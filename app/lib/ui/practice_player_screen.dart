@@ -99,12 +99,12 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Phase: \${_currentPhase.toString().split('.').last}',
+              'Phase: ${_currentPhase.name}',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),
             Text(
-              '\$_secondsElapsed s',
+              '${_secondsElapsed} s',
               style: TextStyle(fontSize: 48),
             ),
             SizedBox(height: 40),

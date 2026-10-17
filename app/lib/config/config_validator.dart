@@ -10,7 +10,7 @@ class ConfigValidator {
       if (!validationResult.isValid) {
         // Log errors in real scenario
         for (var error in validationResult.errors) {
-          print("Config Validation Error: \${error.message}");
+          print("Config Validation Error: ${error.message}");
         }
         return false;
       }
@@ -28,7 +28,7 @@ class ConfigValidator {
 
       return true;
     } catch (e) {
-      print("Exception during validation: \$e");
+      print("Exception during validation: $e");
       return false;
     }
   }
