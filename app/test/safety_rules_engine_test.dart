@@ -28,5 +28,31 @@ void main() {
       final profileEmpty = SafetyProfile(emptyStomachConfirmed: true);
       expect(SafetyRulesEngine.isPracticeAllowed('uddiyana_kriya', profileEmpty, false), isTrue);
     });
+
+    test('SR-01 Comprehensive flag test', () {
+      final practices = ['kapalbhati', 'bhastrika', 'antar_kumbhaka', 'bahya_kumbhaka', 'uddiyana_kriya', 'maha_bandha', 'jalandhara', 'mula', 'bandhas'];
+      final safePractices = ['breath_awareness', 'nadi_shodhana', 'om_chant'];
+
+      final flags = [
+        SafetyProfile(pregnancy: true),
+        SafetyProfile(hypertension: true),
+        SafetyProfile(heartCondition: true),
+        SafetyProfile(epilepsy: true),
+        SafetyProfile(glaucoma: true),
+        SafetyProfile(hernia: true),
+        SafetyProfile(recentSurgery: true)
+      ];
+
+      for (var profile in flags) {
+        for (var practice in practices) {
+          expect(SafetyRulesEngine.isPracticeAllowed(practice, profile, false), isFalse, reason: 'Profile blocked \$practice');
+          expect(SafetyRulesEngine.isPracticeAllowed(practice, profile, true), isTrue, reason: 'Teacher cleared \$practice');
+        }
+
+        for (var practice in safePractices) {
+          expect(SafetyRulesEngine.isPracticeAllowed(practice, profile, false), isTrue, reason: 'Safe practice allowed for \$practice');
+        }
+      }
+    });
   });
 }

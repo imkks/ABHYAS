@@ -8,12 +8,14 @@ class PracticePlayerScreen extends StatefulWidget {
   final SafetyProfile safetyProfile;
   final String practiceName;
   final String practiceId;
+  final int weaningStage; // 1 to 5
 
   const PracticePlayerScreen({
     Key? key,
     required this.safetyProfile,
     required this.practiceName,
     required this.practiceId,
+    this.weaningStage = 1,
   }) : super(key: key);
 
   @override
@@ -77,9 +79,13 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     setState(() {
       _isPlaying = !_isPlaying;
       if (_isPlaying) {
-        _engine.startTimer(_onTick);
+        _engine.resumeTimer(_onTick);
+        if (widget.weaningStage < 4) {
+           // Audio cue placeholder
+           print('Audio Cue: Phase Started');
+        }
       } else {
-        _engine.stopTimer();
+        _engine.pauseTimer();
       }
     });
   }
@@ -111,24 +117,48 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool showVisualPacer = widget.weaningStage < 3;
+    bool showCounts = widget.weaningStage < 3;
+
     return Scaffold(
       appBar: AppBar(title: Text(widget.practiceName)),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (widget.practiceId == 'kapalbhati')
+            if (widget.weaningStage > 1)
+               Padding(
+                 padding: EdgeInsets.all(8.0),
+                 child: Text('Weaning Stage ${widget.weaningStage}: Guidance reduced.', style: TextStyle(color: Colors.orange)),
+               ),
+            if (widget.practiceId == 'kapalbhati' && showVisualPacer)
                Text('Strokes Pacer Active (1 per sec)', style: TextStyle(fontSize: 16, color: Colors.grey)),
             SizedBox(height: 20),
-            Text(
-              'Phase: ${_currentPhase.name}',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-            Text(
-              '${_secondsElapsed} s',
-              style: TextStyle(fontSize: 48),
-            ),
+
+            if (showVisualPacer)
+              AnimatedContainer(
+                duration: Duration(milliseconds: 500),
+                width: _currentPhase == PracticePhase.puraka ? 200 : 100,
+                height: _currentPhase == PracticePhase.puraka ? 200 : 100,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.blue.withOpacity(0.3),
+                  border: Border.all(color: Colors.blue, width: 2)
+                ),
+                child: Center(
+                  child: Text(
+                    _currentPhase.name.toUpperCase(),
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+
+            SizedBox(height: 30),
+            if (showCounts)
+              Text(
+                '${_secondsElapsed} s',
+                style: TextStyle(fontSize: 48),
+              ),
             SizedBox(height: 40),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'practice_list_screen.dart';
+import 'dashboard_screen.dart';
 import '../safety/safety_rules_engine.dart';
+import '../data/local_storage_service.dart';
 
 class PostSessionCheckinScreen extends StatefulWidget {
   final SafetyProfile safetyProfile;
@@ -16,14 +17,22 @@ class _PostSessionCheckinScreenState extends State<PostSessionCheckinScreen> {
   bool _dizziness = false;
   final TextEditingController _noteController = TextEditingController();
 
-  void _submit() {
-    // In Phase 2, this will save to DB and trigger auto-regression logic if strained.
+  void _submit() async {
+    final storage = LocalStorageService();
+    await storage.saveCheckin({
+      'timestamp': DateTime.now().toIso8601String(),
+      'feeling': _feeling,
+      'dizziness': _dizziness,
+      'note': _noteController.text,
+    });
 
-    // Return to list screen, popping everything else
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => PracticeListScreen(safetyProfile: widget.safetyProfile)),
-      (Route<dynamic> route) => false,
-    );
+    // Return to dashboard screen, popping everything else
+    if (mounted) {
+       Navigator.of(context).pushAndRemoveUntil(
+         MaterialPageRoute(builder: (context) => DashboardScreen(safetyProfile: widget.safetyProfile)),
+         (Route<dynamic> route) => false,
+       );
+    }
   }
 
   @override

@@ -36,6 +36,18 @@ class PlayerEngine {
     _timer?.cancel();
   }
 
+  void pauseTimer() {
+    _stopwatch.stop();
+    _timer?.cancel();
+  }
+
+  void resumeTimer(Function(int) onTick) {
+    _stopwatch.start();
+    _timer = Timer.periodic(Duration(milliseconds: 100), (timer) {
+      onTick(_stopwatch.elapsed.inSeconds);
+    });
+  }
+
   /// AC-2: Hold capped by min(level_cap, user_CHT × cap_fraction)
   int calculateMaxHoldSeconds() {
     double userCap = userChtSeconds * holdCapFractionOfCht;

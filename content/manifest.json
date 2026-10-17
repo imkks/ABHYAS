@@ -1,0 +1,32 @@
+{
+  "version": "0.1.0",
+  "items": [
+    {
+      "id": "mantra_om",
+      "type": "mantra",
+      "language": "sa",
+      "tradition_tags": ["all"],
+      "status": "placeholder",
+      "reviewer": null,
+      "content_path": "content/mantras/om.json"
+    },
+    {
+      "id": "lesson_counting",
+      "type": "lesson",
+      "language": "en",
+      "tradition_tags": ["all"],
+      "status": "placeholder",
+      "reviewer": null,
+      "content_path": "content/lessons/counting_methods.md"
+    },
+    {
+      "id": "instruction_kapalbhati",
+      "type": "practice_instruction",
+      "language": "en",
+      "tradition_tags": ["all"],
+      "status": "placeholder",
+      "reviewer": null,
+      "content_path": "content/instructions/kapalbhati.json"
+    }
+  ]
+}

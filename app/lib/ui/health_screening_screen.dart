@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import '../safety/safety_rules_engine.dart';
-import 'practice_player_screen.dart';
+import 'dashboard_screen.dart';
 
 class HealthScreeningScreen extends StatefulWidget {
+  final bool isUpdating;
+
+  const HealthScreeningScreen({Key? key, this.isUpdating = false}) : super(key: key);
+
   @override
   _HealthScreeningScreenState createState() => _HealthScreeningScreenState();
 }
@@ -30,12 +34,16 @@ class _HealthScreeningScreenState extends State<HealthScreeningScreen> {
       emptyStomachConfirmed: true, // Auto-confirm for this simple Phase 1 E2E
     );
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PracticePlayerScreen(safetyProfile: profile),
-      ),
-    );
+    if (widget.isUpdating) {
+       Navigator.pop(context); // just go back if updating from dashboard
+    } else {
+       Navigator.pushReplacement(
+         context,
+         MaterialPageRoute(
+           builder: (context) => DashboardScreen(safetyProfile: profile),
+         ),
+       );
+    }
   }
 
   @override
