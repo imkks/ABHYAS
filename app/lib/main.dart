@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'ui/health_screening_screen.dart';
+import 'ui/onboarding_screen.dart';
 
 void main() {
   runApp(AbhyasApp());
@@ -13,7 +13,7 @@ class AbhyasApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: HealthScreeningScreen(),
+      home: OnboardingScreen(),
     );
   }
 }

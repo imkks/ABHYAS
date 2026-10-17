@@ -2,10 +2,19 @@ import 'package:flutter/material.dart';
 import '../safety/safety_rules_engine.dart';
 import '../player/player_engine.dart';
 
+import 'post_session_checkin_screen.dart';
+
 class PracticePlayerScreen extends StatefulWidget {
   final SafetyProfile safetyProfile;
+  final String practiceName;
+  final String practiceId;
 
-  const PracticePlayerScreen({Key? key, required this.safetyProfile}) : super(key: key);
+  const PracticePlayerScreen({
+    Key? key,
+    required this.safetyProfile,
+    required this.practiceName,
+    required this.practiceId,
+  }) : super(key: key);
 
   @override
   _PracticePlayerScreenState createState() => _PracticePlayerScreenState();
@@ -84,6 +93,16 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     });
   }
 
+  void _finishPractice() {
+    _engine.stopTimer();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PostSessionCheckinScreen(safetyProfile: widget.safetyProfile),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _engine.stopTimer();
@@ -93,11 +112,14 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Practice Player (Level 1)')),
+      appBar: AppBar(title: Text(widget.practiceName)),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            if (widget.practiceId == 'kapalbhati')
+               Text('Strokes Pacer Active (1 per sec)', style: TextStyle(fontSize: 16, color: Colors.grey)),
+            SizedBox(height: 20),
             Text(
               'Phase: ${_currentPhase.name}',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -121,7 +143,12 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                   child: Text('Return to Natural Breath', style: TextStyle(color: Colors.red)),
                 ),
               ],
-            )
+            ),
+            SizedBox(height: 40),
+            ElevatedButton(
+              onPressed: _finishPractice,
+              child: Text('Finish Practice'),
+            ),
           ],
         ),
       ),
