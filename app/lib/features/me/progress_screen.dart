@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../progression/guru_anumati_workflow.dart';
 
 import '../dev/../dev/teacher_console_mock_screen.dart';
+import 'weaning_screen.dart';
 
 class ProgressScreen extends StatefulWidget {
   @override
@@ -80,6 +81,18 @@ class _ProgressScreenState extends State<ProgressScreen> {
               _buildCircularStat('Sopana', '2', Colors.blue),
               _buildCircularStat('CHT', '22s', Colors.teal),
             ],
+          ),
+          SizedBox(height: 20),
+          ElevatedButton.icon(
+            icon: Icon(Icons.psychology),
+            label: Text('Guidance Level (Weaning)'),
+            onPressed: () {
+               Navigator.push(context, MaterialPageRoute(builder: (context) => WeaningScreen()));
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2C2C2C),
+              foregroundColor: Colors.white,
+            ),
           ),
           SizedBox(height: 30),
 
