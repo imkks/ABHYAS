@@ -1,0 +1,10 @@
+00:00 +0: loading /app/app/test/player_engine_test.dart
+00:00 +0: /app/app/test/player_engine_test.dart: Player Engine Tests AC-2: Engine caps hold time properly
+00:00 +1: /app/app/test/player_engine_test.dart: Player Engine Tests Engine schedules full ratio if below cap
+00:00 +2: /app/app/test/player_engine_test.dart: Player Engine Tests AC-9: Returns to natural breath
+00:00 +3: /app/app/test/player_engine_test.dart: Player Engine Tests State machine cycles correctly
+00:00 +4: /app/app/test/safety_rules_engine_test.dart: Safety Rules Matrix Engine tests SR-01 & SR-02 Hypertension/Heart/Pregnancy blocks kapalbhati without teacher clearance
+00:00 +5: /app/app/test/safety_rules_engine_test.dart: Safety Rules Matrix Engine tests SR-03 Menstruation blocks specific practices
+00:00 +6: /app/app/test/safety_rules_engine_test.dart: Safety Rules Matrix Engine tests SR-04 Uddiyana requires empty stomach
+00:00 +7: /app/app/test/safety_rules_engine_test.dart: Safety Rules Matrix Engine tests SR-01 Comprehensive flag test
+00:00 +8: All tests passed!

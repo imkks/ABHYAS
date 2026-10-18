@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../engine/safety/safety_rules_engine.dart';
-import '../practice/practice_list_screen.dart';
-import '../dhyan/dhyan_screen.dart';
-import '../me/progress_screen.dart';
-import '../library/rituals_screen.dart';
-import '../onboarding/health_screening_screen.dart';
+import '../features/practice/practice_list_screen.dart';
+import '../features/dhyan/dhyan_screen.dart';
+import '../features/me/progress_screen.dart';
+import '../features/library/rituals_screen.dart';
+import '../features/onboarding/health_screening_screen.dart';
 
 class MainLayout extends StatefulWidget {
   final SafetyProfile safetyProfile;

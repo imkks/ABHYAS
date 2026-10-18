@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dashboard_screen.dart';
+import '../../core/main_layout.dart';
 import '../../engine/safety/safety_rules_engine.dart';
 import '../../data/local_storage_service.dart';
 

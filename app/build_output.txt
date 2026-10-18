@@ -1,0 +1,64 @@
+Running Gradle task 'assembleRelease'...
+lib/core/main_layout.dart:3:8: Error: Error when reading 'lib/practice/practice_list_screen.dart': No such file or directory
+import '../practice/practice_list_screen.dart';
+       ^
+lib/core/main_layout.dart:4:8: Error: Error when reading 'lib/dhyan/dhyan_screen.dart': No such file or directory
+import '../dhyan/dhyan_screen.dart';
+       ^
+lib/core/main_layout.dart:5:8: Error: Error when reading 'lib/me/progress_screen.dart': No such file or directory
+import '../me/progress_screen.dart';
+       ^
+lib/core/main_layout.dart:6:8: Error: Error when reading 'lib/library/rituals_screen.dart': No such file or directory
+import '../library/rituals_screen.dart';
+       ^
+lib/core/main_layout.dart:7:8: Error: Error when reading 'lib/onboarding/health_screening_screen.dart': No such file or directory
+import '../onboarding/health_screening_screen.dart';
+       ^
+lib/core/theme.dart:52:18: Error: The argument type 'CardTheme' can't be assigned to the parameter type 'CardThemeData?'.
+ - 'CardTheme' is from 'package:flutter/src/material/card_theme.dart' ('/opt/flutter/packages/flutter/lib/src/material/card_theme.dart').
+ - 'CardThemeData' is from 'package:flutter/src/material/card_theme.dart' ('/opt/flutter/packages/flutter/lib/src/material/card_theme.dart').
+      cardTheme: CardTheme(
+                 ^
+lib/core/main_layout.dart:27:7: Error: The method 'PracticeListScreen' isn't defined for the type '_MainLayoutState'.
+ - '_MainLayoutState' is from 'package:abhyas/core/main_layout.dart' ('lib/core/main_layout.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'PracticeListScreen'.
+      PracticeListScreen(safetyProfile: widget.safetyProfile),
+      ^^^^^^^^^^^^^^^^^^
+lib/core/main_layout.dart:28:7: Error: The method 'DhyanScreen' isn't defined for the type '_MainLayoutState'.
+ - '_MainLayoutState' is from 'package:abhyas/core/main_layout.dart' ('lib/core/main_layout.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'DhyanScreen'.
+      DhyanScreen(),
+      ^^^^^^^^^^^
+lib/core/main_layout.dart:29:7: Error: The method 'ProgressScreen' isn't defined for the type '_MainLayoutState'.
+ - '_MainLayoutState' is from 'package:abhyas/core/main_layout.dart' ('lib/core/main_layout.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'ProgressScreen'.
+      ProgressScreen(),
+      ^^^^^^^^^^^^^^
+lib/core/main_layout.dart:30:7: Error: The method 'RitualsScreen' isn't defined for the type '_MainLayoutState'.
+ - '_MainLayoutState' is from 'package:abhyas/core/main_layout.dart' ('lib/core/main_layout.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'RitualsScreen'.
+      RitualsScreen(),
+      ^^^^^^^^^^^^^
+lib/core/main_layout.dart:79:37: Error: The method 'HealthScreeningScreen' isn't defined for the type '_MainLayoutState'.
+ - '_MainLayoutState' is from 'package:abhyas/core/main_layout.dart' ('lib/core/main_layout.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'HealthScreeningScreen'.
+              builder: (context) => HealthScreeningScreen(isUpdating: true)
+                                    ^^^^^^^^^^^^^^^^^^^^^
+Target kernel_snapshot_program failed: Exception
+
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileFlutterBuildRelease'.
+> Process 'command '/opt/flutter/bin/flutter'' finished with non-zero exit value 1
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 28s
+Running Gradle task 'assembleRelease'...                           29.2s
+Gradle task assembleRelease failed with exit code 1
