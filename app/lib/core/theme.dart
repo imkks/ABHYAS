@@ -49,7 +49,7 @@ class AbhyasTheme {
         bodyLarge: TextStyle(fontSize: 16, color: darkInk),
         bodyMedium: TextStyle(fontSize: 14, color: darkInkSoft),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: darkSurface,
         elevation: 0,
         shape: RoundedRectangleBorder(

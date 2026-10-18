@@ -29,7 +29,7 @@ class _PostSessionCheckinScreenState extends State<PostSessionCheckinScreen> {
     // Return to dashboard screen, popping everything else
     if (mounted) {
        Navigator.of(context).pushAndRemoveUntil(
-         MaterialPageRoute(builder: (context) => DashboardScreen(safetyProfile: widget.safetyProfile)),
+         MaterialPageRoute(builder: (context) => MainLayout(safetyProfile: widget.safetyProfile)),
          (Route<dynamic> route) => false,
        );
     }
