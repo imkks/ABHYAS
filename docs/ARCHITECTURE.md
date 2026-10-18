@@ -20,22 +20,36 @@ graph TD
     JSON --> Backend[(Supabase Backend - Phase 2+)]
 ```
 
+## Flutter Application Structure
+
+```text
+/app/lib
+  /core        theme (tokens), l10n, routing, haptics, audio, clock
+  /engine      player_engine (pure Dart), safety_rules, config_models
+  /features
+    /onboarding
+    /today
+    /practice   (list, preflight, player, checkin, cycle_composer)
+    /dhyan      (mala, nidra)
+    /path       (path_map, level_detail, unlock_request)
+    /library
+    /me         (progress, health, weaning, settings)
+  /widgets     shared components
+  /data        repositories, local db (offline), sync
+```
+
 ## Layers
 
-1. **Config Schema Validator** (`app/lib/config/config_validator.dart`)
-    - Validates incoming remote configurations against our predefined schema.
-    - Rejects invalid configurations and logs to the Teacher Console (via backend).
+1. **Engine Layer** (`app/lib/engine`)
+    - **Config Schema Validator**: Validates incoming remote configurations against our predefined schema.
+    - **Safety Rules Engine**: Evaluates the user's current health screening flags (e.g., pregnancy, hypertension) and decides if a practice can be unlocked. Includes rule-matrix unit tests.
+    - **Player Engine**: Manages practice session states and computes maximum allowed durations for breath holds using the logic: `min(level_cap, user_CHT * hold_cap_fraction)`.
 
-2. **Safety Rules Engine** (`app/lib/safety/safety_rules_engine.dart`)
-    - Pure Dart logic.
-    - Evaluates the user's current health screening flags (e.g., pregnancy, hypertension) and decides if a practice can be unlocked.
-    - Includes rules for regression based on "strain" feedback from previous sessions.
-    - Exposes a robust matrix of unit tests.
+2. **Features Layer** (`app/lib/features`)
+    - Contains all the UI screens decoupled by domain (e.g., dhyan, practice, onboarding). The UI layer **only renders state from the engine**; it never computes holds, caps, or locks itself.
 
-3. **Player Engine** (`app/lib/player/player_engine.dart`)
-    - Manages practice session states.
-    - Computes maximum allowed durations for breath holds using the logic: `min(level_cap, user_CHT * hold_cap_fraction)`.
-    - Coordinates UI visual updates, haptic feedbacks, and audio cues independent of UI thread via streams or state objects.
+3. **Widgets Layer** (`app/lib/widgets`)
+    - Reusable, stateless UI components implementing the Design Tokens. Examples: `StopButton`, `PhasePill`, `LockBadge`.
 
-4. **Offline Storage & Backend** (To be implemented)
-    - Will cache configurations, synced states, session logs locally in SQLite or similar, uploading when network resumes.
+4. **Offline Storage & Backend** (`app/lib/data`)
+    - Caches configurations, synced states, and session logs locally (e.g. `shared_preferences`, SQLite), uploading when the network resumes.

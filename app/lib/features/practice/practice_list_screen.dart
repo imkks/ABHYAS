@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../safety/safety_rules_engine.dart';
+import '../../engine/safety/safety_rules_engine.dart';
 import 'practice_player_screen.dart';
 
 class PracticeListScreen extends StatelessWidget {

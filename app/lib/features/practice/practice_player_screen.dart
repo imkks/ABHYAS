@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../safety/safety_rules_engine.dart';
-import '../player/player_engine.dart';
+import '../../engine/safety/safety_rules_engine.dart';
+import '../../engine/player/player_engine.dart';
 
 import 'post_session_checkin_screen.dart';
 

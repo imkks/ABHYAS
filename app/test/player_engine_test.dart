@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:abhyas/player/player_engine.dart';
+import 'package:abhyas/engine/player/player_engine.dart';
 
 void main() {
   group('Player Engine Tests', () {

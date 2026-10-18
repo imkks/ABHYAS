@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../progression/guru_anumati_workflow.dart';
+import '../../../../progression/guru_anumati_workflow.dart';
+import 'widget_gallery.dart';
 
 class TeacherConsoleMockScreen extends StatefulWidget {
   final GuruAnumatiWorkflow workflow;
@@ -60,6 +61,13 @@ class _TeacherConsoleMockScreenState extends State<TeacherConsoleMockScreen> {
               color: req.status == UnlockStatus.approved ? Colors.green : Colors.red,
             ),
           )),
+          SizedBox(height: 40),
+          ElevatedButton(
+            onPressed: () {
+               Navigator.push(context, MaterialPageRoute(builder: (context) => WidgetGalleryScreen()));
+            },
+            child: Text('View Component Gallery (Dev)')
+          )
         ],
       ),
     );

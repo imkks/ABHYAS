@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../player/yoga_nidra_player.dart';
+import '../../engine/player/yoga_nidra_player.dart';
 
 class YogaNidraScreen extends StatefulWidget {
   final int durationMinutes;

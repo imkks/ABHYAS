@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dashboard_screen.dart';
-import '../safety/safety_rules_engine.dart';
-import '../data/local_storage_service.dart';
+import '../../engine/safety/safety_rules_engine.dart';
+import '../../data/local_storage_service.dart';
 
 class PostSessionCheckinScreen extends StatefulWidget {
   final SafetyProfile safetyProfile;

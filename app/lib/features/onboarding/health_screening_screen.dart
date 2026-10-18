@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../safety/safety_rules_engine.dart';
-import 'main_layout.dart';
+import '../../engine/safety/safety_rules_engine.dart';
+import '../../core/main_layout.dart';
 
 class HealthScreeningScreen extends StatefulWidget {
   final bool isUpdating;
