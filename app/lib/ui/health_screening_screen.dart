@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../safety/safety_rules_engine.dart';
-import 'dashboard_screen.dart';
+import 'main_layout.dart';
 
 class HealthScreeningScreen extends StatefulWidget {
   final bool isUpdating;
@@ -35,12 +35,18 @@ class _HealthScreeningScreenState extends State<HealthScreeningScreen> {
     );
 
     if (widget.isUpdating) {
-       Navigator.pop(context); // just go back if updating from dashboard
+       // Since Dashboard is stateless, we push replacement to force rebuild with new state
+       Navigator.pushReplacement(
+         context,
+         MaterialPageRoute(
+           builder: (context) => MainLayout(safetyProfile: profile),
+         ),
+       );
     } else {
        Navigator.pushReplacement(
          context,
          MaterialPageRoute(
-           builder: (context) => DashboardScreen(safetyProfile: profile),
+           builder: (context) => MainLayout(safetyProfile: profile),
          ),
        );
     }
