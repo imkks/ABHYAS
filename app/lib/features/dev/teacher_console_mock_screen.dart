@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../progression/guru_anumati_workflow.dart';
+import '../../engine/progression/guru_anumati_workflow.dart';
 import 'widget_gallery.dart';
 
 class TeacherConsoleMockScreen extends StatefulWidget {

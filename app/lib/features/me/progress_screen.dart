@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../progression/guru_anumati_workflow.dart';
+import '../../engine/progression/guru_anumati_workflow.dart';
 
 import '../dev/../dev/teacher_console_mock_screen.dart';
 import 'weaning_screen.dart';

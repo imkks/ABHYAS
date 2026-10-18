@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../engine/safety/safety_rules_engine.dart';
+import '../features/today/today_screen.dart';
 import '../features/practice/practice_list_screen.dart';
 import '../features/dhyan/dhyan_screen.dart';
 import '../features/me/progress_screen.dart';
@@ -24,10 +25,11 @@ class _MainLayoutState extends State<MainLayout> {
   void initState() {
     super.initState();
     _pages = [
+      TodayScreen(),
       PracticeListScreen(safetyProfile: widget.safetyProfile),
       DhyanScreen(),
-      ProgressScreen(),
       RitualsScreen(),
+      ProgressScreen(),
     ];
   }
 
@@ -53,20 +55,24 @@ class _MainLayoutState extends State<MainLayout> {
         unselectedItemColor: Colors.grey.shade500,
         items: const [
           BottomNavigationBarItem(
+            icon: Icon(Icons.wb_sunny),
+            label: 'Aaj',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.self_improvement),
-            label: 'Practice',
+            label: 'Abhyas',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.spa),
             label: 'Dhyan',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.trending_up),
-            label: 'Progress',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.local_fire_department),
             label: 'Rituals',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Mera',
           ),
         ],
       ),
