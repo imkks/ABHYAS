@@ -1,38 +1,21 @@
-# Miscellaneous
-*.class
-*.log
-*.pyc
-*.swp
-.DS_Store
-.atom/
-.buildlog/
-.history
-.svn/
+# Dependency Directories
+node_modules/
+**/node_modules/
+console/node_modules/
+app/node_modules/
 
-# IntelliJ related
-*.iml
-*.ipr
-*.iws
-.idea/
+# Logs
+npm-debug.log
+yarn-error.log
 
-# The .vscode folder contains configureation for visual studio code
-.vscode/
-
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
-**/.dart_tool/
-**/.flutter-plugins
-**/.flutter-plugins-dependencies
-**/.packages
-**/.pub-cache/
-**/.pub/
-**/build/
-**/flutter_export_environment.sh
-
-# Web related
-lib/generated_plugin_registrant.dart
-
-# Exceptions to above rules.
-!**/build/app/outputs/apk/release/app-release.apkapp/build/
+# Build outputs
+console/build/
+app/build/
+build/
+target/
+.dart_tool/
 app/.dart_tool/
+
+# OS specific
+.DS_Store
+Thumbs.db
