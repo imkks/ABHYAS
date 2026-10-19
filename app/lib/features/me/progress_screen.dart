@@ -5,33 +5,51 @@ import '../dev/../dev/teacher_console_mock_screen.dart';
 import 'weaning_screen.dart';
 
 class ProgressScreen extends StatefulWidget {
+  const ProgressScreen({Key? key}) : super(key: key);
+
   @override
   _ProgressScreenState createState() => _ProgressScreenState();
 }
 
 class _ProgressScreenState extends State<ProgressScreen> {
   final GuruAnumatiWorkflow _workflow = GuruAnumatiWorkflow();
+  bool _hasPendingRequest = false;
+  bool _isApproved = false;
 
-  void _requestUnlock(int level) {
-    setState(() {
-      _workflow.requestUnlock("test-student-id", level);
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Unlock request sent to teacher for Level $level'))
-    );
+  @override
+  void initState() {
+    super.initState();
+    _loadState();
   }
 
-  void _simulateTeacherAction(int level, bool approve) {
-    setState(() {
-      _workflow.simulateTeacherApproval(level, approve, approve ? 'Good progress.' : 'Needs more practice.');
-    });
+  Future<void> _loadState() async {
+    final nextLevel = 3;
+    final approved = await _workflow.isLevelApproved(nextLevel);
+    final requests = await _workflow.getRequests();
+    final pending = requests.any((r) => r.requestedLevel == nextLevel && r.status == UnlockStatus.pending);
+
+    if (mounted) {
+      setState(() {
+        _isApproved = approved;
+        _hasPendingRequest = pending;
+      });
+    }
+  }
+
+  Future<void> _requestUnlock(int level) async {
+    await _workflow.requestUnlock("test-student-id", level);
+    await _loadState();
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Unlock request sent to teacher for Level $level'))
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final nextLevel = 3;
-    final hasPendingRequest = _workflow.requests.any((r) => r.requestedLevel == nextLevel && r.status == UnlockStatus.pending);
-    final isApproved = _workflow.isLevelApproved(nextLevel);
 
     return Scaffold(
       appBar: AppBar(
@@ -115,15 +133,15 @@ class _ProgressScreenState extends State<ProgressScreen> {
           SizedBox(height: 16),
           Card(
             elevation: 6,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: isApproved ? Colors.green : Colors.transparent, width: 2)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: _isApproved ? Colors.green : Colors.transparent, width: 2)),
             child: ListTile(
               contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               title: Text('Sopana $nextLevel: Antar', style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text(isApproved ? 'Approved for Practice' : (hasPendingRequest ? 'Awaiting Teacher Review' : 'Tap to Request Unlock')),
-              trailing: isApproved
+              subtitle: Text(_isApproved ? 'Approved for Practice' : (_hasPendingRequest ? 'Awaiting Teacher Review' : 'Tap to Request Unlock')),
+              trailing: _isApproved
                 ? Icon(Icons.check_circle, color: Colors.green, size: 32)
-                : (hasPendingRequest ? SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.orange)) : Icon(Icons.lock, color: Colors.grey, size: 32)),
-              onTap: (!isApproved && !hasPendingRequest) ? () => _requestUnlock(nextLevel) : null,
+                : (_hasPendingRequest ? SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.orange)) : Icon(Icons.lock, color: Colors.grey, size: 32)),
+              onTap: (!_isApproved && !_hasPendingRequest) ? () => _requestUnlock(nextLevel) : null,
             ),
           ),
 
@@ -140,8 +158,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
           height: 90,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: color.withOpacity(0.5), width: 4),
-            boxShadow: [BoxShadow(color: color.withOpacity(0.2), blurRadius: 10, spreadRadius: 2)]
+            border: Border.all(color: color.withValues(alpha: 0.5), width: 4),
+            boxShadow: [BoxShadow(color: color.withValues(alpha: 0.2), blurRadius: 10, spreadRadius: 2)]
           ),
           child: Center(
             child: Text(value, style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: color)),
@@ -157,7 +175,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: earned ? Colors.green.withOpacity(0.15) : Colors.grey.withOpacity(0.1),
+        color: earned ? Colors.green.withValues(alpha: 0.15) : Colors.grey.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: earned ? Colors.green : Colors.transparent)
       ),

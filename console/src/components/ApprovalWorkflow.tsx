@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { loadUnlockRequests, saveUnlockRequests } from '../configService';
 
 interface UnlockRequest {
   id: string;
@@ -8,17 +9,26 @@ interface UnlockRequest {
   status: 'pending' | 'approved' | 'denied';
 }
 
-const mockRequests: UnlockRequest[] = [
-  { id: 'req-1', studentName: 'Ravi Kumar', requestedLevel: 7, recentFlags: [], status: 'pending' },
-  { id: 'req-2', studentName: 'Priya Sharma', requestedLevel: 5, recentFlags: ['strain'], status: 'pending' }
-];
-
 export const ApprovalWorkflow: React.FC = () => {
-  const [requests, setRequests] = useState<UnlockRequest[]>(mockRequests);
+  const [requests, setRequests] = useState<UnlockRequest[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  const handleAction = (id: string, newStatus: 'approved' | 'denied') => {
-    setRequests(requests.map(req => req.id === id ? { ...req, status: newStatus } : req));
+  useEffect(() => {
+    loadUnlockRequests().then((data: any) => {
+      setRequests(data);
+      setLoading(false);
+    });
+  }, []);
+
+  const handleAction = async (id: string, newStatus: 'approved' | 'denied') => {
+    const updatedRequests = requests.map(req => req.id === id ? { ...req, status: newStatus } : req);
+    setRequests(updatedRequests);
+    await saveUnlockRequests(updatedRequests);
   };
+
+  if (loading) {
+    return <div>Loading requests...</div>;
+  }
 
   return (
     <div style={{ padding: '20px', fontFamily: 'sans-serif', marginTop: '20px', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
@@ -32,7 +42,7 @@ export const ApprovalWorkflow: React.FC = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <strong>{req.studentName}</strong> is requesting to unlock Level {req.requestedLevel}.
-                  {req.recentFlags.length > 0 && (
+                  {req.recentFlags && req.recentFlags.length > 0 && (
                     <div style={{ color: 'red', marginTop: '5px' }}>
                       <span role="img" aria-label="warning">⚠️</span> Recent flags: {req.recentFlags.join(', ')}
                     </div>
