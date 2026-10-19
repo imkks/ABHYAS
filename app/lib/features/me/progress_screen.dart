@@ -1,174 +1,156 @@
 import 'package:flutter/material.dart';
 import '../../engine/progression/guru_anumati_workflow.dart';
-
-import '../dev/../dev/teacher_console_mock_screen.dart';
-import 'weaning_screen.dart';
+import '../../engine/progression/weaning_ladder.dart';
+import '../../engine/progression/tapas_manager.dart';
+import 'privacy_tools_screen.dart';
 
 class ProgressScreen extends StatefulWidget {
+  const ProgressScreen({super.key});
+
   @override
-  _ProgressScreenState createState() => _ProgressScreenState();
+  State<ProgressScreen> createState() => _ProgressScreenState();
 }
 
 class _ProgressScreenState extends State<ProgressScreen> {
+  int _currentLevel = 2;
+  int _malaBeads = 42;
   final GuruAnumatiWorkflow _workflow = GuruAnumatiWorkflow();
-
-  void _requestUnlock(int level) {
-    setState(() {
-      _workflow.requestUnlock("test-student-id", level);
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Unlock request sent to teacher for Level $level'))
-    );
-  }
-
-  void _simulateTeacherAction(int level, bool approve) {
-    setState(() {
-      _workflow.simulateTeacherApproval(level, approve, approve ? 'Good progress.' : 'Needs more practice.');
-    });
-  }
+  final WeaningLadder _weaningLadder = WeaningLadder();
+  final TapasManager _tapasManager = TapasManager();
 
   @override
   Widget build(BuildContext context) {
-    final nextLevel = 3;
+    int nextLevel = _currentLevel + 1;
     final hasPendingRequest = _workflow.requests.any((r) => r.requestedLevel == nextLevel && r.status == UnlockStatus.pending);
     final isApproved = _workflow.isLevelApproved(nextLevel);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('My Progress'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.admin_panel_settings),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(
-                builder: (context) => TeacherConsoleMockScreen(workflow: _workflow),
-              ));
-            },
-            tooltip: 'Teacher Console',
-          )
-        ],
-      ),
+      appBar: AppBar(title: const Text('My Progress')),
       body: ListView(
-        padding: EdgeInsets.all(24),
+        padding: const EdgeInsets.all(16.0),
         children: [
-          Container(
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [Colors.deepPurple.shade900, Colors.indigo.shade900]),
-              borderRadius: BorderRadius.circular(16)
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.wb_sunny, color: Colors.amber, size: 40),
-                SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Brahma Muhurta in 4h 30m', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                      Text('Panchang: Ekadashi Tithi', style: TextStyle(color: Colors.white70, fontSize: 14)),
-                    ]
-                  )
-                )
-              ]
-            )
-          ),
-          SizedBox(height: 30),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildCircularStat('Tapas', '450', Colors.deepOrange),
-              _buildCircularStat('Sopana', '2', Colors.blue),
-              _buildCircularStat('CHT', '22s', Colors.teal),
-            ],
-          ),
-          SizedBox(height: 20),
-          ElevatedButton.icon(
-            icon: Icon(Icons.psychology),
-            label: Text('Guidance Level (Weaning)'),
-            onPressed: () {
-               Navigator.push(context, MaterialPageRoute(builder: (context) => WeaningScreen()));
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2C2C2C),
-              foregroundColor: Colors.white,
-            ),
-          ),
-          SizedBox(height: 30),
-
-          Text('Mudra & Bandha Seals', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
-          SizedBox(height: 16),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              _buildSeal('Gyan', true),
-              _buildSeal('Chin', true),
-              _buildSeal('Dhyana', true),
-              _buildSeal('Nasika', false),
-              _buildSeal('Jalandhara', false),
-            ],
-          ),
-
-          SizedBox(height: 40),
-          Text('Guru Anumati', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
-          SizedBox(height: 16),
+          // Level Status
           Card(
-            elevation: 6,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: isApproved ? Colors.green : Colors.transparent, width: 2)),
-            child: ListTile(
-              contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              title: Text('Sopana $nextLevel: Antar', style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text(isApproved ? 'Approved for Practice' : (hasPendingRequest ? 'Awaiting Teacher Review' : 'Tap to Request Unlock')),
-              trailing: isApproved
-                ? Icon(Icons.check_circle, color: Colors.green, size: 32)
-                : (hasPendingRequest ? SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.orange)) : Icon(Icons.lock, color: Colors.grey, size: 32)),
-              onTap: (!isApproved && !hasPendingRequest) ? () => _requestUnlock(nextLevel) : null,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  Text('Current Level: $_currentLevel', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  Text('Mala Beads: $_malaBeads / 108', style: const TextStyle(fontSize: 18)),
+                  LinearProgressIndicator(value: _malaBeads / 108),
+                ],
+              ),
             ),
           ),
-
+          const SizedBox(height: 16),
+          // Weaning Stage
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.escalator_warning, color: Colors.blue),
+              title: Text('Weaning Stage: ${_weaningLadder.currentStage}'),
+              subtitle: Text('Status: ${_weaningLadder.getStageDescription()}'),
+              trailing: ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _weaningLadder.advanceStage();
+                  });
+                },
+                child: const Text('Advance'),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Tapas Points
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.star, color: Colors.amber),
+              title: const Text('Tapas Points'),
+              trailing: Text('${_tapasManager.tapasPoints}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              onTap: () {
+                setState(() {
+                  _tapasManager.addPoints(10);
+                });
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Mock: Earned 10 Tapas Points for Brahma Muhurta practice!')));
+              },
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Guru Anumati Request
+          Card(
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.lock, color: Colors.red),
+                  title: Text('Next Level ($nextLevel) Gate'),
+                  subtitle: const Text('Requires Teacher Approval (Guru Anumati)'),
+                ),
+                if (isApproved)
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _currentLevel = nextLevel;
+                        });
+                      },
+                      child: const Text('Unlock Level'),
+                    ),
+                  )
+                else if (!hasPendingRequest)
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _workflow.requestUnlock("test-student-id", nextLevel);
+                        });
+                      },
+                      child: const Text('Request Unlock'),
+                    ),
+                  )
+                else
+                  const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text('Request pending teacher review...', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic)),
+                  ),
+                if (hasPendingRequest)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            _workflow.simulateTeacherApproval(nextLevel, true, 'Good progress.');
+                          });
+                        },
+                        child: const Text('(Mock Approve)', style: TextStyle(color: Colors.green)),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            _workflow.simulateTeacherApproval(nextLevel, false, 'Needs more practice.');
+                          });
+                        },
+                        child: const Text('(Mock Deny)', style: TextStyle(color: Colors.red)),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.privacy_tip),
+              title: const Text('Privacy & Data Tools'),
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const PrivacyToolsScreen()));
+              },
+            ),
+          ),
         ],
       ),
-    );
-  }
-
-  Widget _buildCircularStat(String title, String value, Color color) {
-    return Column(
-      children: [
-        Container(
-          width: 90,
-          height: 90,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: color.withOpacity(0.5), width: 4),
-            boxShadow: [BoxShadow(color: color.withOpacity(0.2), blurRadius: 10, spreadRadius: 2)]
-          ),
-          child: Center(
-            child: Text(value, style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: color)),
-          ),
-        ),
-        SizedBox(height: 12),
-        Text(title, style: TextStyle(fontWeight: FontWeight.w500, color: Colors.grey.shade400)),
-      ],
-    );
-  }
-
-  Widget _buildSeal(String name, bool earned) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: earned ? Colors.green.withOpacity(0.15) : Colors.grey.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: earned ? Colors.green : Colors.transparent)
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(earned ? Icons.stars : Icons.lock_outline, size: 16, color: earned ? Colors.green : Colors.grey),
-          SizedBox(width: 8),
-          Text(name, style: TextStyle(color: earned ? Colors.white : Colors.grey)),
-        ],
-      )
     );
   }
 }

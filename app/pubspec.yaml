@@ -37,6 +37,7 @@ dependencies:
   json_schema: ^5.2.2
   haptic_feedback: ^0.6.5
   shared_preferences: ^2.5.6
+  supabase_flutter: ^2.18.3
 
 dev_dependencies:
   flutter_test:

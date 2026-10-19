@@ -1,0 +1,12 @@
+--- app/lib/main.dart
++++ app/lib/main.dart
+@@ -6,7 +6,8 @@
+
+ void main() async {
+   WidgetsFlutterBinding.ensureInitialized();
+-  await LocalStorageService.init();
++  // Mocking local storage init since it doesn't have an init method currently.
++  // await LocalStorageService.init();
+   await SupabaseService.initialize();
+   runApp(const AbhyasApp());
+ }
