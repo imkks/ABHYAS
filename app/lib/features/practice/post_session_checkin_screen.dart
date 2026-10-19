@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'dashboard_screen.dart';
-import '../safety/safety_rules_engine.dart';
-import '../data/local_storage_service.dart';
+import '../../core/main_layout.dart';
+import '../../engine/safety/safety_rules_engine.dart';
+import '../../data/local_storage_service.dart';
 
 class PostSessionCheckinScreen extends StatefulWidget {
   final SafetyProfile safetyProfile;
@@ -29,7 +29,7 @@ class _PostSessionCheckinScreenState extends State<PostSessionCheckinScreen> {
     // Return to dashboard screen, popping everything else
     if (mounted) {
        Navigator.of(context).pushAndRemoveUntil(
-         MaterialPageRoute(builder: (context) => DashboardScreen(safetyProfile: widget.safetyProfile)),
+         MaterialPageRoute(builder: (context) => MainLayout(safetyProfile: widget.safetyProfile)),
          (Route<dynamic> route) => false,
        );
     }

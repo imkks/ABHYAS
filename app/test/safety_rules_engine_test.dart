@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:abhyas/safety/safety_rules_engine.dart';
+import 'package:abhyas/engine/safety/safety_rules_engine.dart';
 
 void main() {
   group('Safety Rules Matrix Engine tests', () {
