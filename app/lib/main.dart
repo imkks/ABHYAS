@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'core/theme.dart';
-import 'features/onboarding/onboarding_screen.dart';
+import 'features/auth/login_screen.dart';
 
 void main() {
   runApp(AbhyasApp());
@@ -13,7 +13,7 @@ class AbhyasApp extends StatelessWidget {
       title: 'Abhyas',
       debugShowCheckedModeBanner: false,
       theme: AbhyasTheme.darkTheme,
-      home: OnboardingScreen(),
+      home: const LoginScreen(),
     );
   }
 }
