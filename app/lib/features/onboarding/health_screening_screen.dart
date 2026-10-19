@@ -36,11 +36,12 @@ class _HealthScreeningScreenState extends State<HealthScreeningScreen> {
 
     if (widget.isUpdating) {
        // Since Dashboard is stateless, we push replacement to force rebuild with new state
-       Navigator.pushReplacement(
+       Navigator.pushAndRemoveUntil(
          context,
          MaterialPageRoute(
            builder: (context) => MainLayout(safetyProfile: profile),
          ),
+         (route) => false,
        );
     } else {
        Navigator.pushReplacement(
