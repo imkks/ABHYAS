@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../engine/player/yoga_nidra_player.dart';
+import '../../core/audio_service.dart';
 
 class YogaNidraScreen extends StatefulWidget {
   final int durationMinutes;
@@ -12,6 +13,7 @@ class YogaNidraScreen extends StatefulWidget {
 
 class _YogaNidraScreenState extends State<YogaNidraScreen> {
   late YogaNidraPlayer _player;
+  final AudioService _audioService = AudioService();
   int _secondsElapsed = 0;
   bool _isPlaying = false;
 
@@ -31,6 +33,7 @@ class _YogaNidraScreenState extends State<YogaNidraScreen> {
     setState(() {
       _isPlaying = false;
     });
+    _audioService.stopAll();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Yoga Nidra Session Complete.'))
     );
@@ -41,8 +44,14 @@ class _YogaNidraScreenState extends State<YogaNidraScreen> {
       _isPlaying = !_isPlaying;
       if (_isPlaying) {
         _player.start(_onTick, _onComplete);
+        // Play the guided Yoga Nidra audio track
+        _audioService.playTrack(
+          'assets/audio/yoga_nidra_${widget.durationMinutes}min.mp3',
+          onComplete: _onComplete,
+        );
       } else {
         _player.pause();
+        _audioService.pauseTrack();
       }
     });
   }
@@ -56,6 +65,7 @@ class _YogaNidraScreenState extends State<YogaNidraScreen> {
   @override
   void dispose() {
     _player.stop();
+    _audioService.stopAll();
     super.dispose();
   }
 

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme.dart';
+import '../../data/session_repository.dart';
+import '../../data/user_repository.dart';
 import 'dart:async';
 
 class SelfCheckPracticeScreen extends StatefulWidget {
@@ -38,7 +40,7 @@ class _SelfCheckPracticeScreenState extends State<SelfCheckPracticeScreen> {
     });
   }
 
-  void _showResults() {
+  void _showResults() async {
     // Calculate simple steadiness
     double avg = _recordedHolds.reduce((a, b) => a + b) / _recordedHolds.length;
     double diffFromTarget = (avg - _targetHoldSeconds).abs();
@@ -49,6 +51,21 @@ class _SelfCheckPracticeScreenState extends State<SelfCheckPracticeScreen> {
     } else if (avg < _targetHoldSeconds) {
       feedback = 'You are releasing early. Ensure you are comfortable.';
     }
+
+    final sessionRepo = SessionRepository();
+    await sessionRepo.logSession(SessionRecord(
+      practiceName: 'Self-Check Kumbhaka',
+      level: 5,
+      durationSeconds: _recordedHolds.reduce((a, b) => a + b),
+      timestamp: DateTime.now(),
+      checkinRating: diffFromTarget < 2 ? 'calm' : 'neutral',
+      holdDurations: _recordedHolds.map((h) => h.toDouble()).toList(),
+    ));
+
+    final userRepo = UserRepository();
+    await userRepo.saveChtBenchmark(avg);
+
+    if (!mounted) return;
 
     showDialog(
       context: context,

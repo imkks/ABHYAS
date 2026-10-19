@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:haptic_feedback/haptic_feedback.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../data/session_repository.dart';
+import '../../engine/progression/guru_anumati_workflow.dart';
 import 'yoga_nidra_screen.dart';
 
 class DhyanScreen extends StatefulWidget {
@@ -9,16 +12,53 @@ class DhyanScreen extends StatefulWidget {
 
 class _DhyanScreenState extends State<DhyanScreen> {
   int _malaCount = 0;
+  static const String _malaKey = 'daily_mala_count';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMalaCount();
+  }
+
+  Future<void> _loadMalaCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        _malaCount = prefs.getInt(_malaKey) ?? 0;
+      });
+    }
+  }
+
+  Future<void> _saveMalaCount(int count) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_malaKey, count);
+  }
 
   void _incrementMala() async {
+    final newCount = _malaCount + 1;
     setState(() {
-      _malaCount++;
+      _malaCount = newCount;
     });
+    await _saveMalaCount(_malaCount);
 
-    if (_malaCount == 108) {
+    if (_malaCount >= 108) {
       await Haptics.vibrate(HapticsType.heavy);
+
+      // Log completed Mala round to session history
+      final sessionRepo = SessionRepository();
+      await sessionRepo.logSession(SessionRecord(
+        practiceName: 'Japa Mala (108 beads)',
+        level: 1,
+        durationSeconds: 324,
+        timestamp: DateTime.now(),
+        checkinRating: 'calm',
+      ));
+
       _showMeruDialog();
-      _malaCount = 0; // Reset for next round
+      setState(() {
+        _malaCount = 0;
+      });
+      await _saveMalaCount(0);
     } else {
       await Haptics.vibrate(HapticsType.light);
     }
@@ -42,6 +82,8 @@ class _DhyanScreenState extends State<DhyanScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tratakaUnlocked = GuruAnumatiWorkflow().isLevelApproved(4);
+
     return Scaffold(
       appBar: AppBar(title: Text('Dhyan & Mala')),
       body: ListView(
@@ -68,14 +110,18 @@ class _DhyanScreenState extends State<DhyanScreen> {
                            BoxShadow(
                              color: Colors.orange.withOpacity(0.3),
                              blurRadius: 10,
-                             spreadRadius: 2
+                             spreadRadius: 2,
                            )
-                         ]
+                         ],
                        ),
                        child: Center(
                          child: Text(
-                           '${_malaCount}',
-                           style: TextStyle(fontSize: 64, fontWeight: FontWeight.bold, color: Colors.orange.shade800),
+                           '$_malaCount',
+                           style: TextStyle(
+                             fontSize: 64,
+                             fontWeight: FontWeight.bold,
+                             color: Colors.orange.shade800,
+                           ),
                          ),
                        ),
                      ),
@@ -88,9 +134,9 @@ class _DhyanScreenState extends State<DhyanScreen> {
                      backgroundColor: Colors.orange.shade50,
                      color: Colors.orange,
                    )
-                 ]
-               )
-             )
+                 ],
+               ),
+             ),
           ),
 
           SizedBox(height: 30),
@@ -98,7 +144,7 @@ class _DhyanScreenState extends State<DhyanScreen> {
           SizedBox(height: 10),
           _buildMeditationCard('Breath Awareness', 'Witness your natural breath.', Icons.self_improvement, Colors.blue, false, routeTo: null),
           _buildMeditationCard('Yoga Nidra (20 min)', 'Deep conscious relaxation.', Icons.bedtime, Colors.indigo, false, routeTo: YogaNidraScreen(durationMinutes: 20)),
-          _buildMeditationCard('Trataka (Candle Flame)', 'Requires Guru Anumati.', Icons.visibility, Colors.grey, true, routeTo: null),
+          _buildMeditationCard('Trataka (Candle Flame)', tratakaUnlocked ? 'Cleared by teacher.' : 'Requires Guru Anumati (Level 4).', Icons.visibility, Colors.purple, !tratakaUnlocked, routeTo: null),
         ],
       ),
     );
@@ -119,7 +165,7 @@ class _DhyanScreenState extends State<DhyanScreen> {
           if (routeTo != null) {
             Navigator.push(context, MaterialPageRoute(builder: (context) => routeTo));
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Playing ${title}')));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Starting $title...')));
           }
         },
       ),

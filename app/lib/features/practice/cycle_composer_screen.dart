@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../core/theme.dart';
+import '../../data/user_repository.dart';
+import '../../engine/player/cycle_sequencer.dart';
+import '../../engine/safety/safety_rules_engine.dart';
+import 'cycle_player_screen.dart';
 
 class CycleStep {
   final String title;
@@ -208,11 +212,43 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
             ),
             child: ElevatedButton.icon(
               icon: Icon(Icons.play_circle_fill),
-              onPressed: () {
-                // Skips disabled steps and begins the cycle. For mockup, we return.
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Starting $_selectedDuration min cycle with selected steps.'))
+              onPressed: () async {
+                final enabledSteps = currentCycle.where((s) => s.isEnabled).toList();
+                if (enabledSteps.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Please enable at least one practice step.')),
+                  );
+                  return;
+                }
+
+                int parseDurationSeconds(String str) {
+                  if (str.endsWith('m')) {
+                    return (int.tryParse(str.replaceAll('m', '')) ?? 1) * 60;
+                  } else if (str.endsWith('s')) {
+                    return int.tryParse(str.replaceAll('s', '')) ?? 30;
+                  }
+                  return 60;
+                }
+
+                final items = enabledSteps.map((s) => CycleStepItem(
+                  id: s.title.toLowerCase().replaceAll(' ', '_'),
+                  title: s.title,
+                  subtitle: '${s.durationStr} session',
+                  durationSeconds: parseDurationSeconds(s.durationStr),
+                  isRequired: s.isRequired,
+                )).toList();
+
+                final profile = await UserRepository().loadProfile() ?? SafetyProfile();
+
+                if (!mounted) return;
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CyclePlayerScreen(
+                      steps: items,
+                      safetyProfile: profile,
+                    ),
+                  ),
                 );
               },
               label: Text('Begin Cycle', style: TextStyle(fontSize: 18, letterSpacing: 1.1)),

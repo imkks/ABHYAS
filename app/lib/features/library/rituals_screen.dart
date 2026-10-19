@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/audio_service.dart';
 
 class RitualsScreen extends StatelessWidget {
   @override
@@ -101,7 +102,18 @@ class RitualsScreen extends StatelessWidget {
         child: Icon(Icons.volume_up, color: Colors.deepOrange),
       ),
       onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Playing $title audio...')));
+        final audio = AudioService();
+        final filename = title.toLowerCase().replaceAll(' ', '_');
+        audio.playTrack('assets/audio/$filename.mp3');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Playing $title...'),
+            action: SnackBarAction(
+              label: 'Stop',
+              onPressed: () => audio.stopAll(),
+            ),
+          ),
+        );
       },
     );
   }

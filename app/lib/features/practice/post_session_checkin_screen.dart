@@ -2,11 +2,22 @@ import 'package:flutter/material.dart';
 import '../../core/main_layout.dart';
 import '../../engine/safety/safety_rules_engine.dart';
 import '../../data/local_storage_service.dart';
+import '../../data/session_repository.dart';
 
 class PostSessionCheckinScreen extends StatefulWidget {
   final SafetyProfile safetyProfile;
+  final String practiceName;
+  final int level;
+  final int durationSeconds;
+  final List<double> holdDurations;
 
-  PostSessionCheckinScreen({required this.safetyProfile});
+  PostSessionCheckinScreen({
+    required this.safetyProfile,
+    this.practiceName = 'Pranayama Practice',
+    this.level = 1,
+    this.durationSeconds = 300,
+    this.holdDurations = const [],
+  });
 
   @override
   _PostSessionCheckinScreenState createState() => _PostSessionCheckinScreenState();
@@ -25,6 +36,16 @@ class _PostSessionCheckinScreenState extends State<PostSessionCheckinScreen> {
       'dizziness': _dizziness,
       'note': _noteController.text,
     });
+
+    final sessionRepo = SessionRepository();
+    await sessionRepo.logSession(SessionRecord(
+      practiceName: widget.practiceName,
+      level: widget.level,
+      durationSeconds: widget.durationSeconds,
+      timestamp: DateTime.now(),
+      checkinRating: _feeling,
+      holdDurations: widget.holdDurations,
+    ));
 
     // Return to dashboard screen, popping everything else
     if (mounted) {

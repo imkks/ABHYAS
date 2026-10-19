@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../engine/safety/safety_rules_engine.dart';
 import '../../core/main_layout.dart';
+import '../../data/user_repository.dart';
 
 class HealthScreeningScreen extends StatefulWidget {
   final bool isUpdating;
@@ -20,8 +21,9 @@ class _HealthScreeningScreenState extends State<HealthScreeningScreen> {
   bool _hernia = false;
   bool _recentSurgery = false;
   bool _menstruation = false;
+  bool _emptyStomachConfirmed = false;
 
-  void _proceed() {
+  void _proceed() async {
     final profile = SafetyProfile(
       pregnancy: _pregnancy,
       hypertension: _hypertension,
@@ -31,8 +33,13 @@ class _HealthScreeningScreenState extends State<HealthScreeningScreen> {
       hernia: _hernia,
       recentSurgery: _recentSurgery,
       menstruation: _menstruation,
-      emptyStomachConfirmed: true, // Auto-confirm for this simple Phase 1 E2E
+      emptyStomachConfirmed: _emptyStomachConfirmed,
     );
+
+    final userRepo = UserRepository();
+    await userRepo.saveProfile(profile);
+
+    if (!mounted) return;
 
     if (widget.isUpdating) {
        // Since Dashboard is stateless, we push replacement to force rebuild with new state
@@ -102,6 +109,12 @@ class _HealthScreeningScreenState extends State<HealthScreeningScreen> {
             title: Text('Menstruation'),
             value: _menstruation,
             onChanged: (val) => setState(() => _menstruation = val!),
+          ),
+          CheckboxListTile(
+            title: Text('Empty Stomach Confirmed'),
+            subtitle: Text('Required for Uddiyana & Maha Bandha'),
+            value: _emptyStomachConfirmed,
+            onChanged: (val) => setState(() => _emptyStomachConfirmed = val!),
           ),
           SizedBox(height: 20),
           ElevatedButton(
