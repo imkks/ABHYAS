@@ -14,7 +14,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
   void _requestUnlock(int level) {
     setState(() {
-      _workflow.requestUnlock(level);
+      _workflow.requestUnlock("test-student-id", level);
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Unlock request sent to teacher for Level $level'))

@@ -39,4 +39,15 @@ class GuruAnumatiWorkflow {
       _requests[index].teacherNote = note;
     }
   }
+
+  void simulateTeacherApproval(int level, bool approve, String note) {
+    final reqs = _requests.where((r) => r.requestedLevel == level && r.status == UnlockStatus.pending).toList();
+    for (var r in reqs) {
+      processRequest(r.id, approve ? UnlockStatus.approved : UnlockStatus.denied, note: note);
+    }
+  }
+
+  bool isLevelApproved(int level) {
+    return _requests.any((r) => r.requestedLevel == level && r.status == UnlockStatus.approved);
+  }
 }
