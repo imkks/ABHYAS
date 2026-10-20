@@ -16,6 +16,8 @@ As per the task brief, the following assumptions were made regarding the design,
 ## CI/CD & Workflow
 * We build `apk` using `ubuntu-latest` inside Github Actions.
 * GitHub Actions workflow `build-apk.yml` triggers specifically on `pull_request` targeting `main` and manual `workflow_dispatch` to prevent redundant runs on non-main commit pushes.
+* GitHub Actions workflow `deploy-console.yml` deploys the Teacher Console to GitHub Pages on every push to `main` affecting `console/**` (or manual trigger).
+* `"homepage": "."` configured in `console/package.json` to allow static assets to resolve relatively on GitHub Pages subdirectory paths.
 
 ## Audio & Haptics
 * `AudioService` uses an injectable interface abstraction layer with logging stubs pending external audio dependency (`just_audio`).
