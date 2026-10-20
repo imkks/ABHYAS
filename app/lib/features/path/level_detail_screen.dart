@@ -13,25 +13,17 @@ class LevelDetailScreen extends StatefulWidget {
   final SafetyProfile safetyProfile;
 
   const LevelDetailScreen({
-    Key? key,
+    super.key,
     required this.level,
     required this.isUnlocked,
     required this.safetyProfile,
-  }) : super(key: key);
+  });
 
   @override
-  _LevelDetailScreenState createState() => _LevelDetailScreenState();
+  State<LevelDetailScreen> createState() => _LevelDetailScreenState();
 }
 
 class _LevelDetailScreenState extends State<LevelDetailScreen> {
-  late bool _unlocked;
-
-  @override
-  void initState() {
-    super.initState();
-    _unlocked = widget.isUnlocked;
-  }
-
   void _openUnlockDialog() {
     showDialog(
       context: context,
@@ -312,9 +304,9 @@ class _LevelDetailScreenState extends State<LevelDetailScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.5)),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
       ),
       child: Text(
         gate.toUpperCase(),
@@ -327,9 +319,9 @@ class _LevelDetailScreenState extends State<LevelDetailScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.4)),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
       ),
       child: Text(
         label,

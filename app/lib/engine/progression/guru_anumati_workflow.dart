@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
-enum UnlockStatus { pending, approved, denied, conditions_added }
+enum UnlockStatus { pending, approved, denied, conditionsAdded }
 
 class UnlockRequest {
   final String id;
@@ -36,7 +36,7 @@ class UnlockRequest {
       requestedLevel: json['requestedLevel'] as int,
       requestedAt: DateTime.parse(json['requestedAt'] as String),
       status: UnlockStatus.values.firstWhere(
-        (e) => e.name == json['status'],
+        (e) => e.name == json['status'] || (json['status'] == 'conditions_added' && e == UnlockStatus.conditionsAdded),
         orElse: () => UnlockStatus.pending,
       ),
       teacherNote: json['teacherNote'] as String?,

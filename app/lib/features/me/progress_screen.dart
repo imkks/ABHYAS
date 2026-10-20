@@ -8,8 +8,10 @@ import '../../engine/safety/safety_rules_engine.dart';
 import 'weaning_screen.dart';
 
 class ProgressScreen extends StatefulWidget {
+  const ProgressScreen({super.key});
+
   @override
-  _ProgressScreenState createState() => _ProgressScreenState();
+  State<ProgressScreen> createState() => _ProgressScreenState();
 }
 
 class _ProgressScreenState extends State<ProgressScreen> {
@@ -137,19 +139,19 @@ class _ProgressScreenState extends State<ProgressScreen> {
                         'Sopana',
                         '$_currentLevel',
                         Colors.blue,
-                        onTap: () {
+                        onTap: () async {
                           final userRepo = UserRepository();
-                          userRepo.loadProfile().then((profile) {
-                            if (!mounted) return;
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => PathMapScreen(
-                                  safetyProfile: profile ?? SafetyProfile(),
-                                ),
+                          final profile = await userRepo.loadProfile();
+                          if (!context.mounted) return;
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PathMapScreen(
+                                safetyProfile: profile ?? SafetyProfile(),
                               ),
-                            ).then((_) => _loadStats());
-                          });
+                            ),
+                          );
+                          if (mounted) _loadStats();
                         },
                       ),
                       _buildCircularStat('CHT', '${_chtSeconds.toStringAsFixed(0)}s', Colors.teal),
@@ -259,9 +261,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
             height: 90,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: color.withOpacity(0.5), width: 4),
+              border: Border.all(color: color.withValues(alpha: 0.5), width: 4),
               boxShadow: [
-                BoxShadow(color: color.withOpacity(0.2), blurRadius: 10, spreadRadius: 2)
+                BoxShadow(color: color.withValues(alpha: 0.2), blurRadius: 10, spreadRadius: 2)
               ],
             ),
             child: Center(
@@ -282,7 +284,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: earned ? Colors.green.withOpacity(0.15) : Colors.grey.withOpacity(0.1),
+        color: earned ? Colors.green.withValues(alpha: 0.15) : Colors.grey.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: earned ? Colors.green : Colors.transparent),
       ),

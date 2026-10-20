@@ -1,4 +1,5 @@
 /// Strongly typed domain models deserializing configuration from seed_config or remote JSON.
+library;
 
 class PracticeConfig {
   final String configVersion;

@@ -3,7 +3,7 @@ name: Abhyas CI / CD
 on:
   pull_request:
     branches:
-      - 'main'
+      - main
   workflow_dispatch:
 
 concurrency:

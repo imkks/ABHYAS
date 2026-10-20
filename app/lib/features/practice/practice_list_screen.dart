@@ -10,10 +10,10 @@ import 'practice_player_screen.dart';
 class PracticeListScreen extends StatefulWidget {
   final SafetyProfile safetyProfile;
 
-  const PracticeListScreen({Key? key, required this.safetyProfile}) : super(key: key);
+  const PracticeListScreen({super.key, required this.safetyProfile});
 
   @override
-  _PracticeListScreenState createState() => _PracticeListScreenState();
+  State<PracticeListScreen> createState() => _PracticeListScreenState();
 }
 
 class _PracticeListScreenState extends State<PracticeListScreen> {
@@ -55,7 +55,7 @@ class _PracticeListScreenState extends State<PracticeListScreen> {
             color: AbhyasTheme.darkSurface,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: AbhyasTheme.saffron.withOpacity(0.4)),
+              side: BorderSide(color: AbhyasTheme.saffron.withValues(alpha: 0.4)),
             ),
             child: ListTile(
               leading: Icon(Icons.alt_route, color: AbhyasTheme.saffron),
@@ -98,7 +98,7 @@ class _PracticeListScreenState extends State<PracticeListScreen> {
                         Container(
                           padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.15),
+                            color: Colors.red.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(

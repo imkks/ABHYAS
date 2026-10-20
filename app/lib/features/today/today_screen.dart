@@ -7,8 +7,10 @@ import '../practice/cycle_composer_screen.dart';
 import '../dhyan/dhyan_screen.dart';
 
 class TodayScreen extends StatefulWidget {
+  const TodayScreen({super.key});
+
   @override
-  _TodayScreenState createState() => _TodayScreenState();
+  State<TodayScreen> createState() => _TodayScreenState();
 }
 
 class _TodayScreenState extends State<TodayScreen> {
@@ -138,7 +140,7 @@ class _TodayScreenState extends State<TodayScreen> {
 
   Widget _buildPracticeCard(BuildContext context) {
     return Card(
-      color: AbhyasTheme.saffron.withOpacity(0.1),
+      color: AbhyasTheme.saffron.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(color: AbhyasTheme.saffron, width: 1),

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../core/audio_service.dart';
 
 class RitualsScreen extends StatelessWidget {
+  const RitualsScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,7 +61,7 @@ class RitualsScreen extends StatelessWidget {
             children: [
               Container(
                 padding: EdgeInsets.all(12),
-                decoration: BoxDecoration(color: color.withOpacity(0.15), shape: BoxShape.circle),
+                decoration: BoxDecoration(color: color.withValues(alpha: 0.15), shape: BoxShape.circle),
                 child: Icon(icon, color: color, size: 28),
               ),
               SizedBox(width: 16),
@@ -98,7 +100,7 @@ class RitualsScreen extends StatelessWidget {
       subtitle: Text(preview, style: TextStyle(color: Colors.grey.shade500)),
       trailing: Container(
         padding: EdgeInsets.all(8),
-        decoration: BoxDecoration(color: Colors.deepOrange.withOpacity(0.1), shape: BoxShape.circle),
+        decoration: BoxDecoration(color: Colors.deepOrange.withValues(alpha: 0.1), shape: BoxShape.circle),
         child: Icon(Icons.volume_up, color: Colors.deepOrange),
       ),
       onTap: () {

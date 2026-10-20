@@ -5,10 +5,10 @@ import '../../core/audio_service.dart';
 class YogaNidraScreen extends StatefulWidget {
   final int durationMinutes;
 
-  const YogaNidraScreen({Key? key, required this.durationMinutes}) : super(key: key);
+  const YogaNidraScreen({super.key, required this.durationMinutes});
 
   @override
-  _YogaNidraScreenState createState() => _YogaNidraScreenState();
+  State<YogaNidraScreen> createState() => _YogaNidraScreenState();
 }
 
 class _YogaNidraScreenState extends State<YogaNidraScreen> {

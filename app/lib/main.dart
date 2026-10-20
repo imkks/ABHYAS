@@ -16,7 +16,7 @@ void main() async {
     final profile = await userRepo.loadProfile();
     home = MainLayout(safetyProfile: profile ?? SafetyProfile());
   } else {
-    home = OnboardingScreen();
+    home = const OnboardingScreen();
   }
 
   runApp(AbhyasApp(home: home));
@@ -25,7 +25,7 @@ void main() async {
 class AbhyasApp extends StatelessWidget {
   final Widget home;
 
-  const AbhyasApp({Key? key, required this.home}) : super(key: key);
+  const AbhyasApp({super.key, required this.home});
 
   @override
   Widget build(BuildContext context) {

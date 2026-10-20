@@ -10,13 +10,13 @@ class UnlockRequestDialog extends StatefulWidget {
   final VoidCallback? onRequestSubmitted;
 
   const UnlockRequestDialog({
-    Key? key,
+    super.key,
     required this.level,
     this.onRequestSubmitted,
-  }) : super(key: key);
+  });
 
   @override
-  _UnlockRequestDialogState createState() => _UnlockRequestDialogState();
+  State<UnlockRequestDialog> createState() => _UnlockRequestDialogState();
 }
 
 class _UnlockRequestDialogState extends State<UnlockRequestDialog> {
@@ -131,9 +131,9 @@ class _UnlockRequestDialogState extends State<UnlockRequestDialog> {
                   Container(
                     padding: EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AbhyasTheme.saffron.withOpacity(0.1),
+                      color: AbhyasTheme.saffron.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: AbhyasTheme.saffron.withOpacity(0.3)),
+                      border: Border.all(color: AbhyasTheme.saffron.withValues(alpha: 0.3)),
                     ),
                     child: Text(
                       'By requesting unlock, you confirm commitment to the tradition guidelines and willingness to follow teacher guidance.',

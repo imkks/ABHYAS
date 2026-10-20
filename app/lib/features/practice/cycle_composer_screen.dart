@@ -20,8 +20,10 @@ class CycleStep {
 }
 
 class CycleComposerScreen extends StatefulWidget {
+  const CycleComposerScreen({super.key});
+
   @override
-  _CycleComposerScreenState createState() => _CycleComposerScreenState();
+  State<CycleComposerScreen> createState() => _CycleComposerScreenState();
 }
 
 class _CycleComposerScreenState extends State<CycleComposerScreen> {
@@ -128,7 +130,7 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       // Timeline graphical node
-                      Container(
+                      SizedBox(
                         width: 32,
                         child: Column(
                           children: [
@@ -166,7 +168,7 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
                                 color: step.isEnabled ? AbhyasTheme.line : Colors.transparent,
                               )
                             ),
-                            color: step.isEnabled ? AbhyasTheme.darkSurface : AbhyasTheme.darkSurfaceAlt.withOpacity(0.5),
+                            color: step.isEnabled ? AbhyasTheme.darkSurface : AbhyasTheme.darkSurfaceAlt.withValues(alpha: 0.5),
                             child: ListTile(
                               contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                               title: Text(
@@ -185,7 +187,7 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
                                 ? Icon(Icons.lock_outline, color: AbhyasTheme.darkInkSoft, size: 20)
                                 : Switch(
                                     value: step.isEnabled,
-                                    activeColor: AbhyasTheme.saffron,
+                                    activeThumbColor: AbhyasTheme.saffron,
                                     onChanged: (val) {
                                       setState(() {
                                         step.isEnabled = val;
@@ -240,7 +242,7 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
 
                 final profile = await UserRepository().loadProfile() ?? SafetyProfile();
 
-                if (!mounted) return;
+                if (!context.mounted) return;
                 Navigator.push(
                   context,
                   MaterialPageRoute(

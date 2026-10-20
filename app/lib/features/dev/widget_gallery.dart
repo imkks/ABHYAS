@@ -3,6 +3,8 @@ import '../../widgets/shared_components.dart';
 import '../../core/theme.dart';
 
 class WidgetGalleryScreen extends StatelessWidget {
+  const WidgetGalleryScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

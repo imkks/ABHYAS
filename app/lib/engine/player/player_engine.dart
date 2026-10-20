@@ -14,7 +14,7 @@ class PlayerEngine {
   final int levelCapSeconds;
   final int userChtSeconds;
 
-  Stopwatch _stopwatch = Stopwatch();
+  final Stopwatch _stopwatch = Stopwatch();
   Timer? _timer;
 
   PlayerEngine({

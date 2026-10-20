@@ -15,17 +15,17 @@ class PracticePlayerScreen extends StatefulWidget {
   final int rounds;
 
   const PracticePlayerScreen({
-    Key? key,
+    super.key,
     required this.safetyProfile,
     required this.practiceName,
     required this.practiceId,
     this.weaningStage = 1,
     this.ratio,
     this.rounds = 5,
-  }) : super(key: key);
+  });
 
   @override
-  _PracticePlayerScreenState createState() => _PracticePlayerScreenState();
+  State<PracticePlayerScreen> createState() => _PracticePlayerScreenState();
 }
 
 class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
@@ -230,7 +230,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                     : (_currentPhase == PracticePhase.rechaka ? 120 : 170),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: _getPhaseColor(_currentPhase).withOpacity(0.3),
+                  color: _getPhaseColor(_currentPhase).withValues(alpha: 0.3),
                   border: Border.all(color: _getPhaseColor(_currentPhase), width: 3),
                 ),
                 child: Center(
@@ -244,7 +244,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
             SizedBox(height: 30),
             if (showCounts)
               Text(
-                '${_secondsElapsed} s',
+                '$_secondsElapsed s',
                 style: TextStyle(fontSize: 48, fontWeight: FontWeight.w300),
               ),
             SizedBox(height: 40),

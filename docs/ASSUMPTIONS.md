@@ -13,8 +13,18 @@ As per the task brief, the following assumptions were made regarding the design,
 ## Engine
 * Monotonic clock for timers is modeled as standard `Stopwatch` in dart, which operates independently from system clock variations.
 
-## CI/CD
+## CI/CD & Workflow
 * We build `apk` using `ubuntu-latest` inside Github Actions.
+* GitHub Actions workflow `build-apk.yml` triggers specifically on `pull_request` targeting `main` and manual `workflow_dispatch` to prevent redundant runs on non-main commit pushes.
+
+## Audio & Haptics
+* `AudioService` uses an injectable interface abstraction layer with logging stubs pending external audio dependency (`just_audio`).
+* `HapticService` dynamically suppresses or scales haptic feedback in accordance with weaning stages 1 through 5 (e.g. stage 5 independent practice suppresses all haptic guidance).
+
+## Modern Flutter Standards & Lints
+* Deprecated `Color.withOpacity(alpha)` updated to Flutter 3.27+ `Color.withValues(alpha: alpha)` across all widgets.
+* Deprecated `ColorScheme.background` and `onBackground` replaced with `surface` and `onSurface`.
+* Super parameters (`super.key`) and public State type signatures (`State<WidgetName>`) enforced throughout the codebase to ensure clean `flutter analyze` runs with zero warnings or info notices.
 
 ## Backend
 * Local testing of APK doesn't require backend interaction right now since Phase 1 includes no backend features. We will mock everything needed to run.

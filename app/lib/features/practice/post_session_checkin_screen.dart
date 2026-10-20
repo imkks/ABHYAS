@@ -11,7 +11,8 @@ class PostSessionCheckinScreen extends StatefulWidget {
   final int durationSeconds;
   final List<double> holdDurations;
 
-  PostSessionCheckinScreen({
+  const PostSessionCheckinScreen({
+    super.key,
     required this.safetyProfile,
     this.practiceName = 'Pranayama Practice',
     this.level = 1,
@@ -20,7 +21,7 @@ class PostSessionCheckinScreen extends StatefulWidget {
   });
 
   @override
-  _PostSessionCheckinScreenState createState() => _PostSessionCheckinScreenState();
+  State<PostSessionCheckinScreen> createState() => _PostSessionCheckinScreenState();
 }
 
 class _PostSessionCheckinScreenState extends State<PostSessionCheckinScreen> {

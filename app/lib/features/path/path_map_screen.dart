@@ -9,10 +9,10 @@ import 'level_detail_screen.dart';
 class PathMapScreen extends StatefulWidget {
   final SafetyProfile safetyProfile;
 
-  const PathMapScreen({Key? key, required this.safetyProfile}) : super(key: key);
+  const PathMapScreen({super.key, required this.safetyProfile});
 
   @override
-  _PathMapScreenState createState() => _PathMapScreenState();
+  State<PathMapScreen> createState() => _PathMapScreenState();
 }
 
 class _PathMapScreenState extends State<PathMapScreen> {
@@ -104,7 +104,7 @@ class _PathMapScreenState extends State<PathMapScreen> {
                 height: 36,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isApproved ? nodeColor.withOpacity(0.2) : AbhyasTheme.darkSurface,
+                  color: isApproved ? nodeColor.withValues(alpha: 0.2) : AbhyasTheme.darkSurface,
                   border: Border.all(color: nodeColor, width: 2),
                 ),
                 child: Center(
@@ -115,7 +115,7 @@ class _PathMapScreenState extends State<PathMapScreen> {
                 Expanded(
                   child: Container(
                     width: 2,
-                    color: isApproved ? AbhyasTheme.leaf.withOpacity(0.5) : AbhyasTheme.line,
+                    color: isApproved ? AbhyasTheme.leaf.withValues(alpha: 0.5) : AbhyasTheme.line,
                   ),
                 ),
             ],
@@ -132,7 +132,7 @@ class _PathMapScreenState extends State<PathMapScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                   side: BorderSide(
-                    color: isApproved ? AbhyasTheme.leaf.withOpacity(0.3) : AbhyasTheme.line,
+                    color: isApproved ? AbhyasTheme.leaf.withValues(alpha: 0.3) : AbhyasTheme.line,
                     width: 1,
                   ),
                 ),
@@ -170,7 +170,7 @@ class _PathMapScreenState extends State<PathMapScreen> {
                             Container(
                               padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                               decoration: BoxDecoration(
-                                color: _getGateColor(level.gate).withOpacity(0.15),
+                                color: _getGateColor(level.gate).withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(

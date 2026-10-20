@@ -66,7 +66,7 @@ class AudioService {
 
   /// Play a bell sound of the given [type].
   ///
-  /// TODO(audio): Load and play from assets/audio/bell_<type>.mp3
+  /// TODO(audio): Load and play from `assets/audio/bell_<type>.mp3`
   Future<void> playBell(BellType type) async {
     debugPrint('[AudioService] playBell(${type.name}) at volume $_volume');
     // TODO(audio): Implement with just_audio one-shot player

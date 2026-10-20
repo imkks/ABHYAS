@@ -6,8 +6,10 @@ import '../../engine/progression/guru_anumati_workflow.dart';
 import 'yoga_nidra_screen.dart';
 
 class DhyanScreen extends StatefulWidget {
+  const DhyanScreen({super.key});
+
   @override
-  _DhyanScreenState createState() => _DhyanScreenState();
+  State<DhyanScreen> createState() => _DhyanScreenState();
 }
 
 class _DhyanScreenState extends State<DhyanScreen> {
@@ -108,7 +110,7 @@ class _DhyanScreenState extends State<DhyanScreen> {
                          border: Border.all(color: Colors.orange, width: 4),
                          boxShadow: [
                            BoxShadow(
-                             color: Colors.orange.withOpacity(0.3),
+                             color: Colors.orange.withValues(alpha: 0.3),
                              blurRadius: 10,
                              spreadRadius: 2,
                            )
@@ -155,7 +157,7 @@ class _DhyanScreenState extends State<DhyanScreen> {
       margin: EdgeInsets.symmetric(vertical: 6),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: color.withOpacity(0.2),
+          backgroundColor: color.withValues(alpha: 0.2),
           child: Icon(icon, color: color),
         ),
         title: Text(title, style: TextStyle(fontWeight: FontWeight.bold)),

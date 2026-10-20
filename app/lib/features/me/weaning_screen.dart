@@ -4,8 +4,10 @@ import '../../data/session_repository.dart';
 import '../practice/self_check_practice_screen.dart';
 
 class WeaningScreen extends StatefulWidget {
+  const WeaningScreen({super.key});
+
   @override
-  _WeaningScreenState createState() => _WeaningScreenState();
+  State<WeaningScreen> createState() => _WeaningScreenState();
 }
 
 class _WeaningScreenState extends State<WeaningScreen> {

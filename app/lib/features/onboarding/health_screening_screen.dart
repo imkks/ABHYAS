@@ -6,10 +6,10 @@ import '../../data/user_repository.dart';
 class HealthScreeningScreen extends StatefulWidget {
   final bool isUpdating;
 
-  const HealthScreeningScreen({Key? key, this.isUpdating = false}) : super(key: key);
+  const HealthScreeningScreen({super.key, this.isUpdating = false});
 
   @override
-  _HealthScreeningScreenState createState() => _HealthScreeningScreenState();
+  State<HealthScreeningScreen> createState() => _HealthScreeningScreenState();
 }
 
 class _HealthScreeningScreenState extends State<HealthScreeningScreen> {

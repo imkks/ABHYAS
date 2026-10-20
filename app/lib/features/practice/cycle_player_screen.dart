@@ -1,11 +1,9 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../core/audio_service.dart';
 import '../../core/haptic_service.dart';
 import '../../core/theme.dart';
 import '../../engine/player/cycle_sequencer.dart';
 import '../../engine/safety/safety_rules_engine.dart';
-import '../../widgets/shared_components.dart';
 import 'post_session_checkin_screen.dart';
 
 class CyclePlayerScreen extends StatefulWidget {
@@ -14,14 +12,14 @@ class CyclePlayerScreen extends StatefulWidget {
   final int weaningStage;
 
   const CyclePlayerScreen({
-    Key? key,
+    super.key,
     required this.steps,
     required this.safetyProfile,
     this.weaningStage = 1,
-  }) : super(key: key);
+  });
 
   @override
-  _CyclePlayerScreenState createState() => _CyclePlayerScreenState();
+  State<CyclePlayerScreen> createState() => _CyclePlayerScreenState();
 }
 
 class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
@@ -219,7 +217,7 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: AbhyasTheme.saffron.withOpacity(_isPaused ? 0.05 : 0.25),
+                          color: AbhyasTheme.saffron.withValues(alpha: _isPaused ? 0.05 : 0.25),
                           blurRadius: 30,
                           spreadRadius: 2,
                         ),

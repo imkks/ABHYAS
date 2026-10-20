@@ -5,16 +5,18 @@ import '../../data/user_repository.dart';
 import 'dart:async';
 
 class SelfCheckPracticeScreen extends StatefulWidget {
+  const SelfCheckPracticeScreen({super.key});
+
   @override
-  _SelfCheckPracticeScreenState createState() => _SelfCheckPracticeScreenState();
+  State<SelfCheckPracticeScreen> createState() => _SelfCheckPracticeScreenState();
 }
 
 class _SelfCheckPracticeScreenState extends State<SelfCheckPracticeScreen> {
   bool _isTiming = false;
-  Stopwatch _stopwatch = Stopwatch();
+  final Stopwatch _stopwatch = Stopwatch();
   Timer? _uiTimer;
 
-  List<int> _recordedHolds = [];
+  final List<int> _recordedHolds = [];
   final int _targetHoldSeconds = 12; // Example from config
 
   void _toggleTimer() {
@@ -135,9 +137,9 @@ class _SelfCheckPracticeScreenState extends State<SelfCheckPracticeScreen> {
                 height: 250,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: _isTiming ? AbhyasTheme.hold.withOpacity(0.3) : AbhyasTheme.darkSurfaceAlt,
+                  color: _isTiming ? AbhyasTheme.hold.withValues(alpha: 0.3) : AbhyasTheme.darkSurfaceAlt,
                   border: Border.all(color: _isTiming ? AbhyasTheme.hold : AbhyasTheme.line, width: 4),
-                  boxShadow: _isTiming ? [BoxShadow(color: AbhyasTheme.hold.withOpacity(0.5), blurRadius: 20, spreadRadius: 5)] : [],
+                  boxShadow: _isTiming ? [BoxShadow(color: AbhyasTheme.hold.withValues(alpha: 0.5), blurRadius: 20, spreadRadius: 5)] : [],
                 ),
                 child: Center(
                   child: Text(
