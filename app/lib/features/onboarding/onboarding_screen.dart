@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'health_screening_screen.dart';
+import '../../data/user_repository.dart';
 
 class OnboardingScreen extends StatefulWidget {
+  const OnboardingScreen({super.key});
+
   @override
-  _OnboardingScreenState createState() => _OnboardingScreenState();
+  State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
@@ -11,13 +14,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   String _selectedTradition = 'Smarta';
   final List<String> _traditions = ['Smarta', 'Vaishnava', 'Shaiva', 'Shakta', 'Arya Samaj', 'Other'];
 
-  void _proceed() {
+  void _proceed() async {
     if (!_consentGiven) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Please provide explicit consent to proceed.'),
       ));
       return;
     }
+
+    final userRepo = UserRepository();
+    await userRepo.saveTradition(_selectedTradition);
+    await userRepo.saveConsent(true);
+
+    if (!mounted) return;
 
     Navigator.pushReplacement(
       context,

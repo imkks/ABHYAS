@@ -10,10 +10,10 @@ import '../features/onboarding/health_screening_screen.dart';
 class MainLayout extends StatefulWidget {
   final SafetyProfile safetyProfile;
 
-  const MainLayout({Key? key, required this.safetyProfile}) : super(key: key);
+  const MainLayout({super.key, required this.safetyProfile});
 
   @override
-  _MainLayoutState createState() => _MainLayoutState();
+  State<MainLayout> createState() => _MainLayoutState();
 }
 
 class _MainLayoutState extends State<MainLayout> {
@@ -85,8 +85,8 @@ class _MainLayoutState extends State<MainLayout> {
               builder: (context) => HealthScreeningScreen(isUpdating: true)
           ));
         },
-        child: Icon(Icons.health_and_safety),
         tooltip: 'Update Health Profile',
+        child: Icon(Icons.health_and_safety),
       ),
     );
   }
