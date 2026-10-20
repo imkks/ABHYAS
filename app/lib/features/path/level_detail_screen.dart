@@ -220,7 +220,7 @@ class _LevelDetailScreenState extends State<LevelDetailScreen> {
           // Primary Action
           if (approved)
             PrimaryButton(
-              label: 'Practice ${widget.level.practices.first}',
+              text: 'Practice ${widget.level.practices.first}',
               onPressed: () {
                 Navigator.push(
                   context,
