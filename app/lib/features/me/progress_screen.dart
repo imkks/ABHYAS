@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../engine/progression/guru_anumati_workflow.dart';
 
 import '../dev/../dev/teacher_console_mock_screen.dart';
+import '../panchang/widgets/panchang_tithi_banner.dart';
 import 'weaning_screen.dart';
 
 class ProgressScreen extends StatefulWidget {
@@ -51,28 +52,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
       body: ListView(
         padding: EdgeInsets.all(24),
         children: [
-          Container(
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [Colors.deepPurple.shade900, Colors.indigo.shade900]),
-              borderRadius: BorderRadius.circular(16)
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.wb_sunny, color: Colors.amber, size: 40),
-                SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Brahma Muhurta in 4h 30m', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                      Text('Panchang: Ekadashi Tithi', style: TextStyle(color: Colors.white70, fontSize: 14)),
-                    ]
-                  )
-                )
-              ]
-            )
-          ),
+          PanchangTithiBanner(),
           SizedBox(height: 30),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,

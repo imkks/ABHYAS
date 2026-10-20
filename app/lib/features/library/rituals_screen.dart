@@ -14,6 +14,7 @@ class RitualsScreen extends StatelessWidget {
           Text('Pre-Practice Flow', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 1.1, color: Colors.deepOrange)),
           SizedBox(height: 16),
           _buildRitualCard(context, 'Achamana', 'Purification', 'Sip water 3 times with specific mantras.', Icons.water_drop, Colors.blue, 'Om Keshavaya Namah, Om Narayanaya Namah, Om Madhavaya Namah.'),
+          _buildRitualCard(context, 'Desha-Kala (Panchang)', 'Time & Space', 'Align your consciousness with today\'s Tithi, Nakshatra, and sacred Muhurta.', Icons.calendar_month, Colors.amber, 'Vedic sadhana begins by locating awareness in cosmic time and space (Desha-Kala Sankalpa). Contemplate today\'s prevailing solar and lunar energies to tune your breath.'),
           _buildRitualCard(context, 'Asana Sthapana', 'Seat', 'Establish your seat.', Icons.chair_alt, Colors.brown, '[CONTENT PENDING - TEACHER REVIEW]'),
           _buildRitualCard(context, 'Sankalp', 'Intention', 'Formulate your intention.', Icons.handshake, Colors.orange, 'I practice today for steadiness of mind and body.'),
 

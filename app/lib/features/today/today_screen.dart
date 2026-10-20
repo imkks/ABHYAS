@@ -1,27 +1,46 @@
 import 'package:flutter/material.dart';
 import '../../core/theme.dart';
+import '../../engine/panchang/panchang_service.dart';
 import '../practice/cycle_composer_screen.dart';
 import '../dhyan/dhyan_screen.dart';
+import '../panchang/panchang_screen.dart';
+import '../panchang/widgets/panchang_muhurta_card.dart';
 
 class TodayScreen extends StatelessWidget {
+  final PanchangService _panchangService = PanchangService();
+
   @override
   Widget build(BuildContext context) {
+    final todayPanchang = _panchangService.getTodayPanchang();
+    final dateSubtitle =
+        '${todayPanchang.vara.englishDay} · ${todayPanchang.tithi.name} (${todayPanchang.tithi.pakshaName})';
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Aaj (Today)'),
         elevation: 0,
         actions: [
-           IconButton(icon: Icon(Icons.settings), onPressed: () {})
+          IconButton(
+            icon: Icon(Icons.calendar_month),
+            tooltip: 'Panchang',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const PanchangScreen()),
+              );
+            },
+          ),
+          IconButton(icon: Icon(Icons.settings), onPressed: () {}),
         ],
       ),
       body: ListView(
         padding: EdgeInsets.all(24),
         children: [
           Text('Namaste, Practitioner', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AbhyasTheme.saffron)),
-          Text('Sunday · Ekadashi (Phase 3)', style: TextStyle(color: AbhyasTheme.darkInkSoft)),
-          SizedBox(height: 30),
+          Text(dateSubtitle, style: TextStyle(color: AbhyasTheme.darkInkSoft)),
+          SizedBox(height: 24),
 
-          _buildMuhurtaCard(),
+          PanchangMuhurtaCard(),
           SizedBox(height: 16),
           _buildSankalpCard(context),
           SizedBox(height: 16),
@@ -32,29 +51,6 @@ class TodayScreen extends StatelessWidget {
           _buildEveningCard(context),
 
         ],
-      ),
-    );
-  }
-
-  Widget _buildMuhurtaCard() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.wb_twilight, color: AbhyasTheme.sky),
-                SizedBox(width: 8),
-                Text('Brahma Muhurta', style: TextStyle(fontWeight: FontWeight.bold)),
-              ],
-            ),
-            SizedBox(height: 8),
-            Text('4:52 AM – 5:40 AM', style: TextStyle(fontSize: 18)),
-            Text('Sunrise: 6:28 AM · Local', style: TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 12)),
-          ],
-        ),
       ),
     );
   }
