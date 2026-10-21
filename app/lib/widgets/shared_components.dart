@@ -6,7 +6,12 @@ class PrimaryButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool isLoading;
 
-  const PrimaryButton({required this.text, this.onPressed, this.isLoading = false});
+  const PrimaryButton({
+    super.key,
+    required this.text,
+    this.onPressed,
+    this.isLoading = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +28,11 @@ class SecondaryButton extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;
 
-  const SecondaryButton({required this.text, this.onPressed});
+  const SecondaryButton({
+    super.key,
+    required this.text,
+    this.onPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +46,7 @@ class SecondaryButton extends StatelessWidget {
 class StopButton extends StatelessWidget {
   final VoidCallback onPressed;
 
-  const StopButton({required this.onPressed});
+  const StopButton({super.key, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +56,7 @@ class StopButton extends StatelessWidget {
       child: Container(
         height: 64, // Touch target >= 64dp per spec
         decoration: BoxDecoration(
-          color: AbhyasTheme.clay.withOpacity(0.2),
+          color: AbhyasTheme.clay.withValues(alpha: 0.2),
           border: Border.all(color: AbhyasTheme.clay),
           borderRadius: BorderRadius.circular(12),
         ),
@@ -63,14 +72,14 @@ class PhasePill extends StatelessWidget {
   final String phase;
   final Color color;
 
-  const PhasePill({required this.phase, required this.color});
+  const PhasePill({super.key, required this.phase, required this.color});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
+        color: color.withValues(alpha: 0.2),
         border: Border.all(color: color),
         borderRadius: BorderRadius.circular(20),
       ),
@@ -90,7 +99,7 @@ class LockBadge extends StatelessWidget {
   final String type; // 'teacher', 'guru', 'safety'
   final String reason;
 
-  const LockBadge({required this.type, required this.reason});
+  const LockBadge({super.key, required this.type, required this.reason});
 
   @override
   Widget build(BuildContext context) {
@@ -99,9 +108,9 @@ class LockBadge extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: badgeColor.withOpacity(0.1),
+        color: badgeColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: badgeColor.withOpacity(0.5))
+        border: Border.all(color: badgeColor.withValues(alpha: 0.5))
       ),
       child: Row(
         children: [
@@ -126,7 +135,7 @@ class BigCounter extends StatelessWidget {
   final String value;
   final String subtitle;
 
-  const BigCounter({required this.value, required this.subtitle});
+  const BigCounter({super.key, required this.value, required this.subtitle});
 
   @override
   Widget build(BuildContext context) {

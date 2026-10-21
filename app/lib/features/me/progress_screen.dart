@@ -1,174 +1,315 @@
 import 'package:flutter/material.dart';
-import '../../engine/progression/guru_anumati_workflow.dart';
-
-import '../dev/../dev/teacher_console_mock_screen.dart';
+import '../../core/theme.dart';
+import '../../data/session_repository.dart';
+import '../../data/user_repository.dart';
+import '../../engine/progression/progression_service.dart';
+import '../path/path_map_screen.dart';
+import '../../engine/safety/safety_rules_engine.dart';
+import '../onboarding/health_screening_screen.dart';
 import 'weaning_screen.dart';
 
 class ProgressScreen extends StatefulWidget {
+  const ProgressScreen({super.key});
+
   @override
-  _ProgressScreenState createState() => _ProgressScreenState();
+  State<ProgressScreen> createState() => _ProgressScreenState();
 }
 
 class _ProgressScreenState extends State<ProgressScreen> {
-  final GuruAnumatiWorkflow _workflow = GuruAnumatiWorkflow();
+  final ProgressionService _progressionService = ProgressionService();
+  final SessionRepository _sessionRepo = SessionRepository();
+  final UserRepository _userRepo = UserRepository();
 
-  void _requestUnlock(int level) {
-    setState(() {
-      _workflow.requestUnlock("test-student-id", level);
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Unlock request sent to teacher for Level $level'))
-    );
+  UserProgression? _progression;
+  int _tapasCount = 0;
+  int _totalPracticeMinutes = 0;
+  double _avgCalmnessDelta = 0.0;
+  double _chtSeconds = 0.0;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStats();
   }
 
-  void _simulateTeacherAction(int level, bool approve) {
-    setState(() {
-      _workflow.simulateTeacherApproval(level, approve, approve ? 'Good progress.' : 'Needs more practice.');
-    });
+  Future<void> _loadStats() async {
+    final prog = await _progressionService.getProgression();
+    final tapas = await _sessionRepo.getTapasCount();
+    final totalMins = await _sessionRepo.getTotalPracticeMinutes();
+    final delta = await _sessionRepo.getAverageCalmnessDelta();
+    final benchmark = await _userRepo.loadChtBenchmark();
+    final avgHold = await _sessionRepo.getAverageHold();
+
+    if (mounted) {
+      setState(() {
+        _progression = prog;
+        _tapasCount = tapas;
+        _totalPracticeMinutes = totalMins;
+        _avgCalmnessDelta = delta;
+        _chtSeconds = benchmark ?? (avgHold > 0 ? avgHold : 20.0);
+        _loading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final nextLevel = 3;
-    final hasPendingRequest = _workflow.requests.any((r) => r.requestedLevel == nextLevel && r.status == UnlockStatus.pending);
-    final isApproved = _workflow.isLevelApproved(nextLevel);
-
     return Scaffold(
+      backgroundColor: AbhyasTheme.darkBg,
       appBar: AppBar(
-        title: Text('My Progress'),
+        title: const Text('My Journey (Mera)'),
+        elevation: 0,
         actions: [
           IconButton(
-            icon: Icon(Icons.admin_panel_settings),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(
-                builder: (context) => TeacherConsoleMockScreen(workflow: _workflow),
-              ));
-            },
-            tooltip: 'Teacher Console',
-          )
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadStats,
+            tooltip: 'Refresh',
+          ),
         ],
       ),
-      body: ListView(
-        padding: EdgeInsets.all(24),
-        children: [
-          Container(
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [Colors.deepPurple.shade900, Colors.indigo.shade900]),
-              borderRadius: BorderRadius.circular(16)
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.wb_sunny, color: Colors.amber, size: 40),
-                SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+      body: _loading || _progression == null
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: _loadStats,
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                children: [
+                  // 1. Current Level Rank & XP Card
+                  _buildLevelCard(_progression!),
+
+                  const SizedBox(height: 20),
+
+                  // 2. "See The Difference" Metrics
+                  const Text(
+                    'Practice Metrics & Transformation',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Brahma Muhurta in 4h 30m', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                      Text('Panchang: Ekadashi Tithi', style: TextStyle(color: Colors.white70, fontSize: 14)),
-                    ]
-                  )
-                )
-              ]
-            )
-          ),
-          SizedBox(height: 30),
+                      _buildMetricTile('Tapas Count', '$_tapasCount', 'Sessions', Colors.deepOrange),
+                      _buildMetricTile('Total Time', '$_totalPracticeMinutes', 'Minutes', Colors.amber),
+                      _buildMetricTile('Calm Shift', _avgCalmnessDelta > 0 ? '+${(_avgCalmnessDelta * 10).round()}%' : '--', 'Post-practice', Colors.teal),
+                      _buildMetricTile('CHT Hold', '${_chtSeconds.round()}s', 'Comfort test', Colors.blue),
+                    ],
+                  ),
+
+                  const SizedBox(height: 28),
+
+                  // 3. Sacred Seals Collection
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Mudra & Bandha Seals',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          final profile = await _userRepo.loadProfile() ?? SafetyProfile();
+                          if (!context.mounted) return;
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => PathMapScreen(safetyProfile: profile)),
+                          );
+                          _loadStats();
+                        },
+                        child: const Text('Sopana Map', style: TextStyle(color: AbhyasTheme.saffron, fontSize: 12)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildSeal('Gyan Mudra', _progression!.level >= 1),
+                      _buildSeal('Chin Mudra', _progression!.level >= 1),
+                      _buildSeal('Dhyana Mudra', _progression!.level >= 2),
+                      _buildSeal('Nasika Mudra', _progression!.level >= 3),
+                      _buildSeal('Jalandhara Bandha', _progression!.level >= 3),
+                      _buildSeal('Shanmukhi Mudra', _progression!.level >= 4),
+                      _buildSeal('Mula Bandha', _progression!.level >= 4),
+                      _buildSeal('Uddiyana Bandha', _progression!.level >= 6),
+                      _buildSeal('Maha Bandha', _progression!.level >= 6),
+                      _buildSeal('Shambhavi Mudra', _progression!.level >= 7),
+                    ],
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  // 4. Personal Preferences & Safety Profile
+                  const Text(
+                    'Preferences & Health Settings',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  const SizedBox(height: 12),
+                  Card(
+                    color: AbhyasTheme.darkSurface,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14), side: const BorderSide(color: AbhyasTheme.line)),
+                    child: Column(
+                      children: [
+                        ListTile(
+                          leading: const Icon(Icons.health_and_safety, color: AbhyasTheme.saffron),
+                          title: const Text('Health Screening Profile', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          subtitle: const Text('Review medical flags & practice advisories', style: TextStyle(fontSize: 12, color: AbhyasTheme.darkInkSoft)),
+                          trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => HealthScreeningScreen(isUpdating: true)),
+                            );
+                          },
+                        ),
+                        const Divider(height: 1, color: AbhyasTheme.line),
+                        ListTile(
+                          leading: const Icon(Icons.psychology, color: AbhyasTheme.leaf),
+                          title: const Text('Guidance Level (Weaning)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          subtitle: const Text('Customize voice cues, bell sounds & haptics', style: TextStyle(fontSize: 12, color: AbhyasTheme.darkInkSoft)),
+                          trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => WeaningScreen()),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                ],
+              ),
+            ),
+    );
+  }
+
+  Widget _buildLevelCard(UserProgression prog) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AbhyasTheme.darkSurface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AbhyasTheme.saffron.withValues(alpha: 0.35)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildCircularStat('Tapas', '450', Colors.deepOrange),
-              _buildCircularStat('Sopana', '2', Colors.blue),
-              _buildCircularStat('CHT', '22s', Colors.teal),
+              Row(
+                children: [
+                  const Icon(Icons.workspace_premium, color: AbhyasTheme.saffron, size: 24),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Level ${prog.level}: ${prog.title}',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.white),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: AbhyasTheme.saffron.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '${prog.totalTapas} Tapas',
+                  style: const TextStyle(color: AbhyasTheme.saffron, fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+              ),
             ],
           ),
-          SizedBox(height: 20),
-          ElevatedButton.icon(
-            icon: Icon(Icons.psychology),
-            label: Text('Guidance Level (Weaning)'),
-            onPressed: () {
-               Navigator.push(context, MaterialPageRoute(builder: (context) => WeaningScreen()));
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2C2C2C),
-              foregroundColor: Colors.white,
-            ),
-          ),
-          SizedBox(height: 30),
-
-          Text('Mudra & Bandha Seals', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
-          SizedBox(height: 16),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
+          const SizedBox(height: 14),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildSeal('Gyan', true),
-              _buildSeal('Chin', true),
-              _buildSeal('Dhyana', true),
-              _buildSeal('Nasika', false),
-              _buildSeal('Jalandhara', false),
+              const Text('Level Progress', style: TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 12)),
+              Text('${prog.currentLevelTapas} / ${prog.tapasNeededForNextLevel} to Level ${prog.level + 1}',
+                  style: const TextStyle(color: AbhyasTheme.saffron, fontSize: 11, fontWeight: FontWeight.bold)),
             ],
           ),
-
-          SizedBox(height: 40),
-          Text('Guru Anumati', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
-          SizedBox(height: 16),
-          Card(
-            elevation: 6,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: isApproved ? Colors.green : Colors.transparent, width: 2)),
-            child: ListTile(
-              contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              title: Text('Sopana $nextLevel: Antar', style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text(isApproved ? 'Approved for Practice' : (hasPendingRequest ? 'Awaiting Teacher Review' : 'Tap to Request Unlock')),
-              trailing: isApproved
-                ? Icon(Icons.check_circle, color: Colors.green, size: 32)
-                : (hasPendingRequest ? SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.orange)) : Icon(Icons.lock, color: Colors.grey, size: 32)),
-              onTap: (!isApproved && !hasPendingRequest) ? () => _requestUnlock(nextLevel) : null,
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: prog.progressPercent,
+              minHeight: 6,
+              backgroundColor: AbhyasTheme.darkSurfaceAlt,
+              color: AbhyasTheme.saffron,
             ),
           ),
-
+          const SizedBox(height: 12),
+          Text(
+            'Current Focus: ${prog.featureHighlight}',
+            style: const TextStyle(fontSize: 12, color: Colors.white70),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildCircularStat(String title, String value, Color color) {
-    return Column(
-      children: [
-        Container(
-          width: 90,
-          height: 90,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: color.withOpacity(0.5), width: 4),
-            boxShadow: [BoxShadow(color: color.withOpacity(0.2), blurRadius: 10, spreadRadius: 2)]
+  Widget _buildMetricTile(String title, String value, String sub, Color color) {
+    return Container(
+      width: 78,
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+      decoration: BoxDecoration(
+        color: AbhyasTheme.darkSurface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AbhyasTheme.line),
+      ),
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color),
           ),
-          child: Center(
-            child: Text(value, style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: color)),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white70),
+            textAlign: TextAlign.center,
           ),
-        ),
-        SizedBox(height: 12),
-        Text(title, style: TextStyle(fontWeight: FontWeight.w500, color: Colors.grey.shade400)),
-      ],
+          Text(
+            sub,
+            style: const TextStyle(fontSize: 9, color: AbhyasTheme.darkInkSoft),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildSeal(String name, bool earned) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: earned ? Colors.green.withOpacity(0.15) : Colors.grey.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: earned ? Colors.green : Colors.transparent)
+        color: earned ? AbhyasTheme.leaf.withValues(alpha: 0.15) : AbhyasTheme.darkSurfaceAlt,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: earned ? AbhyasTheme.leaf.withValues(alpha: 0.4) : Colors.transparent),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(earned ? Icons.stars : Icons.lock_outline, size: 16, color: earned ? Colors.green : Colors.grey),
-          SizedBox(width: 8),
-          Text(name, style: TextStyle(color: earned ? Colors.white : Colors.grey)),
+          Icon(
+            earned ? Icons.verified : Icons.lock_outline,
+            size: 13,
+            color: earned ? AbhyasTheme.leaf : Colors.grey,
+          ),
+          const SizedBox(width: 5),
+          Text(
+            name,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: earned ? FontWeight.bold : FontWeight.normal,
+              color: earned ? Colors.white : Colors.white38,
+            ),
+          ),
         ],
-      )
+      ),
     );
   }
 }

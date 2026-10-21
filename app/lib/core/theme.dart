@@ -28,12 +28,10 @@ class AbhyasTheme {
         primary: saffron,
         secondary: sky,
         surface: darkSurface,
-        background: darkBg,
         error: clay,
         onPrimary: darkBg,
         onSecondary: darkBg,
         onSurface: darkInk,
-        onBackground: darkInk,
         onError: darkBg,
       ),
       appBarTheme: AppBarTheme(

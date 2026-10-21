@@ -37,6 +37,7 @@ dependencies:
   json_schema: ^5.2.2
   haptic_feedback: ^0.6.5
   shared_preferences: ^2.5.6
+  geolocator: ^13.0.2
   audioplayers: ^6.1.0
 
 dev_dependencies:
@@ -65,6 +66,7 @@ flutter:
   assets:
     - assets/audio/
     - assets/audio/voice/
+    - assets/icon/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

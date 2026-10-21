@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../engine/safety/safety_rules_engine.dart';
+import '../../core/audio/practice_audio_service.dart';
+import '../../core/haptic_service.dart';
+import '../../data/user_repository.dart';
 import '../../engine/player/player_engine.dart';
 import '../../engine/player/audio_guidance_engine.dart';
-import '../../core/audio/practice_audio_service.dart';
+import '../../engine/safety/safety_rules_engine.dart';
 import 'post_session_checkin_screen.dart';
 
 class PracticePlayerScreen extends StatefulWidget {
@@ -11,37 +13,44 @@ class PracticePlayerScreen extends StatefulWidget {
   final String practiceName;
   final String practiceId;
   final int weaningStage; // 1 to 5
+  final List<int>? ratio; // [puraka, antar, rechaka, bahya]
+  final int rounds;
 
   const PracticePlayerScreen({
-    Key? key,
+    super.key,
     required this.safetyProfile,
     required this.practiceName,
     required this.practiceId,
     this.weaningStage = 1,
-  }) : super(key: key);
+    this.ratio,
+    this.rounds = 5,
+  });
 
   @override
-  _PracticePlayerScreenState createState() => _PracticePlayerScreenState();
+  State<PracticePlayerScreen> createState() => _PracticePlayerScreenState();
 }
 
 class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   late PlayerEngine _engine;
   late AudioGuidanceEngine _audioEngine;
   final PracticeAudioService _audioService = PracticeAudioService();
+  final HapticService _hapticService = HapticService();
 
+  late List<int> _activeRatio;
   PracticePhase _currentPhase = PracticePhase.puraka;
   int _secondsElapsed = 0;
+  int _totalSecondsElapsed = 0;
+  int _currentRound = 1;
   bool _isPlaying = false;
   bool _isSettling = false;
   bool _isIntegrating = false;
   Timer? _bufferTimer;
 
-  // Level 1 ratio (1:0:1:0)
-  final List<int> ratio = [4, 0, 4, 0];
-
   @override
   void initState() {
     super.initState();
+    _activeRatio = widget.ratio ?? [4, 0, 4, 0];
+
     _engine = PlayerEngine(
       holdCapFractionOfCht: 0.6,
       levelCapSeconds: 30,
@@ -54,25 +63,41 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       integrationDurationSeconds: 60,
     );
     _audioService.initAudio();
+    _initCht();
+  }
+
+  Future<void> _initCht() async {
+    final cht = await UserRepository().loadChtBenchmark();
+    if (cht != null && mounted) {
+      _engine = PlayerEngine(
+        holdCapFractionOfCht: 0.6,
+        levelCapSeconds: 30,
+        userChtSeconds: cht.toInt(),
+      );
+    }
   }
 
   void _onTick(int seconds) {
     setState(() {
       _secondsElapsed = seconds;
+      _totalSecondsElapsed++;
+
+      // Matra pulse on each tick
+      _hapticService.pulseForMatra(widget.weaningStage);
 
       int currentPhaseTarget = 0;
       switch (_currentPhase) {
         case PracticePhase.puraka:
-          currentPhaseTarget = ratio[0];
+          currentPhaseTarget = _activeRatio[0] > 0 ? _activeRatio[0] : 4;
           break;
         case PracticePhase.antarKumbhaka:
-          currentPhaseTarget = _engine.scheduleHold(ratio[1]);
+          currentPhaseTarget = _engine.scheduleHold(_activeRatio[1]);
           break;
         case PracticePhase.rechaka:
-          currentPhaseTarget = ratio[2];
+          currentPhaseTarget = _activeRatio[2] > 0 ? _activeRatio[2] : 4;
           break;
         case PracticePhase.bahyaKumbhaka:
-          currentPhaseTarget = _engine.scheduleHold(ratio[3]);
+          currentPhaseTarget = _engine.scheduleHold(_activeRatio[3]);
           break;
         case PracticePhase.naturalBreath:
           currentPhaseTarget = 4;
@@ -82,14 +107,39 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       if (_secondsElapsed >= currentPhaseTarget) {
         _secondsElapsed = 0;
         _engine.stopTimer();
-        _currentPhase = _engine.getNextPhase(_currentPhase);
+
+        var nextPhase = _engine.getNextPhase(_currentPhase);
+
+        // Check if round completed
+        final isRoundEnd = _currentPhase == PracticePhase.bahyaKumbhaka ||
+            (_activeRatio[3] == 0 && _currentPhase == PracticePhase.rechaka);
+
+        if (isRoundEnd) {
+          _hapticService.roundCompletePulse(widget.weaningStage);
+          if (_currentRound >= widget.rounds) {
+            _startIntegrationBuffer();
+            return;
+          } else {
+            _currentRound++;
+          }
+        }
+
+        // Skip hold phases if ratio specifies 0
+        if (nextPhase == PracticePhase.antarKumbhaka && _activeRatio[1] == 0) {
+          nextPhase = PracticePhase.rechaka;
+        } else if (nextPhase == PracticePhase.bahyaKumbhaka && _activeRatio[3] == 0) {
+          nextPhase = PracticePhase.puraka;
+        }
+
+        _currentPhase = nextPhase;
 
         // Play phase audio transition cue (minimal speech + tonal earcon)
         final cue = _audioEngine.getCueForPhaseTransition(
           phase: _currentPhase,
-          cycleNumber: _engine.currentCycle,
+          cycleNumber: _currentRound,
         );
         _audioService.dispatchCue(cue);
+        _hapticService.phaseTransitionPulse(widget.weaningStage);
 
         if (_isPlaying) {
           _engine.startTimer(_onTick);
@@ -109,7 +159,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     _audioService.dispatchCue(startCue);
 
     _bufferTimer?.cancel();
-    _bufferTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _bufferTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         final tickCue = _audioEngine.tickSettlingBuffer();
         if (tickCue != null) {
@@ -143,9 +193,10 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
 
     final cue = _audioEngine.getCueForPhaseTransition(
       phase: _currentPhase,
-      cycleNumber: _engine.currentCycle,
+      cycleNumber: _currentRound,
     );
     _audioService.dispatchCue(cue);
+    _hapticService.phaseTransitionPulse(widget.weaningStage);
 
     _engine.startTimer(_onTick);
   }
@@ -167,7 +218,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         _engine.resumeTimer(_onTick);
         final cue = _audioEngine.getCueForPhaseTransition(
           phase: _currentPhase,
-          cycleNumber: _engine.currentCycle,
+          cycleNumber: _currentRound,
         );
         _audioService.dispatchCue(cue);
       } else {
@@ -204,7 +255,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     _audioService.dispatchCue(startCue);
 
     _bufferTimer?.cancel();
-    _bufferTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _bufferTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         final tickCue = _audioEngine.tickIntegrationBuffer();
         if (tickCue != null) {
@@ -222,10 +273,16 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   void _finishPracticeNow() {
     _bufferTimer?.cancel();
     _engine.stopTimer();
+    _audioService.stopAll();
+    _hapticService.completionPulse();
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => PostSessionCheckinScreen(safetyProfile: widget.safetyProfile),
+        builder: (context) => PostSessionCheckinScreen(
+          safetyProfile: widget.safetyProfile,
+          practiceName: widget.practiceName,
+          durationSeconds: _totalSecondsElapsed > 0 ? _totalSecondsElapsed : 300,
+        ),
       ),
     );
   }
@@ -262,6 +319,11 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
               });
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.check, color: Colors.white70),
+            tooltip: 'Finish Practice',
+            onPressed: _startIntegrationBuffer,
+          ),
         ],
       ),
       // Full-screen touch gestures enable hands-free / eyes-closed control anywhere on screen
@@ -274,7 +336,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           if (_isPlaying) {
             final cue = _audioEngine.getCueForPhaseTransition(
               phase: _currentPhase,
-              cycleNumber: _engine.currentCycle,
+              cycleNumber: _currentRound,
             );
             _audioService.dispatchCue(cue);
           }
@@ -288,98 +350,101 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                 children: [
                   // Settling Buffer View
                   if (_isSettling) ...[
-                    Text(
+                    const Text(
                       'Settle Into Posture',
                       style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.orangeAccent),
                     ),
-                    SizedBox(height: 12),
-                    Text(
+                    const SizedBox(height: 12),
+                    const Text(
                       'Rest hands in mudra and close your eyes.\nPractice begins in:',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 16, color: Colors.white70),
                     ),
-                    SizedBox(height: 24),
+                    const SizedBox(height: 24),
                     Text(
                       '${_audioEngine.settlingSecondsLeft}',
-                      style: TextStyle(fontSize: 72, fontWeight: FontWeight.bold, color: Colors.orangeAccent),
+                      style: const TextStyle(fontSize: 72, fontWeight: FontWeight.bold, color: Colors.orangeAccent),
                     ),
-                    SizedBox(height: 24),
+                    const SizedBox(height: 24),
                     TextButton(
                       onPressed: _skipSettling,
-                      child: Text('Skip Countdown & Start', style: TextStyle(color: Colors.white60)),
+                      child: const Text('Skip Countdown & Start', style: TextStyle(color: Colors.white60)),
                     ),
                   ]
                   // Post-Session Integration View
                   else if (_isIntegrating) ...[
-                    Text(
+                    const Text(
                       'Silent Integration',
                       style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.tealAccent),
                     ),
-                    SizedBox(height: 12),
+                    const SizedBox(height: 12),
                     Text(
                       'Keep your eyes closed.\nObserve stillness and natural breath.\nCompleting in ${_audioEngine.integrationSecondsLeft}s',
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16, color: Colors.white70),
+                      style: const TextStyle(fontSize: 16, color: Colors.white70),
                     ),
-                    SizedBox(height: 32),
+                    const SizedBox(height: 32),
                     ElevatedButton(
                       onPressed: _finishPracticeNow,
-                      child: Text('Open Eyes & Check-in'),
+                      child: const Text('Open Eyes & Check-in'),
                     ),
                   ]
                   // Active Practice View
                   else ...[
+                    Text(
+                      'Round $_currentRound of ${widget.rounds}',
+                      style: const TextStyle(fontSize: 16, color: Colors.orange, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Ratio: ${_activeRatio.join(" : ")}',
+                      style: const TextStyle(color: Colors.grey, fontSize: 13),
+                    ),
+                    const SizedBox(height: 16),
+
                     if (widget.weaningStage > 1)
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: Colors.white10,
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Text(
                           'Weaning Stage ${widget.weaningStage} · ${_audioEngine.guidanceLevel.name}',
-                          style: TextStyle(color: Colors.orangeAccent, fontSize: 13),
+                          style: const TextStyle(color: Colors.orangeAccent, fontSize: 13),
                         ),
                       ),
-                    SizedBox(height: 16),
-                    Text(
-                      'Cycle ${_engine.currentCycle}',
-                      style: TextStyle(fontSize: 16, color: Colors.white54),
-                    ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
                     if (showVisualPacer)
                       AnimatedContainer(
-                        duration: Duration(milliseconds: 500),
-                        width: _currentPhase == PracticePhase.puraka ? 200 : 130,
-                        height: _currentPhase == PracticePhase.puraka ? 200 : 130,
+                        duration: const Duration(milliseconds: 500),
+                        width: _currentPhase == PracticePhase.puraka
+                            ? 220
+                            : (_currentPhase == PracticePhase.rechaka ? 120 : 170),
+                        height: _currentPhase == PracticePhase.puraka
+                            ? 220
+                            : (_currentPhase == PracticePhase.rechaka ? 120 : 170),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: _currentPhase == PracticePhase.naturalBreath
-                              ? Colors.green.withOpacity(0.2)
-                              : Colors.teal.withOpacity(0.25),
-                          border: Border.all(
-                            color: _currentPhase == PracticePhase.naturalBreath
-                                ? Colors.greenAccent
-                                : Colors.tealAccent,
-                            width: 2,
-                          ),
+                          color: _getPhaseColor(_currentPhase).withValues(alpha: 0.3),
+                          border: Border.all(color: _getPhaseColor(_currentPhase), width: 3),
                         ),
                         child: Center(
                           child: Text(
                             _currentPhase.name.toUpperCase(),
                             textAlign: TextAlign.center,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontWeight: FontWeight.bold,
-                              fontSize: 18,
+                              fontSize: 16,
                               color: Colors.white,
                             ),
                           ),
                         ),
                       )
                     else
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 40.0),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 40.0),
                         child: Text(
                           'Hands-free Audio Mode\n(Eyes Closed)',
                           textAlign: TextAlign.center,
@@ -387,13 +452,13 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                         ),
                       ),
 
-                    SizedBox(height: 24),
+                    const SizedBox(height: 24),
                     if (showCounts)
                       Text(
                         '${_secondsElapsed}s',
-                        style: TextStyle(fontSize: 48, color: Colors.white),
+                        style: const TextStyle(fontSize: 48, fontWeight: FontWeight.w300, color: Colors.white),
                       ),
-                    SizedBox(height: 30),
+                    const SizedBox(height: 30),
 
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -406,23 +471,30 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                               _togglePlay();
                             }
                           },
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          ),
                           child: Text(_isPlaying ? 'Pause' : 'Start Practice'),
                         ),
-                        SizedBox(width: 16),
+                        const SizedBox(width: 16),
                         ElevatedButton(
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade900),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red.shade900,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          ),
                           onPressed: _returnToNaturalBreath,
-                          child: Text('Natural Breath', style: TextStyle(color: Colors.white)),
+                          child: const Text('Natural Breath'),
                         ),
                       ],
                     ),
-                    SizedBox(height: 24),
+                    const SizedBox(height: 24),
                     OutlinedButton(
                       onPressed: _startIntegrationBuffer,
-                      child: Text('Complete Session', style: TextStyle(color: Colors.white70)),
+                      child: const Text('Complete Session', style: TextStyle(color: Colors.white70)),
                     ),
-                    SizedBox(height: 20),
-                    Text(
+                    const SizedBox(height: 20),
+                    const Text(
                       'Eyes-Closed Gestures:\nDouble-tap screen to Pause/Play · Long-press for Natural Breath',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 12, color: Colors.white38),
@@ -435,5 +507,20 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         ),
       ),
     );
+  }
+
+  Color _getPhaseColor(PracticePhase phase) {
+    switch (phase) {
+      case PracticePhase.puraka:
+        return Colors.blue;
+      case PracticePhase.antarKumbhaka:
+        return Colors.purpleAccent;
+      case PracticePhase.rechaka:
+        return Colors.teal;
+      case PracticePhase.bahyaKumbhaka:
+        return Colors.deepOrange;
+      case PracticePhase.naturalBreath:
+        return Colors.green;
+    }
   }
 }

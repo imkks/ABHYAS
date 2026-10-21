@@ -2,7 +2,7 @@ import 'dart:async';
 
 class YogaNidraPlayer {
   final int durationMinutes;
-  Stopwatch _stopwatch = Stopwatch();
+  final Stopwatch _stopwatch = Stopwatch();
   Timer? _timer;
 
   YogaNidraPlayer({required this.durationMinutes});

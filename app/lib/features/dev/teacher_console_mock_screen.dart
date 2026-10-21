@@ -5,10 +5,10 @@ import 'widget_gallery.dart';
 class TeacherConsoleMockScreen extends StatefulWidget {
   final GuruAnumatiWorkflow workflow;
 
-  const TeacherConsoleMockScreen({Key? key, required this.workflow}) : super(key: key);
+  const TeacherConsoleMockScreen({super.key, required this.workflow});
 
   @override
-  _TeacherConsoleMockScreenState createState() => _TeacherConsoleMockScreenState();
+  State<TeacherConsoleMockScreen> createState() => _TeacherConsoleMockScreenState();
 }
 
 class _TeacherConsoleMockScreenState extends State<TeacherConsoleMockScreen> {
