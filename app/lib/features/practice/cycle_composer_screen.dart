@@ -120,6 +120,7 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
 
   void _loadPresetSteps(RoutinePreset preset, int duration) {
     final level = _effectiveLevel;
+    final levelInfo = ProgressionService().getLevelInfo(level);
 
     if (preset == RoutinePreset.surya) {
       // 🌅 Surya Abhyas: Scaled to level
