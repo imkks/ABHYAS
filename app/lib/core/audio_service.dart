@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 /// Types of bell sounds used for practice cues.
 enum BellType {
@@ -25,23 +26,16 @@ enum AudioServiceStatus {
 }
 
 /// Singleton audio service providing a unified API for all app audio playback.
-///
-/// Phase 1 Implementation: Stub that logs actions via [debugPrint].
-/// The full API contract is defined here so that integrating a real audio
-/// backend (e.g. just_audio) requires only swapping the implementation
-/// methods without changing any call sites.
-///
-/// Usage:
-/// ```dart
-/// final audio = AudioService();
-/// await audio.init();
-/// await audio.playBell(BellType.start);
-/// ```
+/// Supports both short one-shot cues and continuous long-form guided audio tracks (e.g. Yoga Nidra).
 class AudioService {
   // Singleton pattern
   static final AudioService _instance = AudioService._internal();
   factory AudioService() => _instance;
   AudioService._internal();
+
+  AudioPlayer? _trackPlayer;
+  AudioPlayer? _bellPlayer;
+  bool _initialized = false;
 
   AudioServiceStatus _status = AudioServiceStatus.idle;
   double _volume = 1.0;
@@ -56,85 +50,132 @@ class AudioService {
   /// The asset path of the currently loaded track, if any.
   String? get currentTrackPath => _currentTrackPath;
 
-  /// Initialize the audio service and preload/prepare the audio system.
-  ///
-  /// Call this once during app startup (e.g. in main.dart).
-  /// TODO(audio): Preload bell and tick audio assets when just_audio is added.
+  /// Master volume level (0.0 to 1.0).
+  double get volume => _volume;
+
+  AudioPlayer? get trackPlayer => _trackPlayer;
+
+  /// Initialize the audio players.
   Future<void> init() async {
-    debugPrint('[AudioService] init() — audio system prepared (stub)');
+    if (_initialized) return;
+    try {
+      _trackPlayer = AudioPlayer();
+      _bellPlayer = AudioPlayer();
+      await _trackPlayer?.setVolume(_volume);
+      await _bellPlayer?.setVolume(_volume);
+    } catch (_) {}
+    _initialized = true;
   }
 
-  /// Play a bell sound of the given [type].
-  ///
-  /// TODO(audio): Load and play from `assets/audio/bell_<type>.mp3`
+  /// Play a calibrated bell cue.
   Future<void> playBell(BellType type) async {
-    debugPrint('[AudioService] playBell(${type.name}) at volume $_volume');
-    // TODO(audio): Implement with just_audio one-shot player
+    try {
+      if (!_initialized) await init();
+      String asset;
+      switch (type) {
+        case BellType.start:
+          asset = 'audio/singingBowl_practice_start_gong.wav';
+          break;
+        case BellType.end:
+          asset = 'audio/singingBowl_session_complete_3bowls.wav';
+          break;
+        case BellType.transition:
+          asset = 'audio/singingBowl_kumbhaka_hold.wav';
+          break;
+      }
+      if (_bellPlayer != null) {
+        await _bellPlayer!.stop();
+        await _bellPlayer!.play(AssetSource(asset));
+      }
+    } catch (_) {}
   }
 
-  /// Play a matra tick sound.
-  ///
-  /// TODO(audio): Load and play from assets/audio/tick.mp3
+  /// Play a subtle click/tick sound.
   Future<void> playTick() async {
-    debugPrint('[AudioService] playTick() at volume $_volume');
-    // TODO(audio): Implement with just_audio one-shot player
+    try {
+      if (!_initialized) await init();
+      if (_bellPlayer != null) {
+        await _bellPlayer!.play(AssetSource('audio/singingBowl_tick_soft.wav'));
+      }
+    } catch (_) {}
   }
 
-  /// Play a longer audio track (e.g. guided Yoga Nidra session or mantra).
+  /// Play a longer continuous audio track (e.g. guided Yoga Nidra session or mantra).
   ///
   /// [assetPath] is the path to the audio asset (e.g. 'assets/audio/yoga_nidra_20min.mp3').
   /// [onComplete] is called when the track finishes playing naturally.
-  ///
-  /// TODO(audio): Implement with just_audio main player
   Future<void> playTrack(String assetPath, {Function? onComplete}) async {
-    debugPrint('[AudioService] playTrack($assetPath) at volume $_volume');
     _currentTrackPath = assetPath;
     _status = AudioServiceStatus.playing;
-    // TODO(audio): Set up just_audio player with asset, listen for completion
-    // and invoke onComplete callback when done.
+
+    try {
+      if (!_initialized) await init();
+      String clean = assetPath.startsWith('assets/') ? assetPath.substring(7) : assetPath;
+      if (_trackPlayer != null) {
+        await _trackPlayer!.stop();
+        _trackPlayer!.onPlayerComplete.listen((_) {
+          _status = AudioServiceStatus.idle;
+          if (onComplete != null) onComplete();
+        });
+
+        try {
+          await _trackPlayer!.play(AssetSource(clean));
+        } catch (_) {
+          if (clean.endsWith('.mp3')) {
+            final wavAlt = clean.replaceAll('.mp3', '.wav');
+            await _trackPlayer!.play(AssetSource(wavAlt));
+          } else if (clean.endsWith('.wav')) {
+            final mp3Alt = clean.replaceAll('.wav', '.mp3');
+            await _trackPlayer!.play(AssetSource(mp3Alt));
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('[AudioService] Note: Audio asset $assetPath not yet found. Timer active: $e');
+    }
   }
 
   /// Pause the currently playing track.
-  ///
-  /// Has no effect if no track is playing.
-  /// TODO(audio): Implement with just_audio pause
   Future<void> pauseTrack() async {
     if (_status != AudioServiceStatus.playing) return;
-    debugPrint('[AudioService] pauseTrack()');
-    _status = AudioServiceStatus.paused;
-    // TODO(audio): Pause just_audio player
+    try {
+      await _trackPlayer?.pause();
+      _status = AudioServiceStatus.paused;
+    } catch (_) {}
   }
 
   /// Resume the currently paused track.
-  ///
-  /// Has no effect if no track is paused.
-  /// TODO(audio): Implement with just_audio resume
   Future<void> resumeTrack() async {
     if (_status != AudioServiceStatus.paused) return;
-    debugPrint('[AudioService] resumeTrack()');
-    _status = AudioServiceStatus.playing;
-    // TODO(audio): Resume just_audio player
+    try {
+      await _trackPlayer?.resume();
+      _status = AudioServiceStatus.playing;
+    } catch (_) {}
+  }
+
+  /// Seek to a specific timestamp in the track.
+  Future<void> seek(Duration position) async {
+    try {
+      await _trackPlayer?.seek(position);
+    } catch (_) {}
   }
 
   /// Stop all audio playback and reset state.
-  ///
-  /// TODO(audio): Stop and dispose just_audio players
   Future<void> stopAll() async {
-    debugPrint('[AudioService] stopAll()');
     _status = AudioServiceStatus.idle;
     _currentTrackPath = null;
-    // TODO(audio): Stop all just_audio players
+    try {
+      await _trackPlayer?.stop();
+      await _bellPlayer?.stop();
+    } catch (_) {}
   }
 
-  /// Set the master volume for all audio playback.
-  ///
-  /// [volume] must be between 0.0 (silent) and 1.0 (full volume).
+  /// Set the master volume for all audio playback (0.0 to 1.0).
   void setVolume(double volume) {
     _volume = volume.clamp(0.0, 1.0);
-    debugPrint('[AudioService] setVolume($_volume)');
-    // TODO(audio): Apply volume to just_audio players
+    try {
+      _trackPlayer?.setVolume(_volume);
+      _bellPlayer?.setVolume(_volume);
+    } catch (_) {}
   }
-
-  /// Current master volume level (0.0 to 1.0).
-  double get volume => _volume;
 }
