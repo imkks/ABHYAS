@@ -4,6 +4,7 @@ import '../../data/user_repository.dart';
 import '../../engine/player/cycle_sequencer.dart';
 import '../../engine/progression/progression_service.dart';
 import '../../engine/safety/safety_rules_engine.dart';
+import 'breath_capacity_test_screen.dart';
 import 'cycle_player_screen.dart';
 
 enum RoutinePreset {
@@ -431,6 +432,16 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
         elevation: 0,
         actions: [
           IconButton(
+            icon: const Icon(Icons.speed, color: AbhyasTheme.saffron),
+            tooltip: 'Find My Apt Level (Breath Test)',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const BreathCapacityTestScreen()),
+              ).then((_) => _initUserData());
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.add, color: AbhyasTheme.saffron),
             tooltip: 'Add Exercise',
             onPressed: _openAddExerciseSheet,
@@ -661,7 +672,7 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
                           Row(
                             children: [
                               // Category Badge
-                              if (step.isPranayamaWithPacer)
+                              if (step.isPranayamaWithPacer) ...[
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                   decoration: BoxDecoration(
@@ -684,8 +695,36 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
                                       ),
                                     ],
                                   ),
-                                )
-                              else
+                                ),
+                                const SizedBox(width: 6),
+                                InkWell(
+                                  onTap: () => _showRatioCustomizer(index),
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: AbhyasTheme.saffron.withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(color: AbhyasTheme.saffron.withValues(alpha: 0.4)),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.tune, size: 12, color: AbhyasTheme.saffron),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          step.ratio != null ? 'Ratio ${step.ratio!.join(":")}' : 'Ratio 1:0:1:0',
+                                          style: const TextStyle(
+                                            color: AbhyasTheme.saffron,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ] else
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                   decoration: BoxDecoration(
@@ -908,6 +947,265 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildPresetChip(String label, bool isSelected, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? AbhyasTheme.saffron.withValues(alpha: 0.25) : AbhyasTheme.darkSurfaceAlt,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? AbhyasTheme.saffron : AbhyasTheme.line,
+            width: isSelected ? 1.4 : 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected ? AbhyasTheme.saffron : Colors.white70,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStepperRow(String label, int value, String unit, Color color, ValueChanged<int> onChanged) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: AbhyasTheme.darkSurfaceAlt,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AbhyasTheme.line),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Container(width: 4, height: 24, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(2))),
+              const SizedBox(width: 10),
+              Text(label, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+            ],
+          ),
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.remove_circle_outline, size: 22, color: AbhyasTheme.darkInkSoft),
+                onPressed: () => onChanged(value - (label.contains('Hold') ? 2 : 1)),
+              ),
+              Container(
+                constraints: const BoxConstraints(minWidth: 42),
+                alignment: Alignment.center,
+                child: Text(
+                  '$value$unit',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: color),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.add_circle_outline, size: 22, color: AbhyasTheme.saffron),
+                onPressed: () => onChanged(value + (label.contains('Hold') ? 2 : 1)),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showRatioCustomizer(int index) {
+    final step = _steps[index];
+    final currentRatio = List<int>.from(step.ratio ?? [4, 0, 4, 0]);
+    while (currentRatio.length < 4) {
+      currentRatio.add(0);
+    }
+
+    int puraka = currentRatio[0];
+    int antar = currentRatio[1];
+    int rechaka = currentRatio[2];
+    int bahya = currentRatio[3];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AbhyasTheme.darkSurface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final cycleTotal = puraka + antar + rechaka + bahya;
+
+            void applyPreset(int p, int a, int r, int b) {
+              setModalState(() {
+                puraka = p;
+                antar = a;
+                rechaka = r;
+                bahya = b;
+              });
+            }
+
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 16,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AbhyasTheme.line,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Customize Breath Ratio', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                          const SizedBox(height: 2),
+                          Text(step.title, style: const TextStyle(fontSize: 12, color: AbhyasTheme.darkInkSoft)),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: AbhyasTheme.saffron.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AbhyasTheme.saffron.withValues(alpha: 0.4)),
+                        ),
+                        child: Text(
+                          '$puraka : $antar : $rechaka : $bahya',
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: AbhyasTheme.saffron, fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Quick Classical Presets Chips
+                  const Text('CLASSICAL RATIO PRESETS', style: TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
+                  const SizedBox(height: 8),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildPresetChip('1:0:1:0 Sama Vritti', puraka == 4 && antar == 0 && rechaka == 4 && bahya == 0, () => applyPreset(4, 0, 4, 0)),
+                        const SizedBox(width: 6),
+                        _buildPresetChip('1:0:2:0 Relaxing', puraka == 4 && antar == 0 && rechaka == 8 && bahya == 0, () => applyPreset(4, 0, 8, 0)),
+                        const SizedBox(width: 6),
+                        _buildPresetChip('1:1:2:0 Gentle Hold', puraka == 4 && antar == 4 && rechaka == 8 && bahya == 0, () => applyPreset(4, 4, 8, 0)),
+                        const SizedBox(width: 6),
+                        _buildPresetChip('1:2:2:0 Deep Hold', puraka == 4 && antar == 8 && rechaka == 8 && bahya == 0, () => applyPreset(4, 8, 8, 0)),
+                        const SizedBox(width: 6),
+                        _buildPresetChip('1:4:2:0 Classical', puraka == 4 && antar == 16 && rechaka == 8 && bahya == 0, () => applyPreset(4, 16, 8, 0)),
+                        const SizedBox(width: 6),
+                        _buildPresetChip('1:4:2:2 Maha Bandha', puraka == 4 && antar == 16 && rechaka == 8 && bahya == 8, () => applyPreset(4, 16, 8, 8)),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Interactive Steppers
+                  _buildStepperRow('Puraka (Inhale)', puraka, 's', AbhyasTheme.sky, (val) {
+                    if (val >= 2 && val <= 16) setModalState(() => puraka = val);
+                  }),
+                  const SizedBox(height: 10),
+                  _buildStepperRow('Antar Kumbhaka (Hold)', antar, 's', AbhyasTheme.saffron, (val) {
+                    if (val >= 0 && val <= 32) setModalState(() => antar = val);
+                  }),
+                  const SizedBox(height: 10),
+                  _buildStepperRow('Rechaka (Exhale)', rechaka, 's', AbhyasTheme.clay, (val) {
+                    if (val >= 2 && val <= 24) setModalState(() => rechaka = val);
+                  }),
+                  const SizedBox(height: 10),
+                  _buildStepperRow('Bahya Kumbhaka (Hold Empty)', bahya, 's', const Color(0xFF9D4EDD), (val) {
+                    if (val >= 0 && val <= 16) setModalState(() => bahya = val);
+                  }),
+
+                  const SizedBox(height: 16),
+
+                  // Breath Test Link
+                  InkWell(
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const BreathCapacityTestScreen()),
+                      ).then((_) => _initUserData());
+                    },
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: AbhyasTheme.darkSurfaceAlt,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        children: const [
+                          Icon(Icons.speed, size: 16, color: AbhyasTheme.saffron),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Unsure of your hold capacity? Take the 1-Min Breath Test',
+                              style: TextStyle(color: Colors.white70, fontSize: 11),
+                            ),
+                          ),
+                          Icon(Icons.arrow_forward_ios, size: 12, color: AbhyasTheme.darkInkSoft),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Apply Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AbhyasTheme.saffron,
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _steps[index] = step.copyWith(
+                            ratio: [puraka, antar, rechaka, bahya],
+                            subtitle: '$puraka:$antar:$rechaka:$bahya ratio (${cycleTotal}s cycle)',
+                          );
+                        });
+                        Navigator.pop(ctx);
+                      },
+                      child: Text('Save Ratio ($puraka:$antar:$rechaka:$bahya)', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

@@ -178,5 +178,29 @@ void main() {
       expect(progression.ratioDescription, contains('1:0:2:0'));
       expect(progression.earnedSeals, contains('Dhyana Mudra'));
     });
+
+    test('calculateLevelFromCht maps breath hold times to apt Sopana levels accurately', () {
+      final service = ProgressionService();
+
+      expect(service.calculateLevelFromCht(10.0), equals(1)); // <15s -> Level 1
+      expect(service.calculateLevelFromCht(20.0), equals(2)); // 15-25s -> Level 2
+      expect(service.calculateLevelFromCht(30.0), equals(3)); // 25-40s -> Level 3
+      expect(service.calculateLevelFromCht(48.0), equals(4)); // 40-60s -> Level 4
+      expect(service.calculateLevelFromCht(75.0), equals(5)); // 60s+ -> Level 5
+    });
+
+    test('saveCalibratedLevel sets active level and awards base Tapas', () async {
+      final service = ProgressionService();
+
+      // Calibrate user to Level 3 after breath test
+      await service.saveCalibratedLevel(3);
+      final progression = await service.getProgression();
+
+      expect(progression.level, equals(3));
+      expect(progression.title, contains('Antaranga'));
+      expect(progression.totalTapas, greaterThanOrEqualTo(750));
+      expect(progression.ratio, equals([4, 4, 8, 0]));
+      expect(progression.earnedSeals, contains('Jalandhara Bandha'));
+    });
   });
 }

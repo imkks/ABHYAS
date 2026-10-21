@@ -4,6 +4,7 @@ import '../../data/user_repository.dart';
 import '../../engine/panchang/panchang_service.dart';
 import '../../engine/progression/progression_service.dart';
 import '../practice/cycle_composer_screen.dart';
+import '../practice/breath_capacity_test_screen.dart';
 import '../panchang/panchang_screen.dart';
 
 class TodayScreen extends StatefulWidget {
@@ -242,6 +243,38 @@ class _TodayScreenState extends State<TodayScreen> {
                   ),
                 ),
               ],
+            ),
+          ),
+
+          const SizedBox(height: 10),
+          InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const BreathCapacityTestScreen()),
+              ).then((_) => _loadTodayData());
+            },
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+              decoration: BoxDecoration(
+                color: AbhyasTheme.saffron.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AbhyasTheme.saffron.withValues(alpha: 0.3)),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.speed, size: 14, color: AbhyasTheme.saffron),
+                  SizedBox(width: 6),
+                  Text(
+                    'Find My Apt Level (1-Min Breath Test)',
+                    style: TextStyle(color: AbhyasTheme.saffron, fontSize: 11, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(width: 4),
+                  Icon(Icons.chevron_right, size: 14, color: AbhyasTheme.saffron),
+                ],
+              ),
             ),
           ),
         ],

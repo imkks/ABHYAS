@@ -6,6 +6,7 @@ import '../../engine/progression/progression_service.dart';
 import '../path/path_map_screen.dart';
 import '../../engine/safety/safety_rules_engine.dart';
 import '../onboarding/health_screening_screen.dart';
+import '../practice/breath_capacity_test_screen.dart';
 import 'weaning_screen.dart';
 
 class ProgressScreen extends StatefulWidget {
@@ -94,6 +95,37 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       _buildMetricTile('Calm Shift', _avgCalmnessDelta > 0 ? '+${(_avgCalmnessDelta * 10).round()}%' : '--', 'Post-practice', Colors.teal),
                       _buildMetricTile('CHT Hold', '${_chtSeconds.round()}s', 'Comfort test', Colors.blue),
                     ],
+                  ),
+                  const SizedBox(height: 10),
+                  InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const BreathCapacityTestScreen()),
+                      ).then((_) => _loadProgressData());
+                    },
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: AbhyasTheme.darkSurface,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AbhyasTheme.line),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.speed, size: 16, color: Colors.blue),
+                              SizedBox(width: 8),
+                              Text('Retest Breath Hold Capacity (CHT)', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                            ],
+                          ),
+                          Icon(Icons.chevron_right, size: 16, color: AbhyasTheme.darkInkSoft),
+                        ],
+                      ),
+                    ),
                   ),
 
                   const SizedBox(height: 28),

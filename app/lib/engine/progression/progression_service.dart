@@ -59,6 +59,7 @@ class UserProgression {
 
 class ProgressionService {
   static const String _bonusTapasKey = 'user_bonus_tapas_points';
+  static const String _calibratedLevelKey = 'user_calibrated_sopana_level';
   static final ProgressionService _instance = ProgressionService._internal();
   factory ProgressionService() => _instance;
   ProgressionService._internal();
@@ -180,6 +181,12 @@ class ProgressionService {
       }
     }
 
+    // If user has calibrated their apt level via breath test, honor it
+    final calibratedLevel = prefs.getInt(_calibratedLevelKey);
+    if (calibratedLevel != null && calibratedLevel > currentLevelInfo.level) {
+      currentLevelInfo = getLevelInfo(calibratedLevel);
+    }
+
     final int rangeStart = currentLevelInfo.minTapas;
     final int rangeEnd = currentLevelInfo.nextLevelTapas;
     final int inLevelXP = totalTapas - rangeStart;
@@ -204,5 +211,23 @@ class ProgressionService {
 
   LevelInfo getLevelInfo(int level) {
     return _levels.firstWhere((l) => l.level == level, orElse: () => _levels.first);
+  }
+
+  Future<void> saveCalibratedLevel(int level) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_calibratedLevelKey, level);
+    final target = getLevelInfo(level);
+    final currentBonus = prefs.getInt(_bonusTapasKey) ?? 0;
+    if (currentBonus < target.minTapas) {
+      await prefs.setInt(_bonusTapasKey, target.minTapas);
+    }
+  }
+
+  int calculateLevelFromCht(double chtSeconds) {
+    if (chtSeconds < 15.0) return 1;
+    if (chtSeconds < 25.0) return 2;
+    if (chtSeconds < 40.0) return 3;
+    if (chtSeconds < 60.0) return 4;
+    return 5;
   }
 }
