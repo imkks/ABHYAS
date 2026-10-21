@@ -30,3 +30,40 @@ As per the task brief, the following assumptions were made regarding the design,
 
 ## Backend
 * Local testing of APK doesn't require backend interaction right now since Phase 1 includes no backend features. We will mock everything needed to run.
+
+## Self-Mastery & Open Access Mode (Bypassing Teacher Plan)
+* The teacher sign-off gate in `GuruAnumatiWorkflow` has been put into idle/bypass mode via `_openAccessMode = true` (default). All 7 Sopana levels and practices are open to the practitioner for self-guided exploration and daily practice.
+* Non-blocking safety advisories remain active in `SafetyRulesEngine` and post-session check-ins to alert users if contraindications are present.
+
+## Dynamic Routine Planner & Signature Presets
+* `CycleComposerScreen` is upgraded to support time-adaptive scheduling (10m, 15m, 20m, 25m, 30m, 45m, 60m).
+* Two signature presets are provided:
+  - **Surya Abhyas (Morning Vitality - 30m default)**: Invocation, Kapalbhati, Nadi Shodhana, Ujjayi, and Breath Awareness Dhyan.
+  - **Chandra Abhyas (Night Bedtime - 25m default)**: Naam Jaap (108 beads), Bhramari Pranayama, and guided Yoga Nidra.
+* Step durations can be customized directly with `+1m` / `-1m` steppers, steps can be reordered, and new exercises can be added from an expandable catalog.
+
+## Custom Mantra & Digital Mala Engine
+* `DhyanScreen` features a customizable Digital Mala supporting 27, 54, 108, or continuous bead counting with haptic pulses and Meru bead completion alerts.
+* Practitioners can select from classical mantras (*Om, Om Namah Shivaya, Hare Krishna, Gayatri, Soham, Ram*) or save their own custom mantras and Ishta Devata Naam to local storage.
+
+## "See the Difference" Reflection & Metrics
+* `PostSessionCheckinScreen` incorporates a Calmness Score (1–10 slider) and computes the Calmness Delta (post - pre) to visually demonstrate transformation.
+* `SessionRepository` persists calmness scores and physical sensations, calculating average calmness improvement and total practice time for display on `ProgressScreen`.
+
+## UI Simplification & Zen Aesthetic
+* Home screen (`TodayScreen`) decluttered from a multi-card wall to 5 purposeful components:
+  1. Header with Tapas XP progress & daily streak.
+  2. Scaled Morning Surya Routine card.
+  3. Evening Bedtime Chandra Routine card.
+  4. Quick time-adaptive session chips (10m, 15m, 20m, 30m, 45m).
+  5. Quiet daily Sankalp reflection.
+* Removed the persistent floating action button and redundant developer/admin mock cards to preserve serene focus.
+* Restructured navigation into 5 dedicated tabs: `Sadhana`, `Abhyas`, `Dhyan`, `Vidyapeeth`, and `Mera`.
+
+## Yogic Self-Mastery Level Progression (Gamified Without Anxiety)
+* Integrated `ProgressionService` providing 7 Sopana ranks from *Prarambha* (Seeker) to *Dhyani* (Absorbed Master).
+* Practice time and calm session check-ins award *Tapas* XP (10 Tapas per minute + calm completion bonuses), advancing the user through the 7 levels.
+* Morning Surya Routine dynamically adapts to user rank: higher Kapalbhati stroke targets (30 -> 120), deeper breath retention ladders (from 1:0:1:0 up to classical 1:4:2:2 Kumbhaka), and unlocks authentic Mudras/Bandhas (Gyan Mudra up to Maha Bandha).
+* Strictly upholds non-competitive design: no leaderboards, no social comparison, no streak-loss shaming, focusing purely on personal self-mastery.
+
+

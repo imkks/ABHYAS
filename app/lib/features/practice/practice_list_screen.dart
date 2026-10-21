@@ -60,7 +60,7 @@ class _PracticeListScreenState extends State<PracticeListScreen> {
             child: ListTile(
               leading: Icon(Icons.alt_route, color: AbhyasTheme.saffron),
               title: Text('Sopana Path Roadmap', style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text('View the 7-level path & submit Guru Anumati requests'),
+              subtitle: Text('View the 7-level path to self-mastery'),
               trailing: Icon(Icons.arrow_forward_ios, size: 14),
               onTap: () {
                 Navigator.push(
@@ -149,6 +149,12 @@ class _PracticeListScreenState extends State<PracticeListScreen> {
                           : Icon(Icons.lock, color: Colors.grey, size: 20),
                       onTap: canPractice
                           ? () {
+                              List<int>? practiceRatio;
+                              if (level.ratioLadder.isNotEmpty) {
+                                final rawRatio = level.ratioLadder.first;
+                                final baseMatra = level.baseCount > 0 ? level.baseCount : 4;
+                                practiceRatio = rawRatio.map((r) => r * baseMatra).toList();
+                              }
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -156,6 +162,7 @@ class _PracticeListScreenState extends State<PracticeListScreen> {
                                     safetyProfile: widget.safetyProfile,
                                     practiceName: displayName,
                                     practiceId: practiceId,
+                                    ratio: practiceRatio,
                                   ),
                                 ),
                               );
