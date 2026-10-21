@@ -160,6 +160,44 @@ class GeoLocation {
 
   static GeoLocation get defaultLocation => sacredCities[0]; // Varanasi
 
+  /// Creates a custom GeoLocation from arbitrary coordinates.
+  factory GeoLocation.custom({
+    required double latitude,
+    required double longitude,
+    String? name,
+    String? stateOrCountry,
+    double? timezoneOffsetHours,
+    double elevationMeters = 0.0,
+  }) {
+    final latDir = latitude >= 0 ? 'N' : 'S';
+    final lngDir = longitude >= 0 ? 'E' : 'W';
+    final resolvedName = (name != null && name.trim().isNotEmpty)
+        ? name.trim()
+        : 'Custom (${latitude.abs().toStringAsFixed(2)}°$latDir, ${longitude.abs().toStringAsFixed(2)}°$lngDir)';
+    final offset = timezoneOffsetHours ?? (DateTime.now().timeZoneOffset.inMinutes / 60.0);
+    return GeoLocation(
+      name: resolvedName,
+      stateOrCountry: stateOrCountry ?? 'Custom Coordinates',
+      latitude: latitude,
+      longitude: longitude,
+      timezoneOffsetHours: offset,
+      elevationMeters: elevationMeters,
+    );
+  }
+
+  /// Human-readable formatted latitude and longitude string (e.g. 25.32° N, 82.97° E).
+  String get formattedCoordinates {
+    final latDir = latitude >= 0 ? 'N' : 'S';
+    final lngDir = longitude >= 0 ? 'E' : 'W';
+    return '${latitude.abs().toStringAsFixed(2)}° $latDir, ${longitude.abs().toStringAsFixed(2)}° $lngDir';
+  }
+
+  /// Whether this location is user-defined custom coordinates.
+  bool get isCustom => !sacredCities.any((c) =>
+      c.name == name &&
+      (c.latitude - latitude).abs() < 0.001 &&
+      (c.longitude - longitude).abs() < 0.001);
+
   Map<String, dynamic> toJson() => {
         'name': name,
         'stateOrCountry': stateOrCountry,

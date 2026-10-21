@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import '../../core/location_service.dart';
 import '../../core/theme.dart';
 import '../../engine/panchang/panchang_engine.dart';
 import '../../engine/panchang/panchang_models.dart';
@@ -69,6 +71,216 @@ class _PanchangScreenState extends State<PanchangScreen> {
     }
   }
 
+  void _showCustomCoordinatesDialog() {
+    final latController = TextEditingController(
+      text: _panchangService.currentLocation.latitude.toStringAsFixed(4),
+    );
+    final lngController = TextEditingController(
+      text: _panchangService.currentLocation.longitude.toStringAsFixed(4),
+    );
+    final nameController = TextEditingController(
+      text: _panchangService.currentLocation.isCustom
+          ? _panchangService.currentLocation.name
+          : '',
+    );
+    final tzController = TextEditingController(
+      text: _panchangService.currentLocation.timezoneOffsetHours.toString(),
+    );
+
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: AbhyasTheme.darkSurface,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: const [
+              Icon(Icons.edit_location_alt, color: AbhyasTheme.saffron),
+              SizedBox(width: 10),
+              Text(
+                'Custom Coordinates',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Enter exact geographic coordinates. Sunrise, Brahma Muhurta, and all 5 limbs of the Panchang will be computed for this exact point on Earth.',
+                    style: TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 13),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: latController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                    decoration: const InputDecoration(
+                      labelText: 'Latitude (-90.0° to +90.0°)',
+                      hintText: 'e.g. 25.3176',
+                      prefixIcon: Icon(Icons.north, size: 18),
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) return 'Enter latitude';
+                      final num = double.tryParse(val.trim());
+                      if (num == null || num < -90.0 || num > 90.0) {
+                        return 'Latitude must be between -90 and 90';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: lngController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                    decoration: const InputDecoration(
+                      labelText: 'Longitude (-180.0° to +180.0°)',
+                      hintText: 'e.g. 82.9739',
+                      prefixIcon: Icon(Icons.east, size: 18),
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) return 'Enter longitude';
+                      final num = double.tryParse(val.trim());
+                      if (num == null || num < -180.0 || num > 180.0) {
+                        return 'Longitude must be between -180 and 180';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: nameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Location Label (Optional)',
+                      hintText: 'e.g. My Sadhana Space',
+                      prefixIcon: Icon(Icons.label_outline, size: 18),
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: tzController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                    decoration: const InputDecoration(
+                      labelText: 'Timezone Offset (Hours)',
+                      hintText: 'e.g. 5.5 for IST, -5 for EST',
+                      prefixIcon: Icon(Icons.access_time, size: 18),
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) return 'Enter timezone offset';
+                      final num = double.tryParse(val.trim());
+                      if (num == null || num < -12.0 || num > 14.0) {
+                        return 'Offset must be between -12 and +14';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel', style: TextStyle(color: AbhyasTheme.darkInkSoft)),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (formKey.currentState?.validate() ?? false) {
+                  final lat = double.parse(latController.text.trim());
+                  final lng = double.parse(lngController.text.trim());
+                  final tz = double.parse(tzController.text.trim());
+                  final label = nameController.text.trim();
+
+                  _panchangService.setCustomCoordinates(
+                    latitude: lat,
+                    longitude: lng,
+                    name: label.isNotEmpty ? label : null,
+                    timezoneOffsetHours: tz,
+                  );
+
+                  if (mounted) {
+                    Navigator.pop(ctx);
+                    setState(() {});
+                  }
+                }
+              },
+              child: const Text('Apply & Calculate'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _detectDeviceLocation() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const Center(
+        child: Card(
+          color: AbhyasTheme.darkSurface,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(color: AbhyasTheme.saffron),
+                SizedBox(width: 16),
+                Text('Acquiring GPS location...', style: TextStyle(color: AbhyasTheme.darkInk)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final result = await DeviceLocationService().fetchCurrentLocation();
+
+    if (mounted) {
+      Navigator.pop(context); // dismiss loading dialog
+    }
+
+    if (result.success && result.location != null) {
+      _panchangService.setLocation(result.location!);
+      if (mounted) {
+        setState(() {});
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Location set to GPS: ${result.location!.formattedCoordinates}',
+            ),
+            backgroundColor: AbhyasTheme.leaf,
+          ),
+        );
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.errorMessage ?? 'Unable to acquire device location'),
+            backgroundColor: AbhyasTheme.clay,
+            action: result.state == LocationPermissionState.deniedForever
+                ? SnackBarAction(
+                    label: 'Settings',
+                    textColor: Colors.white,
+                    onPressed: () => Geolocator.openAppSettings(),
+                  )
+                : null,
+          ),
+        );
+      }
+    }
+  }
+
   void _showLocationPicker() {
     showModalBottomSheet(
       context: context,
@@ -77,6 +289,9 @@ class _PanchangScreenState extends State<PanchangScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) {
+        final currentLoc = _panchangService.currentLocation;
+        final isGps = currentLoc.name.contains('GPS');
+
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -88,7 +303,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
                     const Icon(Icons.location_on, color: AbhyasTheme.saffron),
                     const SizedBox(width: 8),
                     const Text(
-                      'Select Sacred Location',
+                      'Panchang Location',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -104,6 +319,138 @@ class _PanchangScreenState extends State<PanchangScreen> {
                 ),
               ),
               const Divider(height: 1, color: AbhyasTheme.line),
+              // Option 1: Use Current Device Location (GPS)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(14),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _detectDeviceLocation();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: isGps
+                          ? AbhyasTheme.saffron.withValues(alpha: 0.15)
+                          : AbhyasTheme.darkSurfaceAlt,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: isGps ? AbhyasTheme.saffron : AbhyasTheme.line,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.my_location, color: AbhyasTheme.sky, size: 24),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Use Current Location (GPS)',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: AbhyasTheme.darkInk,
+                                ),
+                              ),
+                              Text(
+                                isGps
+                                    ? 'Active: ${currentLoc.formattedCoordinates}'
+                                    : 'Auto-detect via device location permission',
+                                style: const TextStyle(
+                                  color: AbhyasTheme.darkInkSoft,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (isGps)
+                          const Icon(Icons.check_circle, color: AbhyasTheme.saffron, size: 20)
+                        else
+                          const Icon(Icons.arrow_forward_ios, size: 14, color: AbhyasTheme.darkInkSoft),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              // Option 2: Enter Custom Coordinates Manually
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(14),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showCustomCoordinatesDialog();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: currentLoc.isCustom && !isGps
+                          ? AbhyasTheme.saffron.withValues(alpha: 0.15)
+                          : AbhyasTheme.darkSurfaceAlt,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: currentLoc.isCustom && !isGps
+                            ? AbhyasTheme.saffron
+                            : AbhyasTheme.line,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.edit_location_alt, color: AbhyasTheme.saffron, size: 24),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Set Custom Coordinates',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: AbhyasTheme.darkInk,
+                                ),
+                              ),
+                              Text(
+                                currentLoc.isCustom && !isGps
+                                    ? 'Active: ${currentLoc.name} (${currentLoc.formattedCoordinates})'
+                                    : 'Enter custom GPS latitude & longitude',
+                                style: const TextStyle(
+                                  color: AbhyasTheme.darkInkSoft,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (currentLoc.isCustom && !isGps)
+                          const Icon(Icons.check_circle, color: AbhyasTheme.saffron, size: 20)
+                        else
+                          const Icon(Icons.arrow_forward_ios, size: 14, color: AbhyasTheme.darkInkSoft),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+                child: Row(
+                  children: [
+                    Text(
+                      'OR SELECT SACRED REFERENCE CITY',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.8,
+                        color: AbhyasTheme.darkInkSoft,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               Expanded(
                 child: ListView.separated(
                   itemCount: GeoLocation.sacredCities.length,
@@ -112,7 +459,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
                   itemBuilder: (context, index) {
                     final city = GeoLocation.sacredCities[index];
                     final isSelected =
-                        _panchangService.currentLocation.name == city.name;
+                        !currentLoc.isCustom && currentLoc.name == city.name;
                     return ListTile(
                       title: Text(
                         city.name,
@@ -126,7 +473,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
                         ),
                       ),
                       subtitle: Text(
-                        '${city.stateOrCountry} · Lat: ${city.latitude.toStringAsFixed(2)}°, Lng: ${city.longitude.toStringAsFixed(2)}°',
+                        '${city.stateOrCountry} · ${city.formattedCoordinates}',
                         style: const TextStyle(
                           color: AbhyasTheme.darkInkSoft,
                           fontSize: 12,
@@ -204,25 +551,69 @@ class _PanchangScreenState extends State<PanchangScreen> {
       borderRadius: BorderRadius.circular(12),
       onTap: _showLocationPicker,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: AbhyasTheme.darkSurfaceAlt,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AbhyasTheme.line),
+          border: Border.all(
+            color: loc.isCustom ? AbhyasTheme.saffron.withValues(alpha: 0.6) : AbhyasTheme.line,
+          ),
         ),
         child: Row(
           children: [
-            const Icon(Icons.place, size: 18, color: AbhyasTheme.saffron),
-            const SizedBox(width: 8),
+            Icon(
+              loc.isCustom ? Icons.edit_location_alt : Icons.place,
+              size: 20,
+              color: AbhyasTheme.saffron,
+            ),
+            const SizedBox(width: 10),
             Expanded(
-              child: Text(
-                '${loc.name} (${loc.stateOrCountry})',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: AbhyasTheme.darkInk,
-                ),
-                overflow: TextOverflow.ellipsis,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          loc.name,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: AbhyasTheme.darkInk,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (loc.isCustom) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: AbhyasTheme.saffron.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: AbhyasTheme.saffron, width: 0.8),
+                          ),
+                          child: const Text(
+                            'CUSTOM',
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              color: AbhyasTheme.saffron,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${loc.formattedCoordinates} · TZ: ${loc.timezoneOffsetHours >= 0 ? '+' : ''}${loc.timezoneOffsetHours}h',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AbhyasTheme.darkInkSoft,
+                    ),
+                  ),
+                ],
               ),
             ),
             const Text(
@@ -233,8 +624,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const Icon(Icons.keyboard_arrow_right,
-                size: 18, color: AbhyasTheme.sky),
+            const Icon(Icons.keyboard_arrow_right, size: 18, color: AbhyasTheme.sky),
           ],
         ),
       ),

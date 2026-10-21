@@ -149,11 +149,12 @@ class PanchangMuhurtaCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '${panchang.location.name} · ${panchang.tithi.pakshaName}',
+                        '${panchang.location.name} (${panchang.location.formattedCoordinates}) · ${panchang.tithi.pakshaName}',
                         style: const TextStyle(
                           fontSize: 12,
                           color: AbhyasTheme.darkInkSoft,
                         ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
