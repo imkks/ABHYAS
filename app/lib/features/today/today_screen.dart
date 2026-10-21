@@ -383,4 +383,38 @@ class _TodayScreenState extends State<TodayScreen> {
       ),
     );
   }
+
+  Widget _buildMalaCard() {
+    return Card(
+      color: AbhyasTheme.darkSurface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: AbhyasTheme.line),
+      ),
+      child: ListTile(
+        leading: const Icon(Icons.spa, color: AbhyasTheme.saffron),
+        title: const Text('Mala Progress', style: TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 6),
+            LinearProgressIndicator(
+              value: (_malaCount / 108.0).clamp(0.0, 1.0),
+              color: AbhyasTheme.saffron,
+              backgroundColor: AbhyasTheme.darkSurfaceAlt,
+            ),
+            const SizedBox(height: 4),
+            Text('$_malaCount of 108 beads completed', style: const TextStyle(fontSize: 12, color: AbhyasTheme.darkInkSoft)),
+          ],
+        ),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const DhyanScreen()),
+          ).then((_) => _loadTodayData());
+        },
+      ),
+    );
+  }
 }

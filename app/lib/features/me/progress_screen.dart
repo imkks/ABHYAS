@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme.dart';
 import '../../engine/progression/guru_anumati_workflow.dart';
 import '../../data/session_repository.dart';
 import '../../data/user_repository.dart';
@@ -114,9 +115,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.workspace_premium, color: AbhyasTheme.saffron, size: 24),
+                        Icon(Icons.workspace_premium, color: AbhyasTheme.saffron, size: 24),
                         const SizedBox(width: 12),
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -124,8 +125,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
                                 'Self-Mastery Mode Active',
                                 style: TextStyle(fontWeight: FontWeight.bold, color: AbhyasTheme.saffron, fontSize: 13),
                               ),
-                              SizedBox(height: 2),
-                              Text(
+                              const SizedBox(height: 2),
+                              const Text(
                                 'All 7 Sopana levels are unlocked for personal practice & exploration.',
                                 style: TextStyle(color: Colors.white70, fontSize: 11),
                               ),
