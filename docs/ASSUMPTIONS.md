@@ -50,3 +50,20 @@ As per the task brief, the following assumptions were made regarding the design,
 * `PostSessionCheckinScreen` incorporates a Calmness Score (1–10 slider) and computes the Calmness Delta (post - pre) to visually demonstrate transformation.
 * `SessionRepository` persists calmness scores and physical sensations, calculating average calmness improvement and total practice time for display on `ProgressScreen`.
 
+## UI Simplification & Zen Aesthetic
+* Home screen (`TodayScreen`) decluttered from a multi-card wall to 5 purposeful components:
+  1. Header with Tapas XP progress & daily streak.
+  2. Scaled Morning Surya Routine card.
+  3. Evening Bedtime Chandra Routine card.
+  4. Quick time-adaptive session chips (10m, 15m, 20m, 30m, 45m).
+  5. Quiet daily Sankalp reflection.
+* Removed the persistent floating action button and redundant developer/admin mock cards to preserve serene focus.
+* Restructured navigation into 5 dedicated tabs: `Sadhana`, `Abhyas`, `Dhyan`, `Vidyapeeth`, and `Mera`.
+
+## Yogic Self-Mastery Level Progression (Gamified Without Anxiety)
+* Integrated `ProgressionService` providing 7 Sopana ranks from *Prarambha* (Seeker) to *Dhyani* (Absorbed Master).
+* Practice time and calm session check-ins award *Tapas* XP (10 Tapas per minute + calm completion bonuses), advancing the user through the 7 levels.
+* Morning Surya Routine dynamically adapts to user rank: higher Kapalbhati stroke targets (30 -> 120), deeper breath retention ladders (from 1:0:1:0 up to classical 1:4:2:2 Kumbhaka), and unlocks authentic Mudras/Bandhas (Gyan Mudra up to Maha Bandha).
+* Strictly upholds non-competitive design: no leaderboards, no social comparison, no streak-loss shaming, focusing purely on personal self-mastery.
+
+

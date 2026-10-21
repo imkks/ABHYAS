@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/theme.dart';
 import '../../data/user_repository.dart';
-import '../../data/session_repository.dart';
 import '../../engine/panchang/panchang_service.dart';
+import '../../engine/progression/progression_service.dart';
 import '../practice/cycle_composer_screen.dart';
-import '../dhyan/dhyan_screen.dart';
 import '../panchang/panchang_screen.dart';
-import '../panchang/widgets/panchang_muhurta_card.dart';
 
 class TodayScreen extends StatefulWidget {
   const TodayScreen({super.key});
@@ -18,10 +15,10 @@ class TodayScreen extends StatefulWidget {
 
 class _TodayScreenState extends State<TodayScreen> {
   final PanchangService _panchangService = PanchangService();
+  final ProgressionService _progressionService = ProgressionService();
+
   String _tradition = 'Traditional';
-  int _tapasCount = 0;
-  int _comfortStreak = 0;
-  int _malaCount = 0;
+  UserProgression? _progression;
   bool _loading = true;
 
   @override
@@ -32,20 +29,13 @@ class _TodayScreenState extends State<TodayScreen> {
 
   Future<void> _loadTodayData() async {
     final userRepo = UserRepository();
-    final sessionRepo = SessionRepository();
-    final prefs = await SharedPreferences.getInstance();
-
     final tradition = await userRepo.loadTradition();
-    final tapas = await sessionRepo.getTapasCount();
-    final streak = await sessionRepo.getComfortStreak();
-    final mala = prefs.getInt('daily_mala_count') ?? 0;
+    final prog = await _progressionService.getProgression();
 
     if (mounted) {
       setState(() {
         _tradition = tradition ?? 'Smarta';
-        _tapasCount = tapas;
-        _comfortStreak = streak;
-        _malaCount = mala;
+        _progression = prog;
         _loading = false;
       });
     }
@@ -58,13 +48,14 @@ class _TodayScreenState extends State<TodayScreen> {
         '${todayPanchang.vara.englishDay} · ${todayPanchang.tithi.name} (${todayPanchang.tithi.pakshaName})';
 
     return Scaffold(
+      backgroundColor: AbhyasTheme.darkBg,
       appBar: AppBar(
-        title: const Text('Aaj (Today)'),
+        title: const Text('Sadhana (Today)'),
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.calendar_month),
-            tooltip: 'Panchang',
+            icon: const Icon(Icons.calendar_month, color: AbhyasTheme.saffron),
+            tooltip: 'View Astronomical Panchang',
             onPressed: () {
               Navigator.push(
                 context,
@@ -79,50 +70,380 @@ class _TodayScreenState extends State<TodayScreen> {
           ),
         ],
       ),
-      body: _loading
+      body: _loading || _progression == null
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: _loadTodayData,
               child: ListView(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 children: [
-                  const Text(
-                    'Namaste, Practitioner',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: AbhyasTheme.saffron,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    dateSubtitle,
-                    style: const TextStyle(
-                      color: AbhyasTheme.saffron,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
-                  ),
-                  Text(
-                    'Sampradaya: $_tradition · Streak: $_comfortStreak days · Tapas: $_tapasCount',
-                    style: const TextStyle(color: AbhyasTheme.darkInkSoft),
-                  ),
-                  const SizedBox(height: 24),
+                  // 1. Gamified Level & Tapas Progress Header
+                  _buildGamifiedLevelCard(_progression!, dateSubtitle),
 
-                  PanchangMuhurtaCard(),
                   const SizedBox(height: 16),
-                  _buildQuickTimeSelector(context),
-                  const SizedBox(height: 16),
-                  _buildSankalpCard(context),
-                  const SizedBox(height: 16),
-                  _buildMorningPracticeCard(context),
-                  const SizedBox(height: 16),
+
+                  // 2. Morning Routine Card (Surya Abhyas)
+                  _buildMorningPracticeCard(context, _progression!),
+
+                  const SizedBox(height: 14),
+
+                  // 3. Bedtime Routine Card (Chandra Abhyas)
                   _buildEveningPracticeCard(context),
-                  const SizedBox(height: 16),
-                  _buildMalaCard(),
+
+                  const SizedBox(height: 14),
+
+                  // 4. Quick Duration Time Selector
+                  _buildQuickTimeSelector(context),
+
+                  const SizedBox(height: 14),
+
+                  // 5. Daily Sankalp (Quiet single-line intention)
+                  _buildSankalpCard(context),
+
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
+    );
+  }
+
+  Widget _buildGamifiedLevelCard(UserProgression prog, String panchangDate) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFF231F34),
+            const Color(0xFF1B1829),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AbhyasTheme.saffron.withValues(alpha: 0.35), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Top Row: Level Title + Streak
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: AbhyasTheme.saffron.withValues(alpha: 0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.workspace_premium, color: AbhyasTheme.saffron, size: 20),
+                  ),
+                  const SizedBox(width: 8),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'LEVEL ${prog.level}: ${prog.title.toUpperCase()}',
+                        style: const TextStyle(
+                          color: AbhyasTheme.saffron,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          letterSpacing: 1.1,
+                        ),
+                      ),
+                      Text(
+                        panchangDate,
+                        style: const TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 11),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+
+              // Streak Badge
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.deepOrange.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.deepOrange.withValues(alpha: 0.5)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.local_fire_department, color: Colors.deepOrange, size: 16),
+                    const SizedBox(width: 3),
+                    Text(
+                      '${prog.dailyStreak} Days',
+                      style: const TextStyle(
+                        color: Colors.deepOrange,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 14),
+
+          // Tapas XP Progress Bar
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Tapasya: ${prog.totalTapas} pts',
+                style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600),
+              ),
+              Text(
+                '${prog.currentLevelTapas} / ${prog.tapasNeededForNextLevel} to Level ${prog.level + 1}',
+                style: const TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 11),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: prog.progressPercent,
+              minHeight: 6,
+              backgroundColor: AbhyasTheme.darkSurfaceAlt,
+              color: AbhyasTheme.saffron,
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // Feature Highlight Pill
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: AbhyasTheme.darkSurfaceAlt,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.bolt, size: 14, color: AbhyasTheme.saffron),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'Unlocked: ${prog.featureHighlight}',
+                    style: const TextStyle(fontSize: 11, color: Colors.white70, fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMorningPracticeCard(BuildContext context, UserProgression prog) {
+    return Card(
+      color: AbhyasTheme.saffron.withValues(alpha: 0.1),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: const BorderSide(color: AbhyasTheme.saffron, width: 1.2),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(18.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Row(
+                  children: [
+                    Text(
+                      '🌅 Morning Surya Abhyas',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        color: AbhyasTheme.saffron,
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AbhyasTheme.saffron.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text('30 min', style: TextStyle(color: AbhyasTheme.saffron, fontSize: 12, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '⚡ Level ${prog.level} Scaled: Kapalbhati (${prog.kapalbhatiStrokes}) → Nadi Shodhana (${prog.ratioDescription}) → Dhyan',
+              style: const TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 12),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.play_circle_fill, color: Colors.black, size: 18),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AbhyasTheme.saffron,
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const CycleComposerScreen(
+                            initialPreset: RoutinePreset.surya,
+                            initialDuration: 30,
+                          ),
+                        ),
+                      ).then((_) => _loadTodayData());
+                    },
+                    label: const Text('Begin Practice', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: AbhyasTheme.line),
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CycleComposerScreen(
+                          initialPreset: RoutinePreset.surya,
+                          initialDuration: 30,
+                        ),
+                      ),
+                    ).then((_) => _loadTodayData());
+                  },
+                  child: const Text('Customize'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEveningPracticeCard(BuildContext context) {
+    return Card(
+      color: Colors.indigo.shade900.withValues(alpha: 0.25),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(color: Colors.indigo.shade400, width: 1.2),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(18.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.bedtime, color: Colors.indigo.shade300, size: 18),
+                    const SizedBox(width: 6),
+                    Text(
+                      '🌙 Bedtime Chandra Abhyas',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.indigo.shade200,
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: Colors.indigo.shade800.withValues(alpha: 0.4),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text('25 min', style: TextStyle(color: Colors.indigo.shade200, fontSize: 12, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'Naam Jaap (108 beads) → Bhramari → Guided Yoga Nidra for sleep',
+              style: TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 12),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.play_circle_fill, color: Colors.white, size: 18),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.indigo.shade400,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const CycleComposerScreen(
+                            initialPreset: RoutinePreset.chandra,
+                            initialDuration: 25,
+                          ),
+                        ),
+                      ).then((_) => _loadTodayData());
+                    },
+                    label: const Text('Begin Bedtime', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: AbhyasTheme.line),
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CycleComposerScreen(
+                          initialPreset: RoutinePreset.chandra,
+                          initialDuration: 25,
+                        ),
+                      ),
+                    ).then((_) => _loadTodayData());
+                  },
+                  child: const Text('Customize'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -134,17 +455,17 @@ class _TodayScreenState extends State<TodayScreen> {
         side: const BorderSide(color: AbhyasTheme.line),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            const Row(
               children: [
-                const Icon(Icons.av_timer, color: AbhyasTheme.saffron, size: 18),
-                const SizedBox(width: 8),
-                const Text(
-                  'How much time do you have today?',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                Icon(Icons.av_timer, color: AbhyasTheme.saffron, size: 16),
+                SizedBox(width: 6),
+                Text(
+                  'Quick Practice: How much time do you have?',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.white),
                 ),
               ],
             ),
@@ -161,11 +482,11 @@ class _TodayScreenState extends State<TodayScreen> {
                           initialDuration: mins,
                         ),
                       ),
-                    );
+                    ).then((_) => _loadTodayData());
                   },
                   borderRadius: BorderRadius.circular(10),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
                     decoration: BoxDecoration(
                       color: AbhyasTheme.darkSurfaceAlt,
                       borderRadius: BorderRadius.circular(10),
@@ -187,233 +508,17 @@ class _TodayScreenState extends State<TodayScreen> {
 
   Widget _buildSankalpCard(BuildContext context) {
     return Card(
-      child: ListTile(
-        leading: const Icon(Icons.handshake, color: AbhyasTheme.clay),
-        title: const Text('"Today my intention is to practice steadiness."'),
-        trailing: const Icon(Icons.edit, size: 16),
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Sankalp set for today\'s practice.')),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildMorningPracticeCard(BuildContext context) {
-    return Card(
-      color: AbhyasTheme.saffron.withValues(alpha: 0.1),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: AbhyasTheme.saffron, width: 1),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  '🌅 Morning Surya Abhyas',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AbhyasTheme.saffron,
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AbhyasTheme.saffron.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Text('30 min', style: TextStyle(color: AbhyasTheme.saffron, fontSize: 12, fontWeight: FontWeight.bold)),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Kapalbhati → Nadi Shodhana → Ujjayi → Breath Awareness Dhyan',
-              style: TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 13),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AbhyasTheme.saffron,
-                      foregroundColor: Colors.black,
-                      elevation: 2,
-                    ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const CycleComposerScreen(
-                            initialPreset: RoutinePreset.surya,
-                            initialDuration: 30,
-                          ),
-                        ),
-                      );
-                    },
-                    child: const Text('Begin Morning Routine', style: TextStyle(fontWeight: FontWeight.bold)),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(color: AbhyasTheme.line),
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const CycleComposerScreen(
-                          initialPreset: RoutinePreset.surya,
-                          initialDuration: 30,
-                        ),
-                      ),
-                    );
-                  },
-                  child: const Text('Customize'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEveningPracticeCard(BuildContext context) {
-    return Card(
-      color: Colors.indigo.shade900.withValues(alpha: 0.25),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: Colors.indigo.shade400, width: 1),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.bedtime, color: Colors.indigo.shade300, size: 20),
-                    const SizedBox(width: 6),
-                    Text(
-                      '🌙 Bedtime Chandra Abhyas',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.indigo.shade200,
-                      ),
-                    ),
-                  ],
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.indigo.shade800.withValues(alpha: 0.4),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text('25 min', style: TextStyle(color: Colors.indigo.shade200, fontSize: 12, fontWeight: FontWeight.bold)),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Naam Jaap (108 beads) → Bhramari → Guided Yoga Nidra',
-              style: TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 13),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.indigo.shade400,
-                      foregroundColor: Colors.white,
-                      elevation: 2,
-                    ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const CycleComposerScreen(
-                            initialPreset: RoutinePreset.chandra,
-                            initialDuration: 25,
-                          ),
-                        ),
-                      );
-                    },
-                    child: const Text('Begin Bedtime Routine', style: TextStyle(fontWeight: FontWeight.bold)),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(color: AbhyasTheme.line),
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const CycleComposerScreen(
-                          initialPreset: RoutinePreset.chandra,
-                          initialDuration: 25,
-                        ),
-                      ),
-                    );
-                  },
-                  child: const Text('Customize'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMalaCard() {
-    return Card(
       color: AbhyasTheme.darkSurface,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         side: const BorderSide(color: AbhyasTheme.line),
       ),
       child: ListTile(
-        leading: const Icon(Icons.spa, color: AbhyasTheme.saffron),
-        title: const Text('Mala Progress', style: TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 6),
-            LinearProgressIndicator(
-              value: (_malaCount / 108.0).clamp(0.0, 1.0),
-              color: AbhyasTheme.saffron,
-              backgroundColor: AbhyasTheme.darkSurfaceAlt,
-            ),
-            const SizedBox(height: 4),
-            Text('$_malaCount of 108 beads completed', style: const TextStyle(fontSize: 12, color: AbhyasTheme.darkInkSoft)),
-          ],
+        leading: const Icon(Icons.handshake_outlined, color: AbhyasTheme.clay, size: 20),
+        title: const Text(
+          '"Today my intention is to practice steadiness of breath and mind."',
+          style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.white70),
         ),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const DhyanScreen()),
-          ).then((_) => _loadTodayData());
-        },
       ),
     );
   }

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import '../core/theme.dart';
 import '../engine/safety/safety_rules_engine.dart';
 import '../features/today/today_screen.dart';
 import '../features/practice/practice_list_screen.dart';
 import '../features/dhyan/dhyan_screen.dart';
 import '../features/me/progress_screen.dart';
 import '../features/library/rituals_screen.dart';
-import '../features/onboarding/health_screening_screen.dart';
 
 class MainLayout extends StatefulWidget {
   final SafetyProfile safetyProfile;
@@ -25,11 +25,11 @@ class _MainLayoutState extends State<MainLayout> {
   void initState() {
     super.initState();
     _pages = [
-      TodayScreen(),
+      const TodayScreen(),
       PracticeListScreen(safetyProfile: widget.safetyProfile),
-      DhyanScreen(),
-      RitualsScreen(),
-      ProgressScreen(),
+      const DhyanScreen(),
+      const RitualsScreen(),
+      const ProgressScreen(),
     ];
   }
 
@@ -42,6 +42,7 @@ class _MainLayoutState extends State<MainLayout> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AbhyasTheme.darkBg,
       body: IndexedStack(
         index: _currentIndex,
         children: _pages,
@@ -50,43 +51,38 @@ class _MainLayoutState extends State<MainLayout> {
         currentIndex: _currentIndex,
         onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
-        backgroundColor: const Color(0xFF1F1F1F),
-        selectedItemColor: Colors.deepOrange,
+        backgroundColor: const Color(0xFF191824),
+        selectedItemColor: AbhyasTheme.saffron,
         unselectedItemColor: Colors.grey.shade500,
+        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+        unselectedLabelStyle: const TextStyle(fontSize: 11),
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.wb_sunny),
-            label: 'Aaj',
+            icon: Icon(Icons.wb_sunny_outlined),
+            activeIcon: Icon(Icons.wb_sunny),
+            label: 'Sadhana',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.self_improvement),
+            icon: Icon(Icons.self_improvement_outlined),
+            activeIcon: Icon(Icons.self_improvement),
             label: 'Abhyas',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.spa),
+            icon: Icon(Icons.spa_outlined),
+            activeIcon: Icon(Icons.spa),
             label: 'Dhyan',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book),
+            icon: Icon(Icons.menu_book_outlined),
+            activeIcon: Icon(Icons.menu_book),
             label: 'Vidyapeeth',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
             label: 'Mera',
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        mini: true,
-        backgroundColor: Colors.deepOrange,
-        foregroundColor: Colors.white,
-        onPressed: () {
-          Navigator.push(context, MaterialPageRoute(
-              builder: (context) => HealthScreeningScreen(isUpdating: true)
-          ));
-        },
-        tooltip: 'Update Health Profile',
-        child: Icon(Icons.health_and_safety),
       ),
     );
   }

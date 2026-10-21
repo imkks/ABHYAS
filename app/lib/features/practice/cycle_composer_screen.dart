@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../data/user_repository.dart';
 import '../../engine/player/cycle_sequencer.dart';
+import '../../engine/progression/progression_service.dart';
 import '../../engine/safety/safety_rules_engine.dart';
 import 'cycle_player_screen.dart';
 
@@ -9,6 +10,12 @@ enum RoutinePreset {
   surya, // Morning Vitality
   chandra, // Night Bedtime (Naam Jaap, Bhramari, Yoga Nidra)
   custom, // Custom / Flexible
+}
+
+enum RoutineIntensity {
+  gentle, // Level 1 gentle pacing
+  adaptive, // Matched to user's active Sopana level
+  intense, // Advanced challenge
 }
 
 class CycleStep {
@@ -68,6 +75,10 @@ class CycleComposerScreen extends StatefulWidget {
 class _CycleComposerScreenState extends State<CycleComposerScreen> {
   late RoutinePreset _selectedPreset;
   late int _selectedTargetDuration;
+  RoutineIntensity _selectedIntensity = RoutineIntensity.adaptive;
+  int _userLevel = 1;
+  String _levelTitle = 'Prarambha';
+  String _levelHighlight = 'Foundational breath';
   late List<CycleStep> _steps;
 
   @override
@@ -75,25 +86,68 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
     super.initState();
     _selectedPreset = widget.initialPreset;
     _selectedTargetDuration = widget.initialDuration;
-    _loadPresetSteps(_selectedPreset, _selectedTargetDuration);
+    _steps = [];
+    _initLevelAndSteps();
+  }
+
+  Future<void> _initLevelAndSteps() async {
+    final prog = await ProgressionService().getProgression();
+    if (mounted) {
+      setState(() {
+        _userLevel = prog.level;
+        _levelTitle = prog.title;
+        _levelHighlight = prog.featureHighlight;
+        _loadPresetSteps(_selectedPreset, _selectedTargetDuration);
+      });
+    }
+  }
+
+  int get _effectiveLevel {
+    switch (_selectedIntensity) {
+      case RoutineIntensity.gentle:
+        return 1;
+      case RoutineIntensity.intense:
+        return (_userLevel + 1).clamp(1, 7);
+      case RoutineIntensity.adaptive:
+      default:
+        return _userLevel;
+    }
   }
 
   void _loadPresetSteps(RoutinePreset preset, int duration) {
+    final level = _effectiveLevel;
+
     if (preset == RoutinePreset.surya) {
-      // 🌅 Surya Abhyas: Morning Routine
+      // 🌅 Surya Abhyas: Scaled to level
+      String nadiSub = '1:0:1:0 Natural Balance';
+      String kapalbhatiSub = '30 strokes/round gentle cleanse';
+      String ujjayiSub = 'Ocean breath focus';
+
+      if (level == 2) {
+        nadiSub = '1:0:2:0 Extended Exhale (Calming)';
+        kapalbhatiSub = '45 strokes/round rhythmic';
+      } else if (level == 3) {
+        nadiSub = '1:1:2:0 Antar Kumbhaka + Jalandhara';
+        kapalbhatiSub = '60 strokes/round channel cleanse';
+        ujjayiSub = 'Ujjayi + Throat awareness';
+      } else if (level >= 4) {
+        nadiSub = '1:2:2:0 Deep Hold + Mula Bandha';
+        kapalbhatiSub = '80 strokes/round + Solar heat';
+      }
+
       if (duration <= 15) {
         _steps = [
           CycleStep(id: 'sankalp', title: 'Sankalp & Invocation', subtitle: 'Setting sacred intention', durationMinutes: 2),
-          CycleStep(id: 'kapalbhati', title: 'Kapalbhati', subtitle: 'Cleansing abdominal breath', durationMinutes: 3, isPranayamaWithPacer: true),
-          CycleStep(id: 'nadi_shodhana', title: 'Nadi Shodhana', subtitle: 'Alternate nostril balancing', durationMinutes: 5, isPranayamaWithPacer: true),
+          CycleStep(id: 'kapalbhati', title: 'Kapalbhati (Level $level)', subtitle: kapalbhatiSub, durationMinutes: 3, isPranayamaWithPacer: true),
+          CycleStep(id: 'nadi_shodhana', title: 'Nadi Shodhana (Level $level)', subtitle: nadiSub, durationMinutes: 5, isPranayamaWithPacer: true),
           CycleStep(id: 'breath_awareness', title: 'Breath Awareness Dhyan', subtitle: 'Witnessing natural stillness', durationMinutes: 5),
         ];
       } else if (duration <= 25) {
         _steps = [
           CycleStep(id: 'sankalp', title: 'Sankalp & Invocation', subtitle: 'Setting intention', durationMinutes: 2),
-          CycleStep(id: 'kapalbhati', title: 'Kapalbhati', subtitle: 'Cleansing breath', durationMinutes: 4, isPranayamaWithPacer: true),
-          CycleStep(id: 'nadi_shodhana', title: 'Nadi Shodhana', subtitle: 'Channel purification', durationMinutes: 6, isPranayamaWithPacer: true),
-          CycleStep(id: 'ujjayi', title: 'Ujjayi Pranayama', subtitle: 'Ocean breath focus', durationMinutes: 3, isPranayamaWithPacer: true),
+          CycleStep(id: 'kapalbhati', title: 'Kapalbhati (Level $level)', subtitle: kapalbhatiSub, durationMinutes: 4, isPranayamaWithPacer: true),
+          CycleStep(id: 'nadi_shodhana', title: 'Nadi Shodhana (Level $level)', subtitle: nadiSub, durationMinutes: 6, isPranayamaWithPacer: true),
+          CycleStep(id: 'ujjayi', title: 'Ujjayi Pranayama', subtitle: ujjayiSub, durationMinutes: 3, isPranayamaWithPacer: true),
           CycleStep(id: 'breath_awareness', title: 'Breath Awareness Dhyan', subtitle: 'Stillness meditation', durationMinutes: 8),
           CycleStep(id: 'shanti_path', title: 'Shanti Path', subtitle: 'Peace closing prayer', durationMinutes: 2),
         ];
@@ -102,9 +156,9 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
         _steps = [
           CycleStep(id: 'sankalp', title: 'Sankalp & Invocation', subtitle: 'Setting intention & Om', durationMinutes: 2),
           CycleStep(id: 'warmup', title: 'Sukshma Vyayama', subtitle: 'Gentle joint loosening', durationMinutes: 2),
-          CycleStep(id: 'kapalbhati', title: 'Kapalbhati', subtitle: '3 rounds active exhalations', durationMinutes: 4, isPranayamaWithPacer: true),
-          CycleStep(id: 'nadi_shodhana', title: 'Nadi Shodhana', subtitle: 'Alternate nostril balance', durationMinutes: 8, isPranayamaWithPacer: true),
-          CycleStep(id: 'ujjayi', title: 'Ujjayi Pranayama', subtitle: 'Deep meditative respiration', durationMinutes: 4, isPranayamaWithPacer: true),
+          CycleStep(id: 'kapalbhati', title: 'Kapalbhati (Level $level)', subtitle: kapalbhatiSub, durationMinutes: 4, isPranayamaWithPacer: true),
+          CycleStep(id: 'nadi_shodhana', title: 'Nadi Shodhana (Level $level)', subtitle: nadiSub, durationMinutes: 8, isPranayamaWithPacer: true),
+          CycleStep(id: 'ujjayi', title: 'Ujjayi Pranayama', subtitle: ujjayiSub, durationMinutes: 4, isPranayamaWithPacer: true),
           CycleStep(id: 'breath_awareness', title: 'Breath Awareness Dhyan', subtitle: 'Witnessing stillness', durationMinutes: 8),
           CycleStep(id: 'shanti_path', title: 'Shanti Path', subtitle: 'Universal peace chant', durationMinutes: 2),
         ];
@@ -113,16 +167,16 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
         _steps = [
           CycleStep(id: 'sankalp', title: 'Sankalp & Invocation', subtitle: 'Setting sacred intention', durationMinutes: 3),
           CycleStep(id: 'warmup', title: 'Sukshma Vyayama', subtitle: 'Prana loosening', durationMinutes: 4),
-          CycleStep(id: 'kapalbhati', title: 'Kapalbhati', subtitle: 'Cleansing kriya', durationMinutes: 6, isPranayamaWithPacer: true),
-          CycleStep(id: 'nadi_shodhana', title: 'Nadi Shodhana', subtitle: 'Deep nadi purification', durationMinutes: 10, isPranayamaWithPacer: true),
+          CycleStep(id: 'kapalbhati', title: 'Kapalbhati (Level $level)', subtitle: kapalbhatiSub, durationMinutes: 6, isPranayamaWithPacer: true),
+          CycleStep(id: 'nadi_shodhana', title: 'Nadi Shodhana (Level $level)', subtitle: nadiSub, durationMinutes: 10, isPranayamaWithPacer: true),
           CycleStep(id: 'bhastrika', title: 'Bhastrika / Surya Bhedana', subtitle: 'Vital solar activation', durationMinutes: 5, isPranayamaWithPacer: true),
-          CycleStep(id: 'ujjayi', title: 'Ujjayi Pranayama', subtitle: 'Pratyahara bridge', durationMinutes: 5, isPranayamaWithPacer: true),
+          CycleStep(id: 'ujjayi', title: 'Ujjayi Pranayama', subtitle: ujjayiSub, durationMinutes: 5, isPranayamaWithPacer: true),
           CycleStep(id: 'breath_awareness', title: 'Antar Mouna / Dhyan', subtitle: 'Deep meditative stillness', durationMinutes: 10),
           CycleStep(id: 'shanti_path', title: 'Shanti Path', subtitle: 'Closing integration', durationMinutes: 2),
         ];
       }
     } else if (preset == RoutinePreset.chandra) {
-      // 🌙 Chandra Abhyas: Night Bedtime Routine (Naam Jaap + Bhramari + Yoga Nidra)
+      // 🌙 Chandra Abhyas: Night Bedtime Routine
       if (duration <= 20) {
         _steps = [
           CycleStep(id: 'naam_jaap', title: 'Naam Jaap (Digital Mala)', subtitle: '108 bead sacred recitation', durationMinutes: 5),
@@ -164,6 +218,13 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
   void _onPresetChanged(RoutinePreset preset) {
     setState(() {
       _selectedPreset = preset;
+      _loadPresetSteps(_selectedPreset, _selectedTargetDuration);
+    });
+  }
+
+  void _onIntensityChanged(RoutineIntensity intensity) {
+    setState(() {
+      _selectedIntensity = intensity;
       _loadPresetSteps(_selectedPreset, _selectedTargetDuration);
     });
   }
@@ -411,6 +472,29 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
               ],
             ),
           ),
+
+          // Intensity Mode Bar
+          if (_selectedPreset == RoutinePreset.surya)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              color: const Color(0xFF1F1D2B),
+              child: Row(
+                children: [
+                  const Text('Intensity: ', style: TextStyle(fontSize: 12, color: AbhyasTheme.darkInkSoft, fontWeight: FontWeight.bold)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _buildIntensityChip(RoutineIntensity.gentle, '🍃 Gentle'),
+                        _buildIntensityChip(RoutineIntensity.adaptive, '⚡ Level $_userLevel Adapt'),
+                        _buildIntensityChip(RoutineIntensity.intense, '🔥 Intense'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
           // Duration Chips Bar
           Container(
@@ -734,6 +818,30 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildIntensityChip(RoutineIntensity intensity, String label) {
+    final isSelected = _selectedIntensity == intensity;
+    return InkWell(
+      onTap: () => _onIntensityChanged(intensity),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: isSelected ? AbhyasTheme.saffron.withValues(alpha: 0.25) : AbhyasTheme.darkSurfaceAlt,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: isSelected ? AbhyasTheme.saffron : Colors.transparent),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected ? AbhyasTheme.saffron : Colors.white70,
+          ),
+        ),
       ),
     );
   }
