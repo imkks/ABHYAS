@@ -8,7 +8,9 @@ plugins {
 android {
     namespace = "com.example.abhyas"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // ndkVersion is commented out to prevent AGP from attempting to download
+    // unneeded NDK packages via sdkmanager in CI environments.
+    // ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

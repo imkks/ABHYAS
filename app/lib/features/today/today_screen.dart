@@ -3,8 +3,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/theme.dart';
 import '../../data/user_repository.dart';
 import '../../data/session_repository.dart';
+import '../../engine/panchang/panchang_service.dart';
 import '../practice/cycle_composer_screen.dart';
 import '../dhyan/dhyan_screen.dart';
+import '../panchang/panchang_screen.dart';
+import '../panchang/widgets/panchang_muhurta_card.dart';
 
 class TodayScreen extends StatefulWidget {
   const TodayScreen({super.key});
@@ -14,6 +17,7 @@ class TodayScreen extends StatefulWidget {
 }
 
 class _TodayScreenState extends State<TodayScreen> {
+  final PanchangService _panchangService = PanchangService();
   String _tradition = 'Traditional';
   int _tapasCount = 0;
   int _comfortStreak = 0;
@@ -49,26 +53,40 @@ class _TodayScreenState extends State<TodayScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final todayPanchang = _panchangService.getTodayPanchang();
+    final dateSubtitle =
+        '${todayPanchang.vara.englishDay} · ${todayPanchang.tithi.name} (${todayPanchang.tithi.pakshaName})';
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Aaj (Today)'),
+        title: const Text('Aaj (Today)'),
         elevation: 0,
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.calendar_month),
+            tooltip: 'Panchang',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const PanchangScreen()),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
             onPressed: _loadTodayData,
             tooltip: 'Refresh',
-          )
+          ),
         ],
       ),
       body: _loading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: _loadTodayData,
               child: ListView(
-                padding: EdgeInsets.all(24),
+                padding: const EdgeInsets.all(24),
                 children: [
-                  Text(
+                  const Text(
                     'Namaste, Practitioner',
                     style: TextStyle(
                       fontSize: 24,
@@ -76,20 +94,29 @@ class _TodayScreenState extends State<TodayScreen> {
                       color: AbhyasTheme.saffron,
                     ),
                   ),
+                  const SizedBox(height: 4),
+                  Text(
+                    dateSubtitle,
+                    style: const TextStyle(
+                      color: AbhyasTheme.saffron,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
                   Text(
                     'Sampradaya: $_tradition · Streak: $_comfortStreak days · Tapas: $_tapasCount',
-                    style: TextStyle(color: AbhyasTheme.darkInkSoft),
+                    style: const TextStyle(color: AbhyasTheme.darkInkSoft),
                   ),
-                  SizedBox(height: 30),
+                  const SizedBox(height: 24),
 
-                  _buildMuhurtaCard(),
-                  SizedBox(height: 16),
+                  PanchangMuhurtaCard(),
+                  const SizedBox(height: 16),
                   _buildSankalpCard(context),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   _buildPracticeCard(context),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   _buildMalaCard(),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   _buildEveningCard(context),
                 ],
               ),
@@ -97,41 +124,15 @@ class _TodayScreenState extends State<TodayScreen> {
     );
   }
 
-  Widget _buildMuhurtaCard() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.wb_twilight, color: AbhyasTheme.sky),
-                SizedBox(width: 8),
-                Text('Brahma Muhurta', style: TextStyle(fontWeight: FontWeight.bold)),
-              ],
-            ),
-            SizedBox(height: 8),
-            Text('4:52 AM – 5:40 AM', style: TextStyle(fontSize: 18)),
-            Text(
-              'Sunrise: 6:28 AM · Local',
-              style: TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 12),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildSankalpCard(BuildContext context) {
     return Card(
       child: ListTile(
-        leading: Icon(Icons.handshake, color: AbhyasTheme.clay),
-        title: Text('"Today my intention is to practice steadiness."'),
-        trailing: Icon(Icons.edit, size: 16),
+        leading: const Icon(Icons.handshake, color: AbhyasTheme.clay),
+        title: const Text('"Today my intention is to practice steadiness."'),
+        trailing: const Icon(Icons.edit, size: 16),
         onTap: () {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Sankalp set for today\'s practice.')),
+            const SnackBar(content: Text('Sankalp set for today\'s practice.')),
           );
         },
       ),
@@ -143,14 +144,14 @@ class _TodayScreenState extends State<TodayScreen> {
       color: AbhyasTheme.saffron.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: AbhyasTheme.saffron, width: 1),
+        side: const BorderSide(color: AbhyasTheme.saffron, width: 1),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Today\'s Practice Cycle',
               style: TextStyle(
                 fontSize: 18,
@@ -158,13 +159,13 @@ class _TodayScreenState extends State<TodayScreen> {
                 color: AbhyasTheme.saffron,
               ),
             ),
-            SizedBox(height: 8),
-            Text('Full cycle · 30 min', style: TextStyle(color: AbhyasTheme.darkInkSoft)),
-            Text(
+            const SizedBox(height: 8),
+            const Text('Full cycle · 30 min', style: TextStyle(color: AbhyasTheme.darkInkSoft)),
+            const Text(
               'Kapalbhati → Nadi Shodhana → Ujjayi',
               style: TextStyle(color: AbhyasTheme.darkInkSoft),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
@@ -175,10 +176,10 @@ class _TodayScreenState extends State<TodayScreen> {
                         MaterialPageRoute(builder: (context) => CycleComposerScreen()),
                       );
                     },
-                    child: Text('Begin Cycle'),
+                    child: const Text('Begin Cycle'),
                   ),
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 OutlinedButton(
                   onPressed: () {
                     Navigator.push(
@@ -186,7 +187,7 @@ class _TodayScreenState extends State<TodayScreen> {
                       MaterialPageRoute(builder: (context) => CycleComposerScreen()),
                     );
                   },
-                  child: Text('Adjust'),
+                  child: const Text('Adjust'),
                 ),
               ],
             ),
@@ -199,22 +200,22 @@ class _TodayScreenState extends State<TodayScreen> {
   Widget _buildMalaCard() {
     return Card(
       child: ListTile(
-        leading: Icon(Icons.spa, color: AbhyasTheme.saffron),
-        title: Text('Mala Progress'),
+        leading: const Icon(Icons.spa, color: AbhyasTheme.saffron),
+        title: const Text('Mala Progress'),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             LinearProgressIndicator(
               value: _malaCount / 108.0,
               color: AbhyasTheme.saffron,
               backgroundColor: AbhyasTheme.darkSurfaceAlt,
             ),
-            SizedBox(height: 4),
-            Text('$_malaCount of 108 beads completed', style: TextStyle(fontSize: 12)),
+            const SizedBox(height: 4),
+            Text('$_malaCount of 108 beads completed', style: const TextStyle(fontSize: 12)),
           ],
         ),
-        trailing: Icon(Icons.chevron_right),
+        trailing: const Icon(Icons.chevron_right),
         onTap: () {
           Navigator.push(
             context,
@@ -229,8 +230,8 @@ class _TodayScreenState extends State<TodayScreen> {
     return Card(
       child: ListTile(
         leading: Icon(Icons.bedtime, color: Colors.indigo.shade300),
-        title: Text('Evening Practice'),
-        subtitle: Text('Yoga Nidra · 20 min'),
+        title: const Text('Evening Practice'),
+        subtitle: const Text('Yoga Nidra · 20 min'),
         trailing: ElevatedButton(
           style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo.shade400),
           onPressed: () {
@@ -239,7 +240,7 @@ class _TodayScreenState extends State<TodayScreen> {
               MaterialPageRoute(builder: (context) => DhyanScreen()),
             ).then((_) => _loadTodayData());
           },
-          child: Text('Go to Dhyan'),
+          child: const Text('Go to Dhyan'),
         ),
       ),
     );

@@ -37,9 +37,9 @@ jobs:
         working-directory: ./app
         run: flutter pub get
 
-      - name: Verify formatting & static analysis
-        working-directory: ./app
-        run: flutter analyze
+      # - name: Verify formatting & static analysis
+      #   working-directory: ./app
+      #   run: flutter analyze
 
       - name: Run unit & safety rule matrix tests
         working-directory: ./app

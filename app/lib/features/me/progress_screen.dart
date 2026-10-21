@@ -5,6 +5,7 @@ import '../../data/user_repository.dart';
 import '../dev/teacher_console_mock_screen.dart';
 import '../path/path_map_screen.dart';
 import '../../engine/safety/safety_rules_engine.dart';
+import '../panchang/widgets/panchang_tithi_banner.dart';
 import 'weaning_screen.dart';
 
 class ProgressScreen extends StatefulWidget {
@@ -72,10 +73,10 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Progress'),
+        title: const Text('My Progress'),
         actions: [
           IconButton(
-            icon: Icon(Icons.admin_panel_settings),
+            icon: const Icon(Icons.admin_panel_settings),
             onPressed: () async {
               await Navigator.push(
                 context,
@@ -90,47 +91,14 @@ class _ProgressScreenState extends State<ProgressScreen> {
         ],
       ),
       body: _loading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: _loadStats,
               child: ListView(
-                padding: EdgeInsets.all(24),
+                padding: const EdgeInsets.all(24),
                 children: [
-                  Container(
-                    padding: EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.deepPurple.shade900, Colors.indigo.shade900],
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.wb_sunny, color: Colors.amber, size: 40),
-                        SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Brahma Muhurta in 4h 30m',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              Text(
-                                'Panchang: Ekadashi Tithi',
-                                style: TextStyle(color: Colors.white70, fontSize: 14),
-                              ),
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 30),
+                  PanchangTithiBanner(),
+                  const SizedBox(height: 30),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
@@ -157,10 +125,10 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       _buildCircularStat('CHT', '${_chtSeconds.toStringAsFixed(0)}s', Colors.teal),
                     ],
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   ElevatedButton.icon(
-                    icon: Icon(Icons.psychology),
-                    label: Text('Guidance Level (Weaning)'),
+                    icon: const Icon(Icons.psychology),
+                    label: const Text('Guidance Level (Weaning)'),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -172,9 +140,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       foregroundColor: Colors.white,
                     ),
                   ),
-                  SizedBox(height: 30),
+                  const SizedBox(height: 30),
 
-                  Text(
+                  const Text(
                     'Mudra & Bandha Seals',
                     style: TextStyle(
                       fontSize: 20,
@@ -182,7 +150,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       letterSpacing: 1.1,
                     ),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Wrap(
                     spacing: 12,
                     runSpacing: 12,
@@ -195,8 +163,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
                     ],
                   ),
 
-                  SizedBox(height: 40),
-                  Text(
+                  const SizedBox(height: 40),
+                  const Text(
                     'Guru Anumati',
                     style: TextStyle(
                       fontSize: 20,
@@ -204,7 +172,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       letterSpacing: 1.1,
                     ),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   if (nextLevel <= 7)
                     Card(
                       elevation: 6,
@@ -216,10 +184,10 @@ class _ProgressScreenState extends State<ProgressScreen> {
                         ),
                       ),
                       child: ListTile(
-                        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                         title: Text(
                           'Sopana $nextLevel Progression',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         subtitle: Text(
                           isApproved
@@ -229,9 +197,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
                                   : 'Tap to Request Unlock'),
                         ),
                         trailing: isApproved
-                            ? Icon(Icons.check_circle, color: Colors.green, size: 32)
+                            ? const Icon(Icons.check_circle, color: Colors.green, size: 32)
                             : (hasPendingRequest
-                                ? SizedBox(
+                                ? const SizedBox(
                                     width: 24,
                                     height: 24,
                                     child: CircularProgressIndicator(
@@ -239,7 +207,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                                       color: Colors.orange,
                                     ),
                                   )
-                                : Icon(Icons.lock, color: Colors.grey, size: 32)),
+                                : const Icon(Icons.lock, color: Colors.grey, size: 32)),
                         onTap: (!isApproved && !hasPendingRequest)
                             ? () => _requestUnlock(nextLevel)
                             : null,
@@ -273,7 +241,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
               ),
             ),
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           Text(title, style: TextStyle(fontWeight: FontWeight.w500, color: Colors.grey.shade400)),
         ],
       ),
@@ -282,7 +250,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
   Widget _buildSeal(String name, bool earned) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: earned ? Colors.green.withValues(alpha: 0.15) : Colors.grey.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
@@ -296,7 +264,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
             size: 16,
             color: earned ? Colors.green : Colors.grey,
           ),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           Text(name, style: TextStyle(color: earned ? Colors.white : Colors.grey)),
         ],
       ),
