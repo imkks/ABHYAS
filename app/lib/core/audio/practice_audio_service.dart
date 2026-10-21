@@ -17,7 +17,7 @@ class PracticeAudioService {
 
   bool isVoiceEnabled = true;
   bool isAudioTonesEnabled = true;
-  bool isHapticsEnabled = true;
+  bool isHapticsEnabled = false; // Disabled by default to avoid vibration noise/ticking
   double volume = 0.85;
 
   // Optional custom handler (useful for unit testing or custom audio backends)
