@@ -4,6 +4,8 @@ import 'package:abhyas/engine/player/audio_guidance_engine.dart';
 import 'package:abhyas/core/audio/practice_audio_service.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('Audio Guidance Engine & Minimalist Sonic Planner Tests', () {
     test('Correct guidance levels are selected by weaning stage', () {
       expect(
@@ -183,11 +185,15 @@ void main() {
     test('PracticeAudioService records dispatched events in history', () async {
       final service = PracticeAudioService();
       service.clearHistory();
+      // Provide custom test handler so headless environment does not invoke native audio hardware
+      service.customAudioPlayer = (path, vol) async {};
+      service.isHapticsEnabled = false;
 
       final cue = AudioCueEvent(
         type: AudioCueType.phaseTransition,
         phase: PracticePhase.puraka,
         spokenText: 'Inhale',
+        voiceAssetIdentifier: 'assets/audio/voice/voice_puraka.wav',
         soundIdentifier: 'test_cue.wav',
       );
 

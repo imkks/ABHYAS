@@ -51,17 +51,23 @@ class PracticeAudioService {
 
     // 1. Trigger subtle haptics if enabled for hands-free sensory confirmation
     if (isHapticsEnabled && cue.triggerHaptic) {
-      await _triggerHapticForCue(cue.type);
+      try {
+        await _triggerHapticForCue(cue.type);
+      } catch (_) {}
     }
 
     // 2. Play sonic earcon / bell / chime
     if (isAudioTonesEnabled && cue.soundIdentifier != 'silence') {
-      await _playSound(cue.soundIdentifier, isVoice: false);
+      try {
+        await _playSound(cue.soundIdentifier, isVoice: false);
+      } catch (_) {}
     }
 
     // 3. Play spoken instruction audio file directly (no TTS latency!)
     if (isVoiceEnabled && cue.voiceAssetIdentifier != null) {
-      await _playSound(cue.voiceAssetIdentifier!, isVoice: true);
+      try {
+        await _playSound(cue.voiceAssetIdentifier!, isVoice: true);
+      } catch (_) {}
     }
   }
 
