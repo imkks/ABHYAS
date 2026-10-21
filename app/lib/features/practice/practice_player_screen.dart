@@ -53,6 +53,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       settlingDurationSeconds: 10,
       integrationDurationSeconds: 60,
     );
+    _audioService.initAudio();
   }
 
   void _onTick(int seconds) {
@@ -126,6 +127,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
 
   void _skipSettling() {
     _bufferTimer?.cancel();
+    _audioService.stopAll();
     setState(() {
       _isSettling = false;
     });
@@ -177,6 +179,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   /// Emergency Exit: AC-9 Immediate Return to Natural Breath
   void _returnToNaturalBreath() {
     _bufferTimer?.cancel();
+    _audioService.stopAll();
     setState(() {
       _isPlaying = false;
       _isSettling = false;
@@ -231,6 +234,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   void dispose() {
     _bufferTimer?.cancel();
     _engine.stopTimer();
+    _audioService.stopAll();
     super.dispose();
   }
 

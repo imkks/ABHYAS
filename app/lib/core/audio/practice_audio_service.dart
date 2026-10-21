@@ -1,24 +1,27 @@
 import 'package:flutter/services.dart';
+import 'package:audioplayers/audioplayers.dart';
 import '../../engine/player/audio_guidance_engine.dart';
 
 typedef AudioPlaybackHandler = Future<void> Function(String soundPath, double volume);
-typedef SpokenVoiceHandler = Future<void> Function(String text);
 
-/// Service responsible for executing sonic earcons, spoken voice cues, and haptics.
-/// Designed with abstraction to be resilient both on physical devices and in test environments.
+/// Service responsible for playing direct pre-recorded audio assets (bells, bowls, and spoken cues).
+/// Plays purely via AudioPlayer to eliminate text-to-speech conversion latency and synthetic robot voices.
 class PracticeAudioService {
   static final PracticeAudioService _instance = PracticeAudioService._internal();
   factory PracticeAudioService() => _instance;
   PracticeAudioService._internal();
 
+  AudioPlayer? _tonePlayer;
+  AudioPlayer? _voicePlayer;
+  bool _initialized = false;
+
   bool isVoiceEnabled = true;
   bool isAudioTonesEnabled = true;
   bool isHapticsEnabled = true;
-  double volume = 0.8;
+  double volume = 0.85;
 
-  // Optional custom handlers (useful for unit testing or custom audio backends)
+  // Optional custom handler (useful for unit testing or custom audio backends)
   AudioPlaybackHandler? customAudioPlayer;
-  SpokenVoiceHandler? customVoiceSynthesizer;
 
   final List<AudioCueEvent> _eventHistory = [];
   List<AudioCueEvent> get eventHistory => List.unmodifiable(_eventHistory);
@@ -27,7 +30,22 @@ class PracticeAudioService {
     _eventHistory.clear();
   }
 
-  /// Dispatches an AudioCueEvent to the appropriate hardware channels
+  Future<void> initAudio() async {
+    if (_initialized) return;
+    try {
+      _tonePlayer = AudioPlayer();
+      await _tonePlayer?.setVolume(volume);
+
+      _voicePlayer = AudioPlayer();
+      await _voicePlayer?.setVolume(volume);
+    } catch (_) {
+      // In headless test environments, platform channels may be absent
+    }
+
+    _initialized = true;
+  }
+
+  /// Dispatches an AudioCueEvent to the audio players and haptics
   Future<void> dispatchCue(AudioCueEvent cue) async {
     _eventHistory.add(cue);
 
@@ -38,39 +56,58 @@ class PracticeAudioService {
 
     // 2. Play sonic earcon / bell / chime
     if (isAudioTonesEnabled && cue.soundIdentifier != 'silence') {
-      await _playSound(cue.soundIdentifier);
+      await _playSound(cue.soundIdentifier, isVoice: false);
     }
 
-    // 3. Play spoken instruction if provided and not muted
-    if (isVoiceEnabled && cue.spokenText != null && cue.spokenText!.isNotEmpty) {
-      await _speak(cue.spokenText!);
+    // 3. Play spoken instruction audio file directly (no TTS latency!)
+    if (isVoiceEnabled && cue.voiceAssetIdentifier != null) {
+      await _playSound(cue.voiceAssetIdentifier!, isVoice: true);
     }
   }
 
-  Future<void> _playSound(String soundIdentifier) async {
+  Future<void> _playSound(String soundIdentifier, {bool isVoice = false}) async {
     if (customAudioPlayer != null) {
       await customAudioPlayer!(soundIdentifier, volume);
       return;
     }
 
-    // Fallback: System sound or silence if asset audio is loading
+    try {
+      if (!_initialized) {
+        await initAudio();
+      }
+
+      String cleanPath = soundIdentifier;
+      if (cleanPath.startsWith('assets/')) {
+        cleanPath = cleanPath.substring('assets/'.length);
+      }
+
+      final targetPlayer = isVoice ? _voicePlayer : _tonePlayer;
+      if (targetPlayer != null) {
+        await targetPlayer.stop();
+        await targetPlayer.play(AssetSource(cleanPath));
+        return;
+      }
+    } catch (_) {
+      // Gracefully fall back if audio hardware or platform channel is unavailable
+    }
+
+    // Secondary fallback: System sounds
     try {
       if (soundIdentifier.contains('tick')) {
         await SystemSound.play(SystemSoundType.click);
       } else {
         await SystemSound.play(SystemSoundType.alert);
       }
-    } catch (_) {
-      // Gracefully handle environments without system sound support (e.g. headless tests)
-    }
+    } catch (_) {}
   }
 
-  Future<void> _speak(String text) async {
-    if (customVoiceSynthesizer != null) {
-      await customVoiceSynthesizer!(text);
-      return;
-    }
-    // Default fallback: logged/handled via platform TTS when integrated
+  Future<void> stopAll() async {
+    try {
+      await _tonePlayer?.stop();
+    } catch (_) {}
+    try {
+      await _voicePlayer?.stop();
+    } catch (_) {}
   }
 
   Future<void> _triggerHapticForCue(AudioCueType cueType) async {
@@ -92,8 +129,6 @@ class PracticeAudioService {
           await HapticFeedback.lightImpact();
           break;
       }
-    } catch (_) {
-      // In headless test environments, platform channels may be absent
-    }
+    } catch (_) {}
   }
 }

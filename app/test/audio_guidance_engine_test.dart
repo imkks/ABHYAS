@@ -39,29 +39,34 @@ void main() {
       expect(engine.settlingSecondsLeft, equals(4));
       expect(startCue.type, equals(AudioCueType.settlingStart));
       expect(startCue.spokenText, contains('Take your seat'));
+      expect(startCue.voiceAssetIdentifier, contains('voice_settle.wav'));
 
       // Tick 1: 4 -> 3 (should tick with count cue)
       final tick1 = engine.tickSettlingBuffer();
       expect(tick1, isNotNull);
       expect(tick1!.type, equals(AudioCueType.settlingTick));
       expect(tick1.spokenText, equals('3'));
+      expect(tick1.voiceAssetIdentifier, contains('voice_count_3.wav'));
 
       // Tick 2: 3 -> 2
       final tick2 = engine.tickSettlingBuffer();
       expect(tick2, isNotNull);
       expect(tick2!.type, equals(AudioCueType.settlingTick));
       expect(tick2.spokenText, equals('2'));
+      expect(tick2.voiceAssetIdentifier, contains('voice_count_2.wav'));
 
       // Tick 3: 2 -> 1
       final tick3 = engine.tickSettlingBuffer();
       expect(tick3, isNotNull);
       expect(tick3!.type, equals(AudioCueType.settlingTick));
       expect(tick3.spokenText, equals('1'));
+      expect(tick3.voiceAssetIdentifier, contains('voice_count_1.wav'));
 
       // Tick 4: 1 -> 0 (Completes settling, starts practice)
       final startPracticeCue = engine.tickSettlingBuffer();
       expect(startPracticeCue, isNotNull);
       expect(startPracticeCue!.type, equals(AudioCueType.practiceStart));
+      expect(startPracticeCue.voiceAssetIdentifier, contains('voice_begin.wav'));
       expect(engine.isSettling, isFalse);
     });
 
@@ -76,6 +81,7 @@ void main() {
         cycleNumber: 1,
       );
       expect(puraka.spokenText, equals('Inhale'));
+      expect(puraka.voiceAssetIdentifier, contains('voice_puraka.wav'));
       expect(puraka.soundIdentifier, contains('puraka_inhale'));
 
       final hold = engine.getCueForPhaseTransition(
@@ -83,6 +89,7 @@ void main() {
         cycleNumber: 1,
       );
       expect(hold.spokenText, equals('Hold'));
+      expect(hold.voiceAssetIdentifier, contains('voice_kumbhaka.wav'));
       expect(hold.soundIdentifier, contains('kumbhaka_hold'));
 
       final rechaka = engine.getCueForPhaseTransition(
@@ -90,6 +97,7 @@ void main() {
         cycleNumber: 1,
       );
       expect(rechaka.spokenText, equals('Exhale'));
+      expect(rechaka.voiceAssetIdentifier, contains('voice_rechaka.wav'));
       expect(rechaka.soundIdentifier, contains('rechaka_exhale'));
 
       final pause = engine.getCueForPhaseTransition(
@@ -97,6 +105,7 @@ void main() {
         cycleNumber: 1,
       );
       expect(pause.spokenText, equals('Suspend'));
+      expect(pause.voiceAssetIdentifier, contains('voice_bahya.wav'));
       expect(pause.soundIdentifier, contains('bahya_pause'));
     });
 
@@ -111,6 +120,7 @@ void main() {
         cycleNumber: 1,
       );
       expect(puraka.spokenText, isNull);
+      expect(puraka.voiceAssetIdentifier, isNull);
       expect(puraka.soundIdentifier, contains('puraka_inhale'));
 
       final rechaka = engine.getCueForPhaseTransition(
@@ -118,6 +128,7 @@ void main() {
         cycleNumber: 1,
       );
       expect(rechaka.spokenText, isNull);
+      expect(rechaka.voiceAssetIdentifier, isNull);
       expect(rechaka.soundIdentifier, contains('rechaka_exhale'));
     });
 
@@ -139,6 +150,7 @@ void main() {
       expect(emergencyCue.type, equals(AudioCueType.emergencyGrounding));
       expect(emergencyCue.phase, equals(PracticePhase.naturalBreath));
       expect(emergencyCue.spokenText, contains('Rest naturally'));
+      expect(emergencyCue.voiceAssetIdentifier, contains('voice_rest.wav'));
       expect(emergencyCue.soundIdentifier, contains('grounding_bell'));
       expect(engine.isSettling, isFalse);
     });
@@ -152,6 +164,7 @@ void main() {
       final startCue = engine.startIntegrationBuffer();
       expect(engine.isIntegrating, isTrue);
       expect(startCue.type, equals(AudioCueType.integrationStart));
+      expect(startCue.voiceAssetIdentifier, contains('voice_complete.wav'));
 
       // Tick 1: 2 -> 1 (silent)
       final tick1 = engine.tickIntegrationBuffer();
@@ -162,6 +175,7 @@ void main() {
       final endCue = engine.tickIntegrationBuffer();
       expect(endCue, isNotNull);
       expect(endCue!.type, equals(AudioCueType.integrationComplete));
+      expect(endCue.voiceAssetIdentifier, contains('voice_open_eyes.wav'));
       expect(endCue.soundIdentifier, contains('shanti_chime'));
       expect(engine.isIntegrating, isFalse);
     });
@@ -174,7 +188,7 @@ void main() {
         type: AudioCueType.phaseTransition,
         phase: PracticePhase.puraka,
         spokenText: 'Inhale',
-        soundIdentifier: 'test_cue.mp3',
+        soundIdentifier: 'test_cue.wav',
       );
 
       await service.dispatchCue(cue);
