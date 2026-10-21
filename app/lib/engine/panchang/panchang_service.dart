@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'panchang_models.dart';
 import 'panchang_engine.dart';
 
@@ -33,21 +35,66 @@ class BrahmaMuhurtaStatus {
 class PanchangService extends ChangeNotifier {
   static final PanchangService _instance = PanchangService._internal();
   factory PanchangService() => _instance;
-  PanchangService._internal();
+  PanchangService._internal() {
+    _loadSavedLocation();
+  }
+
+  static const String _locationPrefKey = 'panchang_saved_location';
 
   GeoLocation _currentLocation = GeoLocation.defaultLocation;
   final Map<String, DailyPanchang> _cache = {};
+  bool _initialized = false;
 
   GeoLocation get currentLocation => _currentLocation;
+  bool get isInitialized => _initialized;
 
-  void setLocation(GeoLocation newLocation) {
+  Future<void> _loadSavedLocation() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedJson = prefs.getString(_locationPrefKey);
+      if (savedJson != null) {
+        final map = json.decode(savedJson) as Map<String, dynamic>;
+        _currentLocation = GeoLocation.fromJson(map);
+        _cache.clear();
+      }
+    } catch (_) {
+      // Graceful fallback to default location if storage is inaccessible
+    }
+    _initialized = true;
+    notifyListeners();
+  }
+
+  Future<void> setLocation(GeoLocation newLocation) async {
     if (_currentLocation.name != newLocation.name ||
         _currentLocation.latitude != newLocation.latitude ||
         _currentLocation.longitude != newLocation.longitude) {
       _currentLocation = newLocation;
       _cache.clear();
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(
+            _locationPrefKey, json.encode(newLocation.toJson()));
+      } catch (_) {}
       notifyListeners();
     }
+  }
+
+  /// Sets a custom location from exact latitude and longitude coordinates.
+  Future<void> setCustomCoordinates({
+    required double latitude,
+    required double longitude,
+    String? name,
+    double? timezoneOffsetHours,
+    double elevationMeters = 0.0,
+  }) async {
+    final customLoc = GeoLocation.custom(
+      latitude: latitude,
+      longitude: longitude,
+      name: name,
+      timezoneOffsetHours: timezoneOffsetHours,
+      elevationMeters: elevationMeters,
+    );
+    await setLocation(customLoc);
   }
 
   String _cacheKey(DateTime date, GeoLocation loc) {

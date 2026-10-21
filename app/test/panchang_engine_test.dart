@@ -316,5 +316,70 @@ void main() {
       expect(status.countdownString.isNotEmpty, isTrue);
       expect(status.period.name, equals('Brahma Muhurta'));
     });
+
+    test('Custom arbitrary coordinates compute accurate Panchang and format correctly', () {
+      final kailash = GeoLocation.custom(
+        latitude: 31.0667,
+        longitude: 81.3119,
+        name: 'Mount Kailash',
+        timezoneOffsetHours: 5.75,
+      );
+
+      expect(kailash.isCustom, isTrue);
+      expect(kailash.formattedCoordinates, equals('31.07° N, 81.31° E'));
+
+      final date = DateTime(2026, 7, 15);
+      final p = PanchangEngine.calculateDailyPanchang(date: date, location: kailash);
+
+      expect(p.location.name, equals('Mount Kailash'));
+      expect(p.sunrise.isBefore(p.sunset), isTrue);
+      expect(p.brahmaMuhurta.endTime.isBefore(p.sunrise), isTrue);
+      expect(p.tithi.number, inInclusiveRange(1, 30));
+    });
+
+    test('Southern hemisphere coordinates calculate inverted seasonal daylight', () {
+      final sydney = GeoLocation.custom(
+        latitude: -33.8688,
+        longitude: 151.2093,
+        name: 'Sydney Custom',
+        timezoneOffsetHours: 10.0,
+      );
+
+      expect(sydney.formattedCoordinates, equals('33.87° S, 151.21° E'));
+
+      // In Sydney, June 21 is Winter Solstice (shorter daylight < 10h)
+      // and December 21 is Summer Solstice (longer daylight > 14h)
+      final winter = PanchangEngine.calculateDailyPanchang(
+        date: DateTime(2026, 6, 21),
+        location: sydney,
+      );
+      final summer = PanchangEngine.calculateDailyPanchang(
+        date: DateTime(2026, 12, 21),
+        location: sydney,
+      );
+
+      expect(winter.daylightDuration.inMinutes, lessThan(600)); // < 10h
+      expect(summer.daylightDuration.inMinutes, greaterThan(840)); // > 14h
+    });
+
+    test('GeoLocation JSON serialization roundtrip preserves custom coordinates', () {
+      final original = GeoLocation.custom(
+        latitude: 18.5204,
+        longitude: 73.8567,
+        name: 'Pune Studio',
+        timezoneOffsetHours: 5.5,
+        elevationMeters: 560.0,
+      );
+
+      final jsonMap = original.toJson();
+      final restored = GeoLocation.fromJson(jsonMap);
+
+      expect(restored.name, equals(original.name));
+      expect(restored.latitude, equals(original.latitude));
+      expect(restored.longitude, equals(original.longitude));
+      expect(restored.timezoneOffsetHours, equals(original.timezoneOffsetHours));
+      expect(restored.elevationMeters, equals(original.elevationMeters));
+      expect(restored.formattedCoordinates, equals(original.formattedCoordinates));
+    });
   });
 }
