@@ -8,6 +8,7 @@ class LevelInfo {
   final int minTapas;
   final int nextLevelTapas;
   final String ratioDescription;
+  final List<int> ratio; // [puraka, antar, rechaka, bahya] in seconds
   final int kapalbhatiStrokes;
   final List<String> unlockedSeals;
   final String featureHighlight;
@@ -19,6 +20,7 @@ class LevelInfo {
     required this.minTapas,
     required this.nextLevelTapas,
     required this.ratioDescription,
+    required this.ratio,
     required this.kapalbhatiStrokes,
     required this.unlockedSeals,
     required this.featureHighlight,
@@ -35,6 +37,7 @@ class UserProgression {
   final int dailyStreak;
   final List<String> earnedSeals;
   final String ratioDescription;
+  final List<int> ratio;
   final int kapalbhatiStrokes;
   final String featureHighlight;
 
@@ -48,6 +51,7 @@ class UserProgression {
     required this.dailyStreak,
     required this.earnedSeals,
     required this.ratioDescription,
+    required this.ratio,
     required this.kapalbhatiStrokes,
     required this.featureHighlight,
   });
@@ -67,6 +71,7 @@ class ProgressionService {
       minTapas: 0,
       nextLevelTapas: 300,
       ratioDescription: '1:0:1:0 (Natural Rhythm)',
+      ratio: [4, 0, 4, 0],
       kapalbhatiStrokes: 30,
       unlockedSeals: ['Gyan Mudra', 'Chin Mudra'],
       featureHighlight: 'Gentle 4s In : 4s Out breath pacer',
@@ -78,6 +83,7 @@ class ProgressionService {
       minTapas: 300,
       nextLevelTapas: 750,
       ratioDescription: '1:0:2:0 (Extended Exhale)',
+      ratio: [4, 0, 8, 0],
       kapalbhatiStrokes: 45,
       unlockedSeals: ['Gyan Mudra', 'Chin Mudra', 'Dhyana Mudra'],
       featureHighlight: '1:0:2:0 Parasympathetic deep relaxation',
@@ -89,6 +95,7 @@ class ProgressionService {
       minTapas: 750,
       nextLevelTapas: 1500,
       ratioDescription: '1:1:2:0 (Antar Kumbhaka)',
+      ratio: [4, 4, 8, 0],
       kapalbhatiStrokes: 60,
       unlockedSeals: ['Gyan Mudra', 'Chin Mudra', 'Dhyana Mudra', 'Nasika Mudra', 'Jalandhara Bandha'],
       featureHighlight: 'Internal breath hold + Jalandhara Bandha cue',
@@ -100,6 +107,7 @@ class ProgressionService {
       minTapas: 1500,
       nextLevelTapas: 2500,
       ratioDescription: '1:2:2:0 (Vital Energy)',
+      ratio: [4, 8, 8, 0],
       kapalbhatiStrokes: 80,
       unlockedSeals: ['Gyan Mudra', 'Chin Mudra', 'Dhyana Mudra', 'Nasika Mudra', 'Jalandhara Bandha', 'Shanmukhi Mudra', 'Mula Bandha'],
       featureHighlight: 'Bhastrika (Bellows breath) & Mula Bandha',
@@ -111,6 +119,7 @@ class ProgressionService {
       minTapas: 2500,
       nextLevelTapas: 4000,
       ratioDescription: '1:4:2:0 (Classical Kumbhaka)',
+      ratio: [4, 16, 8, 0],
       kapalbhatiStrokes: 100,
       unlockedSeals: ['Gyan Mudra', 'Chin Mudra', 'Dhyana Mudra', 'Nasika Mudra', 'Jalandhara Bandha', 'Shanmukhi Mudra', 'Mula Bandha', 'Prana Mudra'],
       featureHighlight: 'Deep classical 1:4:2:0 retention ladder',
@@ -122,6 +131,7 @@ class ProgressionService {
       minTapas: 4000,
       nextLevelTapas: 6000,
       ratioDescription: '1:4:2:2 (Bahya Retention)',
+      ratio: [4, 16, 8, 8],
       kapalbhatiStrokes: 120,
       unlockedSeals: ['Gyan Mudra', 'Chin Mudra', 'Dhyana Mudra', 'Nasika Mudra', 'Jalandhara Bandha', 'Shanmukhi Mudra', 'Mula Bandha', 'Uddiyana Bandha', 'Maha Bandha'],
       featureHighlight: 'Bahya Kumbhaka + Maha Bandha (Tri-lock)',
@@ -133,6 +143,7 @@ class ProgressionService {
       minTapas: 6000,
       nextLevelTapas: 10000,
       ratioDescription: 'Samadhi Dhyana Pacing',
+      ratio: [6, 24, 12, 0],
       kapalbhatiStrokes: 120,
       unlockedSeals: ['Gyan Mudra', 'Chin Mudra', 'Dhyana Mudra', 'Nasika Mudra', 'Jalandhara Bandha', 'Shanmukhi Mudra', 'Mula Bandha', 'Uddiyana Bandha', 'Maha Bandha', 'Shambhavi Mudra'],
       featureHighlight: 'Shambhavi Mudra & Silent Ajapa Japa',
@@ -185,6 +196,7 @@ class ProgressionService {
       dailyStreak: streak,
       earnedSeals: currentLevelInfo.unlockedSeals,
       ratioDescription: currentLevelInfo.ratioDescription,
+      ratio: currentLevelInfo.ratio,
       kapalbhatiStrokes: currentLevelInfo.kapalbhatiStrokes,
       featureHighlight: currentLevelInfo.featureHighlight,
     );

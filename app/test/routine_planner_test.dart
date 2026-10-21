@@ -118,21 +118,30 @@ void main() {
       expect(l1.title, contains('Prarambha'));
       expect(l1.kapalbhatiStrokes, equals(30));
       expect(l1.unlockedSeals, contains('Gyan Mudra'));
+      expect(l1.ratio, equals([4, 0, 4, 0]));
 
       expect(l2.title, contains('Abhyasi'));
       expect(l2.ratioDescription, contains('1:0:2:0'));
+      expect(l2.ratio, equals([4, 0, 8, 0]));
 
       expect(l3.title, contains('Antaranga'));
       expect(l3.unlockedSeals, contains('Jalandhara Bandha'));
+      expect(l3.ratio, equals([4, 4, 8, 0]));
+
+      expect(l4.title, contains('Shaktiman'));
+      expect(l4.ratio, equals([4, 8, 8, 0]));
 
       expect(l5.title, contains('Kumbhaka Siddha'));
       expect(l5.ratioDescription, contains('1:4:2:0'));
+      expect(l5.ratio, equals([4, 16, 8, 0]));
 
       expect(l6.title, contains('Bandha Yogi'));
       expect(l6.unlockedSeals, contains('Maha Bandha'));
+      expect(l6.ratio, equals([4, 16, 8, 8]));
 
       expect(l7.title, contains('Dhyani'));
       expect(l7.unlockedSeals, contains('Shambhavi Mudra'));
+      expect(l7.ratio, equals([6, 24, 12, 0]));
     });
 
     test('User with zero sessions starts at Level 1 with 0 Tapas', () async {

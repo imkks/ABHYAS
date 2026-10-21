@@ -149,6 +149,12 @@ class _PracticeListScreenState extends State<PracticeListScreen> {
                           : Icon(Icons.lock, color: Colors.grey, size: 20),
                       onTap: canPractice
                           ? () {
+                              List<int>? practiceRatio;
+                              if (level.ratioLadder.isNotEmpty) {
+                                final rawRatio = level.ratioLadder.first;
+                                final baseMatra = level.baseCount > 0 ? level.baseCount : 4;
+                                practiceRatio = rawRatio.map((r) => r * baseMatra).toList();
+                              }
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -156,6 +162,7 @@ class _PracticeListScreenState extends State<PracticeListScreen> {
                                     safetyProfile: widget.safetyProfile,
                                     practiceName: displayName,
                                     practiceId: practiceId,
+                                    ratio: practiceRatio,
                                   ),
                                 ),
                               );

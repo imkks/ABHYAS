@@ -26,6 +26,7 @@ class CycleStep {
   final bool isRequired;
   bool isEnabled;
   final bool isPranayamaWithPacer;
+  final List<int>? ratio;
 
   CycleStep({
     required this.id,
@@ -35,6 +36,7 @@ class CycleStep {
     this.isRequired = false,
     this.isEnabled = true,
     this.isPranayamaWithPacer = false,
+    this.ratio,
   });
 
   CycleStep copyWith({
@@ -45,6 +47,7 @@ class CycleStep {
     bool? isRequired,
     bool? isEnabled,
     bool? isPranayamaWithPacer,
+    List<int>? ratio,
   }) {
     return CycleStep(
       id: id ?? this.id,
@@ -54,6 +57,7 @@ class CycleStep {
       isRequired: isRequired ?? this.isRequired,
       isEnabled: isEnabled ?? this.isEnabled,
       isPranayamaWithPacer: isPranayamaWithPacer ?? this.isPranayamaWithPacer,
+      ratio: ratio ?? this.ratio,
     );
   }
 }
@@ -139,14 +143,14 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
         _steps = [
           CycleStep(id: 'sankalp', title: 'Sankalp & Invocation', subtitle: 'Setting sacred intention', durationMinutes: 2),
           CycleStep(id: 'kapalbhati', title: 'Kapalbhati (Level $level)', subtitle: kapalbhatiSub, durationMinutes: 3, isPranayamaWithPacer: true),
-          CycleStep(id: 'nadi_shodhana', title: 'Nadi Shodhana (Level $level)', subtitle: nadiSub, durationMinutes: 5, isPranayamaWithPacer: true),
+          CycleStep(id: 'nadi_shodhana', title: 'Nadi Shodhana (Level $level)', subtitle: nadiSub, durationMinutes: 5, isPranayamaWithPacer: true, ratio: levelInfo.ratio),
           CycleStep(id: 'breath_awareness', title: 'Breath Awareness Dhyan', subtitle: 'Witnessing natural stillness', durationMinutes: 5),
         ];
       } else if (duration <= 25) {
         _steps = [
           CycleStep(id: 'sankalp', title: 'Sankalp & Invocation', subtitle: 'Setting intention', durationMinutes: 2),
           CycleStep(id: 'kapalbhati', title: 'Kapalbhati (Level $level)', subtitle: kapalbhatiSub, durationMinutes: 4, isPranayamaWithPacer: true),
-          CycleStep(id: 'nadi_shodhana', title: 'Nadi Shodhana (Level $level)', subtitle: nadiSub, durationMinutes: 6, isPranayamaWithPacer: true),
+          CycleStep(id: 'nadi_shodhana', title: 'Nadi Shodhana (Level $level)', subtitle: nadiSub, durationMinutes: 6, isPranayamaWithPacer: true, ratio: levelInfo.ratio),
           CycleStep(id: 'ujjayi', title: 'Ujjayi Pranayama', subtitle: ujjayiSub, durationMinutes: 3, isPranayamaWithPacer: true),
           CycleStep(id: 'breath_awareness', title: 'Breath Awareness Dhyan', subtitle: 'Stillness meditation', durationMinutes: 8),
           CycleStep(id: 'shanti_path', title: 'Shanti Path', subtitle: 'Peace closing prayer', durationMinutes: 2),
@@ -157,7 +161,7 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
           CycleStep(id: 'sankalp', title: 'Sankalp & Invocation', subtitle: 'Setting intention & Om', durationMinutes: 2),
           CycleStep(id: 'warmup', title: 'Sukshma Vyayama', subtitle: 'Gentle joint loosening', durationMinutes: 2),
           CycleStep(id: 'kapalbhati', title: 'Kapalbhati (Level $level)', subtitle: kapalbhatiSub, durationMinutes: 4, isPranayamaWithPacer: true),
-          CycleStep(id: 'nadi_shodhana', title: 'Nadi Shodhana (Level $level)', subtitle: nadiSub, durationMinutes: 8, isPranayamaWithPacer: true),
+          CycleStep(id: 'nadi_shodhana', title: 'Nadi Shodhana (Level $level)', subtitle: nadiSub, durationMinutes: 8, isPranayamaWithPacer: true, ratio: levelInfo.ratio),
           CycleStep(id: 'ujjayi', title: 'Ujjayi Pranayama', subtitle: ujjayiSub, durationMinutes: 4, isPranayamaWithPacer: true),
           CycleStep(id: 'breath_awareness', title: 'Breath Awareness Dhyan', subtitle: 'Witnessing stillness', durationMinutes: 8),
           CycleStep(id: 'shanti_path', title: 'Shanti Path', subtitle: 'Universal peace chant', durationMinutes: 2),
@@ -168,7 +172,7 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
           CycleStep(id: 'sankalp', title: 'Sankalp & Invocation', subtitle: 'Setting sacred intention', durationMinutes: 3),
           CycleStep(id: 'warmup', title: 'Sukshma Vyayama', subtitle: 'Prana loosening', durationMinutes: 4),
           CycleStep(id: 'kapalbhati', title: 'Kapalbhati (Level $level)', subtitle: kapalbhatiSub, durationMinutes: 6, isPranayamaWithPacer: true),
-          CycleStep(id: 'nadi_shodhana', title: 'Nadi Shodhana (Level $level)', subtitle: nadiSub, durationMinutes: 10, isPranayamaWithPacer: true),
+          CycleStep(id: 'nadi_shodhana', title: 'Nadi Shodhana (Level $level)', subtitle: nadiSub, durationMinutes: 10, isPranayamaWithPacer: true, ratio: levelInfo.ratio),
           CycleStep(id: 'bhastrika', title: 'Bhastrika / Surya Bhedana', subtitle: 'Vital solar activation', durationMinutes: 5, isPranayamaWithPacer: true),
           CycleStep(id: 'ujjayi', title: 'Ujjayi Pranayama', subtitle: ujjayiSub, durationMinutes: 5, isPranayamaWithPacer: true),
           CycleStep(id: 'breath_awareness', title: 'Antar Mouna / Dhyan', subtitle: 'Deep meditative stillness', durationMinutes: 10),
@@ -400,6 +404,7 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
       durationSeconds: s.durationMinutes * 60,
       isRequired: s.isRequired,
       isPranayamaWithPacer: s.isPranayamaWithPacer,
+      ratio: s.ratio,
     )).toList();
 
     final profile = await UserRepository().loadProfile() ?? SafetyProfile();
