@@ -66,4 +66,10 @@ As per the task brief, the following assumptions were made regarding the design,
 * Morning Surya Routine dynamically adapts to user rank: higher Kapalbhati stroke targets (30 -> 120), deeper breath retention ladders (from 1:0:1:0 up to classical 1:4:2:2 Kumbhaka), and unlocks authentic Mudras/Bandhas (Gyan Mudra up to Maha Bandha).
 * Strictly upholds non-competitive design: no leaderboards, no social comparison, no streak-loss shaming, focusing purely on personal self-mastery.
 
+## Dynamic Ratio Customization & 1-Minute Breath Capacity Diagnostic
+* Practitioners can fully customize their Pranayama breath ratios (Puraka, Antar Kumbhaka, Rechaka, Bahya Kumbhaka) in `CycleComposerScreen` via an interactive bottom sheet or choose from classical presets (`1:0:1:0` to `1:4:2:2`).
+* Integrated `BreathCapacityTestScreen` (Sopana Pariksha): a 1-minute guided breath exercise (3 centering breaths -> 1 deep inhale -> comfortable hold until first urge) to measure Comfortable Hold Time (CHT).
+* The diagnostic maps CHT to the practitioner's apt Sopana level (<15s -> Level 1, 15-25s -> Level 2, 25-40s -> Level 3, 40-60s -> Level 4, 60s+ -> Level 5), calibrates their active rank in `ProgressionService`, and sets the safe hold cap (`CHT * 0.60`).
+
+
 
