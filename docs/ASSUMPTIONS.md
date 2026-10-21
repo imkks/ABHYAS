@@ -30,3 +30,23 @@ As per the task brief, the following assumptions were made regarding the design,
 
 ## Backend
 * Local testing of APK doesn't require backend interaction right now since Phase 1 includes no backend features. We will mock everything needed to run.
+
+## Self-Mastery & Open Access Mode (Bypassing Teacher Plan)
+* The teacher sign-off gate in `GuruAnumatiWorkflow` has been put into idle/bypass mode via `_openAccessMode = true` (default). All 7 Sopana levels and practices are open to the practitioner for self-guided exploration and daily practice.
+* Non-blocking safety advisories remain active in `SafetyRulesEngine` and post-session check-ins to alert users if contraindications are present.
+
+## Dynamic Routine Planner & Signature Presets
+* `CycleComposerScreen` is upgraded to support time-adaptive scheduling (10m, 15m, 20m, 25m, 30m, 45m, 60m).
+* Two signature presets are provided:
+  - **Surya Abhyas (Morning Vitality - 30m default)**: Invocation, Kapalbhati, Nadi Shodhana, Ujjayi, and Breath Awareness Dhyan.
+  - **Chandra Abhyas (Night Bedtime - 25m default)**: Naam Jaap (108 beads), Bhramari Pranayama, and guided Yoga Nidra.
+* Step durations can be customized directly with `+1m` / `-1m` steppers, steps can be reordered, and new exercises can be added from an expandable catalog.
+
+## Custom Mantra & Digital Mala Engine
+* `DhyanScreen` features a customizable Digital Mala supporting 27, 54, 108, or continuous bead counting with haptic pulses and Meru bead completion alerts.
+* Practitioners can select from classical mantras (*Om, Om Namah Shivaya, Hare Krishna, Gayatri, Soham, Ram*) or save their own custom mantras and Ishta Devata Naam to local storage.
+
+## "See the Difference" Reflection & Metrics
+* `PostSessionCheckinScreen` incorporates a Calmness Score (1–10 slider) and computes the Calmness Delta (post - pre) to visually demonstrate transformation.
+* `SessionRepository` persists calmness scores and physical sensations, calculating average calmness improvement and total practice time for display on `ProgressScreen`.
+

@@ -111,16 +111,77 @@ class _TodayScreenState extends State<TodayScreen> {
 
                   PanchangMuhurtaCard(),
                   const SizedBox(height: 16),
+                  _buildQuickTimeSelector(context),
+                  const SizedBox(height: 16),
                   _buildSankalpCard(context),
                   const SizedBox(height: 16),
-                  _buildPracticeCard(context),
+                  _buildMorningPracticeCard(context),
+                  const SizedBox(height: 16),
+                  _buildEveningPracticeCard(context),
                   const SizedBox(height: 16),
                   _buildMalaCard(),
-                  const SizedBox(height: 16),
-                  _buildEveningCard(context),
                 ],
               ),
             ),
+    );
+  }
+
+  Widget _buildQuickTimeSelector(BuildContext context) {
+    return Card(
+      color: AbhyasTheme.darkSurface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: AbhyasTheme.line),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.av_timer, color: AbhyasTheme.saffron, size: 18),
+                const SizedBox(width: 8),
+                const Text(
+                  'How much time do you have today?',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [10, 15, 20, 30, 45].map((mins) {
+                return InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CycleComposerScreen(
+                          initialDuration: mins,
+                        ),
+                      ),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AbhyasTheme.darkSurfaceAlt,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AbhyasTheme.line),
+                    ),
+                    child: Text(
+                      '${mins}m',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -139,7 +200,7 @@ class _TodayScreenState extends State<TodayScreen> {
     );
   }
 
-  Widget _buildPracticeCard(BuildContext context) {
+  Widget _buildMorningPracticeCard(BuildContext context) {
     return Card(
       color: AbhyasTheme.saffron.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(
@@ -151,43 +212,74 @@ class _TodayScreenState extends State<TodayScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Today\'s Practice Cycle',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AbhyasTheme.saffron,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  '🌅 Morning Surya Abhyas',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AbhyasTheme.saffron,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AbhyasTheme.saffron.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text('30 min', style: TextStyle(color: AbhyasTheme.saffron, fontSize: 12, fontWeight: FontWeight.bold)),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
-            const Text('Full cycle · 30 min', style: TextStyle(color: AbhyasTheme.darkInkSoft)),
             const Text(
-              'Kapalbhati → Nadi Shodhana → Ujjayi',
-              style: TextStyle(color: AbhyasTheme.darkInkSoft),
+              'Kapalbhati → Nadi Shodhana → Ujjayi → Breath Awareness Dhyan',
+              style: TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 13),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
                   child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AbhyasTheme.saffron,
+                      foregroundColor: Colors.black,
+                      elevation: 2,
+                    ),
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => CycleComposerScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => const CycleComposerScreen(
+                            initialPreset: RoutinePreset.surya,
+                            initialDuration: 30,
+                          ),
+                        ),
                       );
                     },
-                    child: const Text('Begin Cycle'),
+                    child: const Text('Begin Morning Routine', style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
                 OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: AbhyasTheme.line),
+                  ),
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => CycleComposerScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const CycleComposerScreen(
+                          initialPreset: RoutinePreset.surya,
+                          initialDuration: 30,
+                        ),
+                      ),
                     );
                   },
-                  child: const Text('Adjust'),
+                  child: const Text('Customize'),
                 ),
               ],
             ),
@@ -197,50 +289,96 @@ class _TodayScreenState extends State<TodayScreen> {
     );
   }
 
-  Widget _buildMalaCard() {
+  Widget _buildEveningPracticeCard(BuildContext context) {
     return Card(
-      child: ListTile(
-        leading: const Icon(Icons.spa, color: AbhyasTheme.saffron),
-        title: const Text('Mala Progress'),
-        subtitle: Column(
+      color: Colors.indigo.shade900.withValues(alpha: 0.25),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(color: Colors.indigo.shade400, width: 1),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 4),
-            LinearProgressIndicator(
-              value: _malaCount / 108.0,
-              color: AbhyasTheme.saffron,
-              backgroundColor: AbhyasTheme.darkSurfaceAlt,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.bedtime, color: Colors.indigo.shade300, size: 20),
+                    const SizedBox(width: 6),
+                    Text(
+                      '🌙 Bedtime Chandra Abhyas',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.indigo.shade200,
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.indigo.shade800.withValues(alpha: 0.4),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text('25 min', style: TextStyle(color: Colors.indigo.shade200, fontSize: 12, fontWeight: FontWeight.bold)),
+                ),
+              ],
             ),
-            const SizedBox(height: 4),
-            Text('$_malaCount of 108 beads completed', style: const TextStyle(fontSize: 12)),
+            const SizedBox(height: 8),
+            const Text(
+              'Naam Jaap (108 beads) → Bhramari → Guided Yoga Nidra',
+              style: TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 13),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.indigo.shade400,
+                      foregroundColor: Colors.white,
+                      elevation: 2,
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const CycleComposerScreen(
+                            initialPreset: RoutinePreset.chandra,
+                            initialDuration: 25,
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text('Begin Bedtime Routine', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: AbhyasTheme.line),
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CycleComposerScreen(
+                          initialPreset: RoutinePreset.chandra,
+                          initialDuration: 25,
+                        ),
+                      ),
+                    );
+                  },
+                  child: const Text('Customize'),
+                ),
+              ],
+            ),
           ],
-        ),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => DhyanScreen()),
-          ).then((_) => _loadTodayData());
-        },
-      ),
-    );
-  }
-
-  Widget _buildEveningCard(BuildContext context) {
-    return Card(
-      child: ListTile(
-        leading: Icon(Icons.bedtime, color: Colors.indigo.shade300),
-        title: const Text('Evening Practice'),
-        subtitle: const Text('Yoga Nidra · 20 min'),
-        trailing: ElevatedButton(
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo.shade400),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => DhyanScreen()),
-            ).then((_) => _loadTodayData());
-          },
-          child: const Text('Go to Dhyan'),
         ),
       ),
     );

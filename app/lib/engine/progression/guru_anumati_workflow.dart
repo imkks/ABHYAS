@@ -46,6 +46,7 @@ class UnlockRequest {
 
 class GuruAnumatiWorkflow {
   static const String _storageKey = 'guru_anumati_requests';
+  static const String _openAccessKey = 'guru_anumati_open_access';
   static final GuruAnumatiWorkflow _instance = GuruAnumatiWorkflow._internal();
   factory GuruAnumatiWorkflow() => _instance;
 
@@ -54,12 +55,20 @@ class GuruAnumatiWorkflow {
   }
 
   final List<UnlockRequest> _requests = [];
+  bool _openAccessMode = true; // Open access mode: bypasses teacher gating to grant full user access
 
   List<UnlockRequest> get requests => List.unmodifiable(_requests);
+  bool get openAccessMode => _openAccessMode;
+
+  set openAccessMode(bool value) {
+    _openAccessMode = value;
+    _saveToDisk();
+  }
 
   Future<void> _loadFromDisk() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      _openAccessMode = prefs.getBool(_openAccessKey) ?? true;
       final rawList = prefs.getStringList(_storageKey);
       if (rawList != null) {
         _requests.clear();
@@ -75,6 +84,7 @@ class GuruAnumatiWorkflow {
   Future<void> _saveToDisk() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_openAccessKey, _openAccessMode);
       final rawList = _requests.map((r) => json.encode(r.toJson())).toList();
       await prefs.setStringList(_storageKey, rawList);
     } catch (_) {}
@@ -107,6 +117,8 @@ class GuruAnumatiWorkflow {
   }
 
   bool isLevelApproved(int level) {
+    // If open access mode is enabled (default), user can access and practice all levels directly.
+    if (_openAccessMode) return true;
     return _requests.any((r) => r.requestedLevel == level && r.status == UnlockStatus.approved);
   }
 }

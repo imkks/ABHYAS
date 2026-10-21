@@ -67,8 +67,8 @@ class _MainLayoutState extends State<MainLayout> {
             label: 'Dhyan',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.local_fire_department),
-            label: 'Rituals',
+            icon: Icon(Icons.menu_book),
+            label: 'Vidyapeeth',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),

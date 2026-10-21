@@ -21,6 +21,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
   final UserRepository _userRepo = UserRepository();
 
   int _tapasCount = 0;
+  int _totalPracticeMinutes = 0;
+  double _avgCalmnessDelta = 0.0;
   double _chtSeconds = 0.0;
   int _currentLevel = 1;
   bool _loading = true;
@@ -33,6 +35,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
   Future<void> _loadStats() async {
     final tapas = await _sessionRepo.getTapasCount();
+    final totalMins = await _sessionRepo.getTotalPracticeMinutes();
+    final delta = await _sessionRepo.getAverageCalmnessDelta();
     final benchmark = await _userRepo.loadChtBenchmark();
     final avgHold = await _sessionRepo.getAverageHold();
 
@@ -47,6 +51,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
     if (mounted) {
       setState(() {
         _tapasCount = tapas;
+        _totalPracticeMinutes = totalMins;
+        _avgCalmnessDelta = delta;
         _chtSeconds = benchmark ?? (avgHold > 0 ? avgHold : 20.0);
         _currentLevel = level;
         _loading = false;
@@ -98,31 +104,45 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 padding: const EdgeInsets.all(24),
                 children: [
                   PanchangTithiBanner(),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 20),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: AbhyasTheme.saffron.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AbhyasTheme.saffron.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.workspace_premium, color: AbhyasTheme.saffron, size: 24),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Self-Mastery Mode Active',
+                                style: TextStyle(fontWeight: FontWeight.bold, color: AbhyasTheme.saffron, fontSize: 13),
+                              ),
+                              SizedBox(height: 2),
+                              Text(
+                                'All 7 Sopana levels are unlocked for personal practice & exploration.',
+                                style: TextStyle(color: Colors.white70, fontSize: 11),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       _buildCircularStat('Tapas', '$_tapasCount', Colors.deepOrange),
-                      _buildCircularStat(
-                        'Sopana',
-                        '$_currentLevel',
-                        Colors.blue,
-                        onTap: () async {
-                          final userRepo = UserRepository();
-                          final profile = await userRepo.loadProfile();
-                          if (!context.mounted) return;
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => PathMapScreen(
-                                safetyProfile: profile ?? SafetyProfile(),
-                              ),
-                            ),
-                          );
-                          if (mounted) _loadStats();
-                        },
-                      ),
-                      _buildCircularStat('CHT', '${_chtSeconds.toStringAsFixed(0)}s', Colors.teal),
+                      _buildCircularStat('Minutes', '$_totalPracticeMinutes', Colors.amber),
+                      _buildCircularStat('Calm Shift', _avgCalmnessDelta > 0 ? '+${(_avgCalmnessDelta * 10).round()}%' : '--', Colors.teal),
+                      _buildCircularStat('CHT', '${_chtSeconds.toStringAsFixed(0)}s', Colors.blue),
                     ],
                   ),
                   const SizedBox(height: 20),

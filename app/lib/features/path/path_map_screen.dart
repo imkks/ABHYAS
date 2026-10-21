@@ -49,6 +49,27 @@ class _PathMapScreenState extends State<PathMapScreen> {
             'From foundational breath awareness to advanced internal absorption.',
             style: TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 14),
           ),
+          SizedBox(height: 16),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: AbhyasTheme.saffron.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AbhyasTheme.saffron.withValues(alpha: 0.35)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.workspace_premium, color: AbhyasTheme.saffron, size: 20),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Self-Mastery Mode: All 7 Sopana levels are open for practice and exploration.',
+                    style: TextStyle(fontSize: 12, color: AbhyasTheme.saffron, fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
+            ),
+          ),
           SizedBox(height: 24),
 
           // Vertical timeline of the 7 levels

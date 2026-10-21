@@ -60,7 +60,7 @@ class _PracticeListScreenState extends State<PracticeListScreen> {
             child: ListTile(
               leading: Icon(Icons.alt_route, color: AbhyasTheme.saffron),
               title: Text('Sopana Path Roadmap', style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text('View the 7-level path & submit Guru Anumati requests'),
+              subtitle: Text('View the 7-level path to self-mastery'),
               trailing: Icon(Icons.arrow_forward_ios, size: 14),
               onTap: () {
                 Navigator.push(
