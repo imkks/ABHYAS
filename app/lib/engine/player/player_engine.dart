@@ -16,12 +16,27 @@ class PlayerEngine {
 
   Stopwatch _stopwatch = Stopwatch();
   Timer? _timer;
+  int _currentCycle = 1;
+  final int? targetCycles;
 
   PlayerEngine({
     required this.holdCapFractionOfCht,
     required this.levelCapSeconds,
     required this.userChtSeconds,
+    this.targetCycles,
   });
+
+  int get currentCycle => _currentCycle;
+  bool get isTargetCyclesReached =>
+      targetCycles != null && _currentCycle > targetCycles!;
+
+  void incrementCycle() {
+    _currentCycle++;
+  }
+
+  void resetCycles() {
+    _currentCycle = 1;
+  }
 
   void startTimer(Function(int) onTick) {
     _stopwatch.start();
@@ -71,6 +86,7 @@ class PlayerEngine {
       case PracticePhase.rechaka:
         return PracticePhase.bahyaKumbhaka;
       case PracticePhase.bahyaKumbhaka:
+        _currentCycle++;
         return PracticePhase.puraka;
       case PracticePhase.naturalBreath:
         return PracticePhase.puraka;
