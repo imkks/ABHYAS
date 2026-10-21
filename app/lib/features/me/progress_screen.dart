@@ -102,7 +102,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const BreathCapacityTestScreen()),
-                      ).then((_) => _loadProgressData());
+                      ).then((_) => _loadStats());
                     },
                     borderRadius: BorderRadius.circular(10),
                     child: Container(

@@ -438,7 +438,7 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const BreathCapacityTestScreen()),
-              ).then((_) => _initUserData());
+              ).then((_) => _initLevelAndSteps());
             },
           ),
           IconButton(
@@ -1151,7 +1151,7 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const BreathCapacityTestScreen()),
-                      ).then((_) => _initUserData());
+                      ).then((_) => _initLevelAndSteps());
                     },
                     borderRadius: BorderRadius.circular(10),
                     child: Container(
