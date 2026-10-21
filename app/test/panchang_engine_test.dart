@@ -3,6 +3,7 @@ import 'package:abhyas/engine/panchang/solar_calculator.dart';
 import 'package:abhyas/engine/panchang/panchang_models.dart';
 import 'package:abhyas/engine/panchang/panchang_engine.dart';
 import 'package:abhyas/engine/panchang/panchang_service.dart';
+import 'package:abhyas/core/location_service.dart';
 
 void main() {
   group('SolarCalculator Astronomical Engine Tests', () {
@@ -380,6 +381,33 @@ void main() {
       expect(restored.timezoneOffsetHours, equals(original.timezoneOffsetHours));
       expect(restored.elevationMeters, equals(original.elevationMeters));
       expect(restored.formattedCoordinates, equals(original.formattedCoordinates));
+    });
+
+    test('LocationFetchResult models granted and denied states cleanly', () {
+      final loc = GeoLocation.custom(
+        latitude: 25.3176,
+        longitude: 82.9739,
+        name: 'Device Location (GPS)',
+      );
+
+      final successResult = LocationFetchResult.success(loc);
+      expect(successResult.success, isTrue);
+      expect(successResult.state, equals(LocationPermissionState.granted));
+      expect(successResult.location?.name, equals('Device Location (GPS)'));
+
+      final deniedResult = LocationFetchResult.failure(
+        LocationPermissionState.denied,
+        'Permission denied by user',
+      );
+      expect(deniedResult.success, isFalse);
+      expect(deniedResult.state, equals(LocationPermissionState.denied));
+      expect(deniedResult.errorMessage, contains('Permission denied'));
+
+      final disabledResult = LocationFetchResult.failure(
+        LocationPermissionState.serviceDisabled,
+        'GPS disabled',
+      );
+      expect(disabledResult.state, equals(LocationPermissionState.serviceDisabled));
     });
   });
 }

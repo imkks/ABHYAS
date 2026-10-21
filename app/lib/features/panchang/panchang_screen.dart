@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import '../../core/location_service.dart';
 import '../../core/theme.dart';
 import '../../engine/panchang/panchang_engine.dart';
 import '../../engine/panchang/panchang_models.dart';
@@ -219,6 +221,66 @@ class _PanchangScreenState extends State<PanchangScreen> {
     );
   }
 
+  Future<void> _detectDeviceLocation() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const Center(
+        child: Card(
+          color: AbhyasTheme.darkSurface,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(color: AbhyasTheme.saffron),
+                SizedBox(width: 16),
+                Text('Acquiring GPS location...', style: TextStyle(color: AbhyasTheme.darkInk)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final result = await DeviceLocationService().fetchCurrentLocation();
+
+    if (mounted) {
+      Navigator.pop(context); // dismiss loading dialog
+    }
+
+    if (result.success && result.location != null) {
+      await _panchangService.setLocation(result.location!);
+      if (mounted) {
+        setState(() {});
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Location set to GPS: ${result.location!.formattedCoordinates}',
+            ),
+            backgroundColor: AbhyasTheme.leaf,
+          ),
+        );
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.errorMessage ?? 'Unable to acquire device location'),
+            backgroundColor: AbhyasTheme.clay,
+            action: result.state == LocationPermissionState.deniedForever
+                ? SnackBarAction(
+                    label: 'Settings',
+                    textColor: Colors.white,
+                    onPressed: () => Geolocator.openAppSettings(),
+                  )
+                : null,
+          ),
+        );
+      }
+    }
+  }
+
   void _showLocationPicker() {
     showModalBottomSheet(
       context: context,
@@ -228,6 +290,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
       ),
       builder: (context) {
         final currentLoc = _panchangService.currentLocation;
+        final isGps = currentLoc.name.contains('GPS');
 
         return SafeArea(
           child: Column(
@@ -256,8 +319,66 @@ class _PanchangScreenState extends State<PanchangScreen> {
                 ),
               ),
               const Divider(height: 1, color: AbhyasTheme.line),
+              // Option 1: Use Current Device Location (GPS)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(14),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _detectDeviceLocation();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: isGps
+                          ? AbhyasTheme.saffron.withValues(alpha: 0.15)
+                          : AbhyasTheme.darkSurfaceAlt,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: isGps ? AbhyasTheme.saffron : AbhyasTheme.line,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.my_location, color: AbhyasTheme.sky, size: 24),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Use Current Location (GPS)',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: AbhyasTheme.darkInk,
+                                ),
+                              ),
+                              Text(
+                                isGps
+                                    ? 'Active: ${currentLoc.formattedCoordinates}'
+                                    : 'Auto-detect via device location permission',
+                                style: const TextStyle(
+                                  color: AbhyasTheme.darkInkSoft,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (isGps)
+                          const Icon(Icons.check_circle, color: AbhyasTheme.saffron, size: 20)
+                        else
+                          const Icon(Icons.arrow_forward_ios, size: 14, color: AbhyasTheme.darkInkSoft),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              // Option 2: Enter Custom Coordinates Manually
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(14),
                   onTap: () {
@@ -267,12 +388,12 @@ class _PanchangScreenState extends State<PanchangScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
-                      color: currentLoc.isCustom
+                      color: currentLoc.isCustom && !isGps
                           ? AbhyasTheme.saffron.withValues(alpha: 0.15)
                           : AbhyasTheme.darkSurfaceAlt,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: currentLoc.isCustom
+                        color: currentLoc.isCustom && !isGps
                             ? AbhyasTheme.saffron
                             : AbhyasTheme.line,
                       ),
@@ -294,7 +415,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
                                 ),
                               ),
                               Text(
-                                currentLoc.isCustom
+                                currentLoc.isCustom && !isGps
                                     ? 'Active: ${currentLoc.name} (${currentLoc.formattedCoordinates})'
                                     : 'Enter custom GPS latitude & longitude',
                                 style: const TextStyle(
@@ -305,7 +426,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
                             ],
                           ),
                         ),
-                        if (currentLoc.isCustom)
+                        if (currentLoc.isCustom && !isGps)
                           const Icon(Icons.check_circle, color: AbhyasTheme.saffron, size: 20)
                         else
                           const Icon(Icons.arrow_forward_ios, size: 14, color: AbhyasTheme.darkInkSoft),
