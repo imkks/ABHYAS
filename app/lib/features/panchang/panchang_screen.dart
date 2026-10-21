@@ -200,7 +200,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
                   final tz = double.parse(tzController.text.trim());
                   final label = nameController.text.trim();
 
-                  await _panchangService.setCustomCoordinates(
+                  _panchangService.setCustomCoordinates(
                     latitude: lat,
                     longitude: lng,
                     name: label.isNotEmpty ? label : null,
@@ -250,7 +250,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
     }
 
     if (result.success && result.location != null) {
-      await _panchangService.setLocation(result.location!);
+      _panchangService.setLocation(result.location!);
       if (mounted) {
         setState(() {});
         ScaffoldMessenger.of(context).showSnackBar(

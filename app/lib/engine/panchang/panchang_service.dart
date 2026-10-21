@@ -64,29 +64,33 @@ class PanchangService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> setLocation(GeoLocation newLocation) async {
+  void setLocation(GeoLocation newLocation) {
     if (_currentLocation.name != newLocation.name ||
         _currentLocation.latitude != newLocation.latitude ||
         _currentLocation.longitude != newLocation.longitude) {
       _currentLocation = newLocation;
       _cache.clear();
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString(
-            _locationPrefKey, json.encode(newLocation.toJson()));
-      } catch (_) {}
       notifyListeners();
+      _saveLocationToPrefs(newLocation);
     }
   }
 
+  Future<void> _saveLocationToPrefs(GeoLocation loc) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+          _locationPrefKey, json.encode(loc.toJson()));
+    } catch (_) {}
+  }
+
   /// Sets a custom location from exact latitude and longitude coordinates.
-  Future<void> setCustomCoordinates({
+  void setCustomCoordinates({
     required double latitude,
     required double longitude,
     String? name,
     double? timezoneOffsetHours,
     double elevationMeters = 0.0,
-  }) async {
+  }) {
     final customLoc = GeoLocation.custom(
       latitude: latitude,
       longitude: longitude,
@@ -94,7 +98,7 @@ class PanchangService extends ChangeNotifier {
       timezoneOffsetHours: timezoneOffsetHours,
       elevationMeters: elevationMeters,
     );
-    await setLocation(customLoc);
+    setLocation(customLoc);
   }
 
   String _cacheKey(DateTime date, GeoLocation loc) {

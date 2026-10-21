@@ -3,6 +3,7 @@ import 'package:abhyas/engine/panchang/solar_calculator.dart';
 import 'package:abhyas/engine/panchang/panchang_models.dart';
 import 'package:abhyas/engine/panchang/panchang_engine.dart';
 import 'package:abhyas/engine/panchang/panchang_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:abhyas/core/location_service.dart';
 
 void main() {
@@ -275,6 +276,10 @@ void main() {
   });
 
   group('PanchangService State & Persistence Tests', () {
+    setUp(() {
+      SharedPreferences.setMockInitialValues({});
+    });
+
     test('PanchangService is singleton and caches repeated calculations', () {
       final service1 = PanchangService();
       final service2 = PanchangService();
