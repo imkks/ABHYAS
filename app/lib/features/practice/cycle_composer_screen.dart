@@ -83,7 +83,7 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
       // 🌅 Surya Abhyas: Morning Routine
       if (duration <= 15) {
         _steps = [
-          CycleStep(id: 'sankalp', title: 'Sankalp & Invocation', subtitle: 'Setting intention', durationMinutes: 2),
+          CycleStep(id: 'sankalp', title: 'Sankalp & Invocation', subtitle: 'Setting sacred intention', durationMinutes: 2),
           CycleStep(id: 'kapalbhati', title: 'Kapalbhati', subtitle: 'Cleansing abdominal breath', durationMinutes: 3, isPranayamaWithPacer: true),
           CycleStep(id: 'nadi_shodhana', title: 'Nadi Shodhana', subtitle: 'Alternate nostril balancing', durationMinutes: 5, isPranayamaWithPacer: true),
           CycleStep(id: 'breath_awareness', title: 'Breath Awareness Dhyan', subtitle: 'Witnessing natural stillness', durationMinutes: 5),
@@ -101,7 +101,7 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
         // Default 30 min morning routine
         _steps = [
           CycleStep(id: 'sankalp', title: 'Sankalp & Invocation', subtitle: 'Setting intention & Om', durationMinutes: 2),
-          CycleStep(id: 'warmup', title: 'Sukshma Vyayama', subtitle: 'Gentle neck & shoulder loosening', durationMinutes: 2),
+          CycleStep(id: 'warmup', title: 'Sukshma Vyayama', subtitle: 'Gentle joint loosening', durationMinutes: 2),
           CycleStep(id: 'kapalbhati', title: 'Kapalbhati', subtitle: '3 rounds active exhalations', durationMinutes: 4, isPranayamaWithPacer: true),
           CycleStep(id: 'nadi_shodhana', title: 'Nadi Shodhana', subtitle: 'Alternate nostril balance', durationMinutes: 8, isPranayamaWithPacer: true),
           CycleStep(id: 'ujjayi', title: 'Ujjayi Pranayama', subtitle: 'Deep meditative respiration', durationMinutes: 4, isPranayamaWithPacer: true),
@@ -126,33 +126,33 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
       if (duration <= 20) {
         _steps = [
           CycleStep(id: 'naam_jaap', title: 'Naam Jaap (Digital Mala)', subtitle: '108 bead sacred recitation', durationMinutes: 5),
-          CycleStep(id: 'bhramari', title: 'Bhramari Pranayama', subtitle: 'Humming bee breath for vagal calming', durationMinutes: 5, isPranayamaWithPacer: true),
+          CycleStep(id: 'bhramari', title: 'Bhramari Pranayama', subtitle: 'Humming bee breath for calming', durationMinutes: 5, isPranayamaWithPacer: true),
           CycleStep(id: 'yoga_nidra', title: 'Yoga Nidra', subtitle: 'Conscious deep relaxation for sleep', durationMinutes: 10),
         ];
       } else if (duration <= 30) {
         // Default 25-30 min evening routine
         _steps = [
           CycleStep(id: 'naam_jaap', title: 'Naam Jaap (Digital Mala)', subtitle: '108 bead meditative japa', durationMinutes: 5),
-          CycleStep(id: 'bhramari', title: 'Bhramari Pranayama', subtitle: 'Humming bee breath to soothe the nervous system', durationMinutes: 5, isPranayamaWithPacer: true),
-          CycleStep(id: 'yoga_nidra', title: 'Yoga Nidra', subtitle: 'Guided body scanning & conscious deep sleep', durationMinutes: 15),
+          CycleStep(id: 'bhramari', title: 'Bhramari Pranayama', subtitle: 'Humming bee breath to soothe nerves', durationMinutes: 5, isPranayamaWithPacer: true),
+          CycleStep(id: 'yoga_nidra', title: 'Yoga Nidra', subtitle: 'Guided deep conscious sleep', durationMinutes: 15),
         ];
       } else {
         // 40m - 45m extended evening relaxation
         _steps = [
-          CycleStep(id: 'naam_jaap', title: 'Naam Jaap (Digital Mala)', subtitle: 'Extended Japa with chosen mantra', durationMinutes: 10),
+          CycleStep(id: 'naam_jaap', title: 'Naam Jaap (Digital Mala)', subtitle: 'Extended Japa recitation', durationMinutes: 10),
           CycleStep(id: 'sheetali', title: 'Sheetali / Chandra Bhedana', subtitle: 'Cooling lunar breath', durationMinutes: 5, isPranayamaWithPacer: true),
           CycleStep(id: 'bhramari', title: 'Bhramari Pranayama', subtitle: 'Deep humming vibration', durationMinutes: 5, isPranayamaWithPacer: true),
-          CycleStep(id: 'yoga_nidra', title: 'Yoga Nidra', subtitle: 'Full 20-minute psychic sleep induction', durationMinutes: 20),
+          CycleStep(id: 'yoga_nidra', title: 'Yoga Nidra', subtitle: 'Full 20-min psychic sleep induction', durationMinutes: 20),
         ];
       }
     } else {
       // ⚙️ Custom / Modular Routine
       _steps = [
-        CycleStep(id: 'sankalp', title: 'Sankalp & Invocation', subtitle: 'Intention', durationMinutes: 2),
-        CycleStep(id: 'kapalbhati', title: 'Kapalbhati', subtitle: 'Cleansing', durationMinutes: 4, isPranayamaWithPacer: true),
-        CycleStep(id: 'nadi_shodhana', title: 'Nadi Shodhana', subtitle: 'Balancing', durationMinutes: 6, isPranayamaWithPacer: true),
-        CycleStep(id: 'bhramari', title: 'Bhramari', subtitle: 'Calming', durationMinutes: 3, isPranayamaWithPacer: true),
-        CycleStep(id: 'breath_awareness', title: 'Breath Awareness Dhyan', subtitle: 'Meditation', durationMinutes: 8),
+        CycleStep(id: 'sankalp', title: 'Sankalp & Invocation', subtitle: 'Intention setting', durationMinutes: 2),
+        CycleStep(id: 'kapalbhati', title: 'Kapalbhati', subtitle: 'Active cleansing', durationMinutes: 4, isPranayamaWithPacer: true),
+        CycleStep(id: 'nadi_shodhana', title: 'Nadi Shodhana', subtitle: 'Channel balancing', durationMinutes: 6, isPranayamaWithPacer: true),
+        CycleStep(id: 'bhramari', title: 'Bhramari', subtitle: 'Calming vibration', durationMinutes: 3, isPranayamaWithPacer: true),
+        CycleStep(id: 'breath_awareness', title: 'Breath Awareness Dhyan', subtitle: 'Silent meditation', durationMinutes: 8),
       ];
     }
   }
@@ -364,7 +364,7 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: const Icon(Icons.add, color: AbhyasTheme.saffron),
             tooltip: 'Add Exercise',
             onPressed: _openAddExerciseSheet,
           ),
@@ -373,36 +373,39 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Preset Tabs (Morning Surya / Evening Chandra / Custom)
+          // Preset Tabs (Morning / Night / Custom)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: const BoxDecoration(
-              color: Color(0xFF1F1F1F),
+              color: Color(0xFF191824),
               border: Border(bottom: BorderSide(color: AbhyasTheme.line, width: 1)),
             ),
             child: Row(
               children: [
                 Expanded(
                   child: _buildPresetTab(
-                    RoutinePreset.surya,
-                    '🌅 Morning (Surya)',
-                    'Pranayama & Dhyan',
+                    preset: RoutinePreset.surya,
+                    icon: Icons.wb_sunny_rounded,
+                    title: 'Morning',
+                    subtitle: 'Pranayama & Dhyan',
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: _buildPresetTab(
-                    RoutinePreset.chandra,
-                    '🌙 Night (Chandra)',
-                    'Naam Jaap & Nidra',
+                    preset: RoutinePreset.chandra,
+                    icon: Icons.bedtime_rounded,
+                    title: 'Night',
+                    subtitle: 'Naam Jaap & Nidra',
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: _buildPresetTab(
-                    RoutinePreset.custom,
-                    '⚙️ Custom',
-                    'Open Sadhana',
+                    preset: RoutinePreset.custom,
+                    icon: Icons.tune_rounded,
+                    title: 'Custom',
+                    subtitle: 'Open Sadhana',
                   ),
                 ),
               ],
@@ -452,7 +455,7 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
           // Total Time Indicator Bar
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            color: const Color(0xFF181818),
+            color: const Color(0xFF14121F),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -481,7 +484,7 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
           // Reorderable Steps List
           Expanded(
             child: ReorderableListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               itemCount: _steps.length,
               onReorder: _moveStep,
               itemBuilder: (context, index) {
@@ -492,93 +495,186 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
                   child: Card(
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
                       side: BorderSide(
                         color: step.isEnabled ? AbhyasTheme.line : Colors.transparent,
+                        width: 1,
                       ),
                     ),
-                    color: step.isEnabled ? AbhyasTheme.darkSurface : AbhyasTheme.darkSurfaceAlt.withValues(alpha: 0.4),
+                    color: step.isEnabled
+                        ? AbhyasTheme.darkSurface
+                        : AbhyasTheme.darkSurfaceAlt.withValues(alpha: 0.35),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      child: Row(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Drag handle
-                          const Icon(Icons.drag_indicator, color: AbhyasTheme.darkInkSoft, size: 20),
-                          const SizedBox(width: 8),
-
-                          // Enable/Disable Switch
-                          Switch(
-                            value: step.isEnabled,
-                            activeColor: AbhyasTheme.saffron,
-                            onChanged: (_) => _toggleStepEnabled(index),
-                          ),
-                          const SizedBox(width: 8),
-
-                          // Step Details
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  step.title,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                    color: step.isEnabled ? Colors.white : Colors.grey,
-                                    decoration: step.isEnabled ? null : TextDecoration.lineThrough,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  step.subtitle,
-                                  style: const TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 11),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          // Duration stepper (- and +)
+                          // ROW 1: Drag handle + Title & Subtitle + Enable Switch
                           Row(
-                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              IconButton(
-                                icon: const Icon(Icons.remove_circle_outline, size: 20),
-                                color: AbhyasTheme.darkInkSoft,
-                                onPressed: step.isEnabled ? () => _adjustStepDuration(index, -1) : null,
-                                tooltip: '-1 min',
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: AbhyasTheme.darkSurfaceAlt,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  '${step.durationMinutes}m',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: step.isEnabled ? AbhyasTheme.saffron : Colors.grey,
-                                    fontSize: 13,
+                              // Drag Handle
+                              ReorderableDragStartListener(
+                                index: index,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  child: const Icon(
+                                    Icons.drag_indicator_rounded,
+                                    color: AbhyasTheme.darkInkSoft,
+                                    size: 20,
                                   ),
                                 ),
                               ),
-                              IconButton(
-                                icon: const Icon(Icons.add_circle_outline, size: 20),
-                                color: AbhyasTheme.darkInkSoft,
-                                onPressed: step.isEnabled ? () => _adjustStepDuration(index, 1) : null,
-                                tooltip: '+1 min',
+                              const SizedBox(width: 8),
+
+                              // Exercise Title and Description
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      step.title,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                        color: step.isEnabled ? Colors.white : Colors.white38,
+                                        decoration: step.isEnabled ? null : TextDecoration.lineThrough,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      step.subtitle,
+                                      style: TextStyle(
+                                        color: step.isEnabled ? AbhyasTheme.darkInkSoft : Colors.white24,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+
+                              // Enable/Disable Switch
+                              Switch(
+                                value: step.isEnabled,
+                                activeColor: AbhyasTheme.saffron,
+                                onChanged: (_) => _toggleStepEnabled(index),
                               ),
                             ],
                           ),
 
-                          // Delete Step
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline, size: 18),
-                            color: Colors.red.withValues(alpha: 0.6),
-                            onPressed: () => _removeStep(index),
-                            tooltip: 'Remove',
+                          const SizedBox(height: 8),
+                          const Divider(height: 1, color: AbhyasTheme.line),
+                          const SizedBox(height: 8),
+
+                          // ROW 2: Category Badge + Stepper Controls + Delete Action
+                          Row(
+                            children: [
+                              // Category Badge
+                              if (step.isPranayamaWithPacer)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: AbhyasTheme.leaf.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(color: AbhyasTheme.leaf.withValues(alpha: 0.35)),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.air, size: 12, color: AbhyasTheme.leaf),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        'Pranayama',
+                                        style: TextStyle(
+                                          color: AbhyasTheme.leaf,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              else
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: AbhyasTheme.sky.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(color: AbhyasTheme.sky.withValues(alpha: 0.35)),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.spa, size: 12, color: AbhyasTheme.sky),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        'Meditation',
+                                        style: TextStyle(
+                                          color: AbhyasTheme.sky,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                              const Spacer(),
+
+                              // Duration Stepper Pill: [-] 2 min [+]
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: AbhyasTheme.darkSurfaceAlt,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: AbhyasTheme.line),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    InkWell(
+                                      onTap: step.isEnabled ? () => _adjustStepDuration(index, -1) : null,
+                                      borderRadius: const BorderRadius.horizontal(left: Radius.circular(8)),
+                                      child: const Padding(
+                                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                                        child: Icon(Icons.remove, size: 16, color: Colors.white70),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                                      child: Text(
+                                        '${step.durationMinutes} min',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: step.isEnabled ? AbhyasTheme.saffron : Colors.grey,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                    InkWell(
+                                      onTap: step.isEnabled ? () => _adjustStepDuration(index, 1) : null,
+                                      borderRadius: const BorderRadius.horizontal(right: Radius.circular(8)),
+                                      child: const Padding(
+                                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                                        child: Icon(Icons.add, size: 16, color: Colors.white70),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const SizedBox(width: 8),
+
+                              // Delete Action
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline, size: 20),
+                                color: Colors.red.withValues(alpha: 0.65),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                                onPressed: () => _removeStep(index),
+                                tooltip: 'Remove step',
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -591,21 +687,22 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
 
           // Bottom Action Bar
           Container(
-            padding: const EdgeInsets.all(20.0),
+            padding: const EdgeInsets.all(18.0),
             decoration: const BoxDecoration(
-              color: Color(0xFF1F1F1F),
+              color: Color(0xFF191824),
               border: Border(top: BorderSide(color: AbhyasTheme.line, width: 1)),
             ),
             child: Row(
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
-                    icon: const Icon(Icons.add),
+                    icon: const Icon(Icons.add, size: 18),
                     label: const Text('Add Step'),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       side: const BorderSide(color: AbhyasTheme.line),
                       foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     onPressed: _openAddExerciseSheet,
                   ),
@@ -614,20 +711,21 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
                 Expanded(
                   flex: 2,
                   child: ElevatedButton.icon(
-                    icon: const Icon(Icons.play_circle_fill, color: Colors.black),
+                    icon: const Icon(Icons.play_circle_fill, color: Colors.black, size: 20),
                     label: Text(
                       'Begin ($_totalMinutes m)',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
-                        letterSpacing: 1.1,
+                        letterSpacing: 0.5,
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AbhyasTheme.saffron,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       elevation: 4,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     onPressed: _beginCycle,
                   ),
@@ -640,42 +738,58 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
     );
   }
 
-  Widget _buildPresetTab(RoutinePreset preset, String title, String subtitle) {
+  Widget _buildPresetTab({
+    required RoutinePreset preset,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
     final isSelected = _selectedPreset == preset;
     return InkWell(
       onTap: () => _onPresetChanged(preset),
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
         decoration: BoxDecoration(
           color: isSelected ? AbhyasTheme.saffron.withValues(alpha: 0.15) : AbhyasTheme.darkSurfaceAlt,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? AbhyasTheme.saffron : Colors.transparent,
             width: 1.5,
           ),
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-                color: isSelected ? AbhyasTheme.saffron : Colors.white,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icon,
+                  size: 15,
+                  color: isSelected ? AbhyasTheme.saffron : Colors.white70,
+                ),
+                const SizedBox(width: 5),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: isSelected ? AbhyasTheme.saffron : Colors.white,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 2),
             Text(
               subtitle,
               style: TextStyle(
                 fontSize: 10,
-                color: isSelected ? AbhyasTheme.saffron.withValues(alpha: 0.8) : AbhyasTheme.darkInkSoft,
+                color: isSelected ? AbhyasTheme.saffron.withValues(alpha: 0.85) : AbhyasTheme.darkInkSoft,
               ),
               textAlign: TextAlign.center,
               maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
