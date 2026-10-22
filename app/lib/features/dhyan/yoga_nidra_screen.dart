@@ -217,16 +217,16 @@ class _YogaNidraScreenState extends State<YogaNidraScreen> {
 
               const SizedBox(height: 20),
 
-              // Audio Controls (Rewind 15s, Play/Pause, Forward 15s)
+              // Audio Controls (Rewind 10s, Play/Pause, Forward 10s)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   IconButton(
                     iconSize: 40,
                     color: Colors.white70,
-                    icon: const Icon(Icons.replay_15),
-                    tooltip: 'Rewind 15s',
-                    onPressed: () => _seekBy(-15),
+                    icon: const Icon(Icons.replay_10),
+                    tooltip: 'Rewind 10s',
+                    onPressed: () => _seekBy(-10),
                   ),
                   const SizedBox(width: 24),
                   IconButton(
@@ -239,9 +239,9 @@ class _YogaNidraScreenState extends State<YogaNidraScreen> {
                   IconButton(
                     iconSize: 40,
                     color: Colors.white70,
-                    icon: const Icon(Icons.forward_15),
-                    tooltip: 'Forward 15s',
-                    onPressed: () => _seekBy(15),
+                    icon: const Icon(Icons.forward_10),
+                    tooltip: 'Forward 10s',
+                    onPressed: () => _seekBy(10),
                   ),
                 ],
               ),
