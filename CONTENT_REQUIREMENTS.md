@@ -38,5 +38,9 @@ Please place finalized studio recordings into `app/assets/audio/`. Both `.mp3` a
 ## 3. Bundled Short Voice & Bell Assets (Already Generated)
 
 Located in `app/assets/audio/` and `app/assets/audio/voice/`:
-- **Voice Prompts**: `voice_settle.wav`, `voice_begin.wav`, `voice_puraka.wav` (*"Inhale"*), `voice_kumbhaka.wav` (*"Hold"*), `voice_rechaka.wav` (*"Exhale"*), `voice_bahya.wav` (*"Suspend"*), `voice_rest.wav`, `voice_complete.wav`, `voice_open_eyes.wav`.
+- **Pranayama Voice Prompts**: `voice_settle.wav`, `voice_begin.wav`, `voice_puraka.wav` (*"Inhale"*), `voice_kumbhaka.wav` (*"Hold"*), `voice_rechaka.wav` (*"Exhale"*), `voice_bahya.wav` (*"Suspend"*), `voice_rest.wav`, `voice_complete.wav`, `voice_open_eyes.wav`.
+- **Meditation Voice Prompts**:
+  - Progressive Japa: `voice_japa_vaikhari.wav`, `voice_japa_upamshu.wav`, `voice_japa_manasika.wav`, `voice_japa_laya.wav`
+  - Breath Awareness: `voice_breath_intro.wav`, `voice_breath_nostril.wav`, `voice_breath_pause.wav`, `voice_breath_return.wav`, `voice_breath_complete.wav`
+- **Ambient Soundscapes**: `tanpura_drone.wav` (432Hz Sa-Pa meditative chord), `yoga_nidra_ambient.wav`.
 - **Acoustic Singing Bowls & Bells**: 40 harmonic WAV files across 4 palettes (Singing Bowl, Temple Bell, Woodblock, Flute Harmonic).
