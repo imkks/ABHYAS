@@ -131,18 +131,23 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
       return _buildNostrilDhyanPacer(currentStep, stepRemaining);
     }
 
-    // 5. Nadi Shodhana / Ratio Pranayama: Vishnu Mudra alternate nostril ratios
+    // 5. 3-Stage Naam Japa: Vaikhari (loud) -> Upamshu (whisper) -> Manasika (silent mind)
+    if (id.contains('naam') || id.contains('japa') || id.contains('jaap')) {
+      return _buildNaamJapaPacer(currentStep, stepRemaining);
+    }
+
+    // 6. Nadi Shodhana / Ratio Pranayama: Vishnu Mudra alternate nostril ratios
     if (id.contains('nadi') || (currentStep.isPranayamaWithPacer && currentStep.ratio != null && currentStep.ratio!.length >= 3)) {
       return _buildNadiShodhanaPacer(currentStep, stepRemaining, currentStep.ratio ?? [4, 8, 8, 4]);
     }
 
-    // 6. Default step timer (Sankalp, Sukshma Vyayama, Yoga Nidra, Savasana, Shanti Path)
+    // 7. Default step timer (Sankalp, Sukshma Vyayama, Yoga Nidra, Savasana, Shanti Path)
     return _buildDefaultTimer(currentStep, stepRemaining);
   }
 
-  /// Kapalbhati Specialized Pacer: 3 Rounds (Strokes -> Deep Puraka -> 10s Antar Kumbhaka -> Relax)
+  /// Kapalbhati Specialized Pacer: 3 Rounds (Strokes -> Bahir Kumbhaka (Empty Hold) -> Puraka -> Relax)
   Widget _buildKapalbhatiPacer(CycleStepItem currentStep, int stepRemaining) {
-    const roundDuration = 55; // 35s strokes + 4s puraka + 10s hold + 6s recovery
+    const roundDuration = 55; // 35s strokes + 10s Bahir Kumbhaka + 4s Puraka + 6s rest
     final currentRoundNum = (_stepSeconds ~/ roundDuration) + 1;
     final secInRound = _stepSeconds % roundDuration;
 
@@ -154,35 +159,35 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
     if (currentRoundNum > 3) {
       phaseTitle = 'KAPALBHATI COMPLETE';
       countText = 'STILL';
-      subtitle = 'Rest in natural breath • Observe frontal brain clarity';
+      subtitle = 'Rest in natural breath • Observe frontal brain luminosity (Kapala Bhati)';
       phaseColor = Colors.tealAccent;
     } else if (secInRound < 35) {
-      // 35 sharp strokes (~1 per second)
+      // 35 active sharp exhalations (~1 per second)
       final strokeNum = secInRound + 1;
       phaseTitle = 'ROUND $currentRoundNum: ACTIVE EXHALATIONS';
       countText = 'Stroke $strokeNum/35';
-      subtitle = 'Sharp abdominal contraction • Chin Mudra • Passive inhale';
+      subtitle = 'Sharp abdominal pumping • Chin Mudra • Passive inhalation';
       phaseColor = AbhyasTheme.saffron;
-    } else if (secInRound < 39) {
-      // Deep Puraka (4s)
-      final purakaSec = (secInRound - 35) + 1;
-      phaseTitle = 'ROUND $currentRoundNum: DEEP PURAKA';
-      countText = '${purakaSec}s / 4s';
-      subtitle = 'Exhale completely, then take one deep, smooth inhalation';
-      phaseColor = AbhyasTheme.sky;
-    } else if (secInRound < 49) {
-      // Antar Kumbhaka (10s Soft Hold)
-      final holdLeft = 49 - secInRound;
-      phaseTitle = 'ROUND $currentRoundNum: ANTAR KUMBHAKA';
-      countText = '${holdLeft}s HOLD';
-      subtitle = 'Soft 10s internal hold • Jalandhara Bandha (Chin Lock)';
+    } else if (secInRound < 45) {
+      // Bahir Kumbhaka (10s External Hold on Empty Lungs)
+      final holdLeft = 45 - secInRound;
+      phaseTitle = 'ROUND $currentRoundNum: BAHIR KUMBHAKA (HOLD EMPTY)';
+      countText = '${holdLeft}s EMPTY';
+      subtitle = 'Exhale completely • Hold outside • Maha Bandha (Chin & Navel lock)';
       phaseColor = const Color(0xFF9D4EDD);
+    } else if (secInRound < 49) {
+      // Deep Puraka Release (4s)
+      final purakaSec = (secInRound - 45) + 1;
+      phaseTitle = 'ROUND $currentRoundNum: PURAKA RELEASE';
+      countText = '${purakaSec}s / 4s';
+      subtitle = 'Release locks gently • Take one slow, deep diaphragmatic inhalation';
+      phaseColor = AbhyasTheme.sky;
     } else {
-      // Recovery (6s)
+      // Natural Breath Rest (6s)
       final recLeft = 55 - secInRound;
       phaseTitle = 'ROUND $currentRoundNum: NATURAL REST';
       countText = '${recLeft}s';
-      subtitle = 'Slow release • Breathe naturally before next round';
+      subtitle = 'Breathe naturally • Feel still prana before next round';
       phaseColor = Colors.tealAccent;
     }
 
@@ -225,7 +230,7 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
                 Text(
                   countText,
                   style: const TextStyle(
-                    fontSize: 32,
+                    fontSize: 30,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                     fontFeatures: [FontFeature.tabularFigures()],
@@ -284,20 +289,41 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
     );
   }
 
-  /// Bhramari Specialized Pacer: Shanmukhi Mudra & Humming Bee Skull Resonance
+  /// Bhramari Specialized Pacer: Shanmukhi Mudra & Humming Bee with optional Antar Kumbhaka
   Widget _buildBhramariPacer(CycleStepItem currentStep, int stepRemaining) {
-    const cycleTotal = 12; // 4s inhale + 8s humming exhale
+    final antarHold = (currentStep.ratio != null && currentStep.ratio!.length > 1) ? currentStep.ratio![1] : 0;
+    final cycleTotal = 4 + antarHold + 8; // Puraka (4s) + [Antar Kumbhaka] + Humming (8s)
     final secInCycle = _stepSeconds % cycleTotal;
     final roundNum = (_stepSeconds ~/ cycleTotal) + 1;
 
-    final isInhale = secInCycle < 4;
-    final phaseTitle = isInhale ? 'PURAKA (SMOOTH INHALE)' : 'BHRAMARI RECHAKA (HUMMING)';
-    final phaseColor = isInhale ? AbhyasTheme.sky : AbhyasTheme.saffron;
-    final secondsInPhase = isInhale ? secInCycle + 1 : (secInCycle - 4) + 1;
-    final totalInPhase = isInhale ? 4 : 8;
-    final cue = isInhale
-        ? 'Shanmukhi Mudra · Deep smooth Ujjayi inhalation'
-        : 'Close ears with thumbs · Long humming (Mmm...) vibrating skull';
+    String phaseTitle;
+    Color phaseColor;
+    int secondsInPhase;
+    int totalInPhase;
+    String cue;
+
+    if (secInCycle < 4) {
+      // Inhale
+      phaseTitle = 'PURAKA (SMOOTH INHALE)';
+      phaseColor = AbhyasTheme.sky;
+      secondsInPhase = secInCycle + 1;
+      totalInPhase = 4;
+      cue = 'Shanmukhi Mudra · Deep smooth Ujjayi inhalation';
+    } else if (antarHold > 0 && secInCycle < 4 + antarHold) {
+      // Antar Kumbhaka (Advanced)
+      phaseTitle = 'ANTAR KUMBHAKA (INTERNAL HOLD)';
+      phaseColor = const Color(0xFF9D4EDD);
+      secondsInPhase = (secInCycle - 4) + 1;
+      totalInPhase = antarHold;
+      cue = 'Shanmukhi Mudra · Soft internal retention · Stillness at brow';
+    } else {
+      // Humming Exhale
+      phaseTitle = 'BHRAMARI RECHAKA (HUMMING)';
+      phaseColor = AbhyasTheme.saffron;
+      secondsInPhase = (secInCycle - 4 - antarHold) + 1;
+      totalInPhase = 8;
+      cue = 'Close ears with thumbs · Long humming (Mmm...) vibrating skull';
+    }
 
     return Column(
       children: [
@@ -327,11 +353,12 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
                 Text(
                   phaseTitle,
                   style: TextStyle(
-                    fontSize: 10,
+                    fontSize: 9,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.1,
                     color: phaseColor,
                   ),
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -376,7 +403,7 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
                 border: Border.all(color: AbhyasTheme.line),
               ),
               child: Text(
-                'Breath $roundNum · Shanmukhi Mudra',
+                'Breath $roundNum · Shanmukhi Mudra ${antarHold > 0 ? "(Hold $antarHold s)" : ""}',
                 style: const TextStyle(fontSize: 11, color: Colors.white70),
               ),
             ),
@@ -399,20 +426,41 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
     );
   }
 
-  /// Ujjayi Specialized Pacer: Ocean Wave Whispering Breath
+  /// Ujjayi Specialized Pacer: Ocean Wave Whispering Breath with optional Antar Kumbhaka
   Widget _buildUjjayiPacer(CycleStepItem currentStep, int stepRemaining) {
-    const cycleTotal = 9; // 4s inhale + 5s exhale
+    final antarHold = (currentStep.ratio != null && currentStep.ratio!.length > 1) ? currentStep.ratio![1] : 0;
+    final cycleTotal = 4 + antarHold + 5; // Puraka (4s) + [Antar Kumbhaka] + Rechaka (5s)
     final secInCycle = _stepSeconds % cycleTotal;
     final roundNum = (_stepSeconds ~/ cycleTotal) + 1;
 
-    final isInhale = secInCycle < 4;
-    final phaseTitle = isInhale ? 'UJJAYI PURAKA (OCEAN INHALE)' : 'UJJAYI RECHAKA (OCEAN EXHALE)';
-    final phaseColor = isInhale ? AbhyasTheme.sky : AbhyasTheme.clay;
-    final secondsInPhase = isInhale ? secInCycle + 1 : (secInCycle - 4) + 1;
-    final totalInPhase = isInhale ? 4 : 5;
-    final cue = isInhale
-        ? 'Gently constrict back of throat (glottis) • Soft ocean wave sound'
-        : 'Smooth continuous exhalation like calm ocean surf';
+    String phaseTitle;
+    Color phaseColor;
+    int secondsInPhase;
+    int totalInPhase;
+    String cue;
+
+    if (secInCycle < 4) {
+      // Inhale
+      phaseTitle = 'UJJAYI PURAKA (OCEAN INHALE)';
+      phaseColor = AbhyasTheme.sky;
+      secondsInPhase = secInCycle + 1;
+      totalInPhase = 4;
+      cue = 'Gently constrict back of throat (glottis) • Soft ocean wave sound';
+    } else if (antarHold > 0 && secInCycle < 4 + antarHold) {
+      // Antar Kumbhaka (Advanced)
+      phaseTitle = 'ANTAR KUMBHAKA (INTERNAL HOLD)';
+      phaseColor = const Color(0xFF9D4EDD);
+      secondsInPhase = (secInCycle - 4) + 1;
+      totalInPhase = antarHold;
+      cue = 'Gentle chin lock (Jalandhara Bandha) • Throat throat lock retention';
+    } else {
+      // Exhale
+      phaseTitle = 'UJJAYI RECHAKA (OCEAN EXHALE)';
+      phaseColor = AbhyasTheme.clay;
+      secondsInPhase = (secInCycle - 4 - antarHold) + 1;
+      totalInPhase = 5;
+      cue = 'Smooth continuous exhalation like calm ocean surf';
+    }
 
     return Column(
       children: [
@@ -442,11 +490,12 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
                 Text(
                   phaseTitle,
                   style: TextStyle(
-                    fontSize: 10,
+                    fontSize: 9,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.1,
                     color: phaseColor,
                   ),
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -491,7 +540,7 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
                 border: Border.all(color: AbhyasTheme.line),
               ),
               child: Text(
-                'Breath $roundNum · Throat Resonance',
+                'Breath $roundNum · Throat Resonance ${antarHold > 0 ? "(Hold $antarHold s)" : ""}',
                 style: const TextStyle(fontSize: 11, color: Colors.white70),
               ),
             ),
@@ -594,6 +643,117 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
           child: const Text(
             'Jnana Mudra · Observe complete stillness at brow center (Ajna Chakra)',
             style: TextStyle(fontSize: 11, color: Colors.white70),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 3-Stage Guided Naam Japa Pacer: Vaikhari (loud) -> Upamshu (murmur) -> Manasika (silent mind)
+  Widget _buildNaamJapaPacer(CycleStepItem currentStep, int stepRemaining) {
+    final totalDuration = currentStep.durationSeconds > 0 ? currentStep.durationSeconds : 480;
+    final progress = (_stepSeconds / totalDuration).clamp(0.0, 1.0);
+
+    String stageTitle;
+    String stageDescription;
+    Color stageColor;
+
+    if (progress < 0.33) {
+      stageTitle = 'STAGE 1: VAIKHARI (SPOKEN ALOUD)';
+      stageDescription = 'Recite the sacred Naam out loud with devotion and clear resonance.';
+      stageColor = AbhyasTheme.saffron;
+    } else if (progress < 0.66) {
+      stageTitle = 'STAGE 2: UPAMSHU (WHISPER / MURMUR)';
+      stageDescription = 'Murmur the Naam softly with subtle lip movement so only you can hear.';
+      stageColor = AbhyasTheme.sky;
+    } else {
+      stageTitle = 'STAGE 3: MANASIKA (SILENT INNER MIND)';
+      stageDescription = 'Let the repetition become purely mental and effortless within inner space.';
+      stageColor = const Color(0xFF9D4EDD);
+    }
+
+    return Column(
+      children: [
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 400),
+          width: 210,
+          height: 210,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AbhyasTheme.darkSurface,
+            border: Border.all(
+              color: _isPaused ? Colors.grey : stageColor,
+              width: 5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: stageColor.withValues(alpha: _isPaused ? 0.05 : 0.35),
+                blurRadius: 32,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: stageColor.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    stageTitle,
+                    style: TextStyle(
+                      fontSize: 8.5,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.1,
+                      color: stageColor,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _formatSeconds(stepRemaining),
+                  style: const TextStyle(
+                    fontSize: 42,
+                    fontWeight: FontWeight.w200,
+                    color: Colors.white,
+                    fontFeatures: [FontFeature.tabularFigures()],
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14.0),
+                  child: Text(
+                    stageDescription,
+                    style: TextStyle(
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.w500,
+                      color: stageColor,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          decoration: BoxDecoration(
+            color: AbhyasTheme.darkSurface,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: AbhyasTheme.line),
+          ),
+          child: Text(
+            '3-Stage Progression: Vaikhari ➔ Upamshu ➔ Manasika',
+            style: const TextStyle(fontSize: 11, color: Colors.white70),
             textAlign: TextAlign.center,
           ),
         ),

@@ -26,7 +26,9 @@ class _PracticeListScreenState extends State<PracticeListScreen> {
   int _kapalbhatiStrokes = 30;
   int _kapalbhatiRounds = 3;
   int _ujjayiBreaths = 10;
+  int _ujjayiAntarKumbhaka = 0; // 0 or 4 seconds
   int _bhramariBreaths = 7;
+  int _bhramariAntarKumbhaka = 0; // 0 or 4 seconds
   int _sheetaliBreaths = 9;
   int _userLevel = 1;
 
@@ -398,14 +400,14 @@ class _PracticeListScreenState extends State<PracticeListScreen> {
             },
           ),
 
-          // Practice 2: Kapalbhati (Active Pumping + End Kumbhaka)
+          // Practice 2: Kapalbhati (Active Pumping + Bahir Kumbhaka)
           _buildPranayamaCard(
             title: 'Kapalbhati',
             sanskrit: 'Skull Shining Cleansing',
             tag: 'Cleansing & Heating',
             mudra: 'Chin Mudra',
-            description: '30–50 rapid, sharp abdominal exhalations per round. Concludes with a deep Puraka and 10s soft Antar Kumbhaka.',
-            activeSettingText: '$_kapalbhatiRounds Rounds · $_kapalbhatiStrokes strokes/round + 10s Kumbhaka',
+            description: '30–50 rapid, sharp abdominal exhalations per round. Concludes with complete exhalation, 10s Bahir Kumbhaka (empty hold with Maha Bandha), and slow Puraka release.',
+            activeSettingText: '$_kapalbhatiRounds Rounds · $_kapalbhatiStrokes strokes/round + 10s Bahir Kumbhaka',
             icon: Icons.local_fire_department,
             accentColor: Colors.deepOrange,
             onCustomize: () {
@@ -434,13 +436,13 @@ class _PracticeListScreenState extends State<PracticeListScreen> {
             sanskrit: 'Ocean Sound Breath',
             tag: 'Soothing & Focus',
             mudra: 'Jnana Mudra',
-            description: 'Gentle throat constriction producing an ocean wave sound. Soothes the vagus nerve and anchors internal concentration.',
-            activeSettingText: '$_ujjayiBreaths Deep Ocean Breaths (Throat Resonance)',
+            description: 'Gentle throat constriction producing an ocean wave sound. Optional Antar Kumbhaka internal hold for advanced soothing focus.',
+            activeSettingText: '$_ujjayiBreaths Ocean Breaths · ${_ujjayiAntarKumbhaka > 0 ? "4s Antar Kumbhaka" : "Natural (No Hold)"}',
             icon: Icons.waves,
             accentColor: AbhyasTheme.sky,
             onCustomize: () {
               setState(() {
-                _ujjayiBreaths = _ujjayiBreaths == 10 ? 15 : (_ujjayiBreaths == 15 ? 20 : 10);
+                _ujjayiAntarKumbhaka = _ujjayiAntarKumbhaka == 0 ? 4 : 0;
               });
             },
             onPlay: () {
@@ -451,6 +453,7 @@ class _PracticeListScreenState extends State<PracticeListScreen> {
                     safetyProfile: widget.safetyProfile,
                     practiceName: 'Ujjayi Pranayama',
                     practiceId: 'ujjayi',
+                    ratio: [4, _ujjayiAntarKumbhaka, 5, 0],
                     rounds: _ujjayiBreaths,
                   ),
                 ),
@@ -464,13 +467,13 @@ class _PracticeListScreenState extends State<PracticeListScreen> {
             sanskrit: 'Humming Bee Breath',
             tag: 'Calming & Resonance',
             mudra: 'Shanmukhi Mudra',
-            description: 'Smooth inhale followed by long continuous humming exhalation. Vibrates cranial tissues to quiet the mind completely.',
-            activeSettingText: '$_bhramariBreaths Continuous Humming Cycles with Shanmukhi Mudra',
+            description: 'Smooth inhale followed by long continuous humming exhalation. Optional Antar Kumbhaka with brow focus before cranial vibration.',
+            activeSettingText: '$_bhramariBreaths Humming Cycles · ${_bhramariAntarKumbhaka > 0 ? "4s Antar Kumbhaka" : "Natural (No Hold)"}',
             icon: Icons.graphic_eq,
             accentColor: Colors.tealAccent,
             onCustomize: () {
               setState(() {
-                _bhramariBreaths = _bhramariBreaths == 7 ? 11 : (_bhramariBreaths == 11 ? 5 : 7);
+                _bhramariAntarKumbhaka = _bhramariAntarKumbhaka == 0 ? 4 : 0;
               });
             },
             onPlay: () {
@@ -481,6 +484,7 @@ class _PracticeListScreenState extends State<PracticeListScreen> {
                     safetyProfile: widget.safetyProfile,
                     practiceName: 'Bhramari Pranayama',
                     practiceId: 'bhramari',
+                    ratio: [4, _bhramariAntarKumbhaka, 8, 0],
                     rounds: _bhramariBreaths,
                   ),
                 ),

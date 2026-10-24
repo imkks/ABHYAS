@@ -152,9 +152,19 @@ class _TodayScreenState extends State<TodayScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'LEVEL ${prog.level}: ${prog.title.toUpperCase()}',
+                        prog.journeyPhase.toUpperCase(),
                         style: const TextStyle(
                           color: AbhyasTheme.saffron,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 10,
+                          letterSpacing: 1.1,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'LEVEL ${prog.level}: ${prog.title.toUpperCase()}',
+                        style: const TextStyle(
+                          color: Colors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
                           letterSpacing: 1.1,

@@ -235,15 +235,32 @@ void main() {
       expect(level6Ratio[3], lessThanOrEqualTo(level6Ratio[1]));
     });
 
-    test('Kapalbhati mechanics structure: active exhalations followed by soft Antar Kumbhaka hold', () {
+    test('Kapalbhati mechanics structure: active exhalations followed by Bahir Kumbhaka hold', () {
       const strokesDuration = 35; // 35 active strokes (~1/sec)
-      const purakaDuration = 4; // deep puraka
-      const antarKumbhakaDuration = 10; // 10s soft hold
+      const bahirKumbhakaDuration = 10; // 10s external hold on empty lungs
+      const purakaDuration = 4; // deep puraka release
       const recoveryDuration = 6; // calm settling
-      const singleRoundDuration = strokesDuration + purakaDuration + antarKumbhakaDuration + recoveryDuration;
+      const singleRoundDuration = strokesDuration + bahirKumbhakaDuration + purakaDuration + recoveryDuration;
 
       expect(singleRoundDuration, equals(55));
-      expect(antarKumbhakaDuration, equals(10));
+      expect(bahirKumbhakaDuration, equals(10));
+    });
+
+    test('ProgressionService categorizes levels into 3 Yogic Journey Phases', () {
+      final service = ProgressionService();
+
+      final l1 = service.getLevelInfo(1);
+      final l3 = service.getLevelInfo(3);
+      final l5 = service.getLevelInfo(5);
+
+      expect(l1.journeyPhase, contains('Phase 1: Foundation'));
+      expect(l1.phaseName, equals('Foundation'));
+
+      expect(l3.journeyPhase, contains('Phase 2: Deepening'));
+      expect(l3.phaseName, equals('Deepening'));
+
+      expect(l5.journeyPhase, contains('Phase 3: Advanced'));
+      expect(l5.phaseName, equals('Advanced'));
     });
   });
 }

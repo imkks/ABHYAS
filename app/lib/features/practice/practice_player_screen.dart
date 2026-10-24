@@ -91,18 +91,18 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       final isBhramari = widget.practiceId.contains('bhramari');
       final isUjjayi = widget.practiceId.contains('ujjayi');
 
-      // 1. Specialized Kapalbhati mechanics (35 strokes -> 4s deep inhale -> 10s soft kumbhaka -> 6s recovery)
+      // 1. Specialized Kapalbhati mechanics (35 strokes -> 10s Bahir Kumbhaka (empty hold) -> 4s deep inhale -> 6s recovery)
       if (isKapal) {
         int target = 35;
         if (_kapalbhatiPhaseIndex == 0) {
           target = 35;
           _hapticService.pulseForMatra(widget.weaningStage);
         } else if (_kapalbhatiPhaseIndex == 1) {
-          target = 4;
+          target = 10; // Bahir Kumbhaka (hold empty)
         } else if (_kapalbhatiPhaseIndex == 2) {
-          target = 10;
+          target = 4; // Puraka release
         } else {
-          target = 6;
+          target = 6; // Natural rest
         }
 
         if (_secondsElapsed >= target) {
@@ -130,14 +130,26 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         return;
       }
 
-      // 2. Specialized Bhramari mechanics (4s inhale -> 8s humming bee exhale with Shanmukhi Mudra)
+      // 2. Specialized Bhramari mechanics (4s inhale -> [optional Antar Kumbhaka] -> 8s humming bee exhale)
       if (isBhramari) {
-        final target = _bhramariPhaseIndex == 0 ? 4 : 8;
+        final antarHold = _activeRatio.length > 1 ? _activeRatio[1] : 0;
+        final hasHold = antarHold > 0;
+        int target = 4;
+
+        if (_bhramariPhaseIndex == 0) {
+          target = 4; // Puraka
+        } else if (hasHold && _bhramariPhaseIndex == 1) {
+          target = antarHold; // Antar Kumbhaka
+        } else {
+          target = 8; // Humming Exhale
+        }
+
         if (_secondsElapsed >= target) {
           _secondsElapsed = 0;
           _engine.stopTimer();
 
-          if (_bhramariPhaseIndex == 1) {
+          final isLastPhase = hasHold ? (_bhramariPhaseIndex == 2) : (_bhramariPhaseIndex == 1);
+          if (isLastPhase) {
             _bhramariPhaseIndex = 0;
             _hapticService.roundCompletePulse(widget.weaningStage);
             if (_currentRound >= widget.rounds) {
@@ -147,7 +159,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
               _currentRound++;
             }
           } else {
-            _bhramariPhaseIndex = 1;
+            _bhramariPhaseIndex++;
             _hapticService.phaseTransitionPulse(widget.weaningStage);
           }
 
@@ -158,14 +170,26 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         return;
       }
 
-      // 3. Specialized Ujjayi mechanics (4s ocean inhale -> 5s ocean exhale)
+      // 3. Specialized Ujjayi mechanics (4s ocean inhale -> [optional Antar Kumbhaka] -> 5s ocean exhale)
       if (isUjjayi) {
-        final target = _ujjayiPhaseIndex == 0 ? 4 : 5;
+        final antarHold = _activeRatio.length > 1 ? _activeRatio[1] : 0;
+        final hasHold = antarHold > 0;
+        int target = 4;
+
+        if (_ujjayiPhaseIndex == 0) {
+          target = 4; // Puraka
+        } else if (hasHold && _ujjayiPhaseIndex == 1) {
+          target = antarHold; // Antar Kumbhaka
+        } else {
+          target = 5; // Rechaka
+        }
+
         if (_secondsElapsed >= target) {
           _secondsElapsed = 0;
           _engine.stopTimer();
 
-          if (_ujjayiPhaseIndex == 1) {
+          final isLastPhase = hasHold ? (_ujjayiPhaseIndex == 2) : (_ujjayiPhaseIndex == 1);
+          if (isLastPhase) {
             _ujjayiPhaseIndex = 0;
             _hapticService.roundCompletePulse(widget.weaningStage);
             if (_currentRound >= widget.rounds) {
@@ -175,7 +199,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
               _currentRound++;
             }
           } else {
-            _ujjayiPhaseIndex = 1;
+            _ujjayiPhaseIndex++;
             _hapticService.phaseTransitionPulse(widget.weaningStage);
           }
 
@@ -605,19 +629,19 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         sub = 'Sharp abdominal pumping • Chin Mudra';
         color = Colors.orangeAccent;
       } else if (_kapalbhatiPhaseIndex == 1) {
-        title = 'DEEP PURAKA';
-        count = '${_secondsElapsed + 1}s / 4s';
-        sub = 'Take one deep, slow breath filling lungs';
-        color = Colors.blueAccent;
+        title = 'BAHIR KUMBHAKA (HOLD EMPTY)';
+        count = '${10 - _secondsElapsed}s EMPTY';
+        sub = 'Exhale completely • Hold outside • Maha Bandha';
+        color = const Color(0xFF9D4EDD);
       } else if (_kapalbhatiPhaseIndex == 2) {
-        title = 'ANTAR KUMBHAKA';
-        count = '${10 - _secondsElapsed}s HOLD';
-        sub = 'Soft 10s internal hold • Jalandhara Bandha';
-        color = Colors.purpleAccent;
+        title = 'PURAKA RELEASE';
+        count = '${_secondsElapsed + 1}s / 4s';
+        sub = 'Release locks • Take one deep, smooth diaphragmatic breath in';
+        color = Colors.blueAccent;
       } else {
         title = 'NATURAL REST';
         count = '${6 - _secondsElapsed}s';
-        sub = 'Gentle natural breathing';
+        sub = 'Gentle natural breathing before next round';
         color = Colors.tealAccent;
       }
 
@@ -625,24 +649,56 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     }
 
     if (isBhramari) {
-      final isInhale = _bhramariPhaseIndex == 0;
-      final title = isInhale ? 'PURAKA (SMOOTH INHALE)' : 'BHRAMARI (HUMMING BEE)';
-      final count = isInhale ? '${_secondsElapsed + 1}s / 4s' : '${_secondsElapsed + 1}s / 8s';
-      final sub = isInhale
-          ? 'Shanmukhi Mudra: Thumbs on ears • Deep breath'
-          : 'Humming sound (Mmm...) vibrating whole skull';
-      final color = isInhale ? Colors.blueAccent : Colors.orangeAccent;
+      final antarHold = _activeRatio.length > 1 ? _activeRatio[1] : 0;
+      final hasHold = antarHold > 0;
+      String title;
+      String count;
+      String sub;
+      Color color;
+
+      if (_bhramariPhaseIndex == 0) {
+        title = 'PURAKA (SMOOTH INHALE)';
+        count = '${_secondsElapsed + 1}s / 4s';
+        sub = 'Shanmukhi Mudra: Thumbs ready • Deep smooth breath';
+        color = Colors.blueAccent;
+      } else if (hasHold && _bhramariPhaseIndex == 1) {
+        title = 'ANTAR KUMBHAKA (INTERNAL HOLD)';
+        count = '${_secondsElapsed + 1}s / ${antarHold}s';
+        sub = 'Soft retention • Stillness at brow center';
+        color = const Color(0xFF9D4EDD);
+      } else {
+        title = 'BHRAMARI (HUMMING BEE)';
+        count = '${_secondsElapsed + 1}s / 8s';
+        sub = 'Close ears with thumbs • Continuous humming vibrating skull';
+        color = Colors.orangeAccent;
+      }
       return _buildPacerRing(title: title, count: count, subtitle: sub, color: color, size: 210);
     }
 
     if (isUjjayi) {
-      final isInhale = _ujjayiPhaseIndex == 0;
-      final title = isInhale ? 'UJJAYI PURAKA (OCEAN INHALE)' : 'UJJAYI RECHAKA (OCEAN EXHALE)';
-      final count = isInhale ? '${_secondsElapsed + 1}s / 4s' : '${_secondsElapsed + 1}s / 5s';
-      final sub = isInhale
-          ? 'Gently constrict glottis • Whispering ocean sound'
-          : 'Smooth, unbroken exhalation like ocean waves';
-      final color = isInhale ? Colors.blueAccent : Colors.tealAccent;
+      final antarHold = _activeRatio.length > 1 ? _activeRatio[1] : 0;
+      final hasHold = antarHold > 0;
+      String title;
+      String count;
+      String sub;
+      Color color;
+
+      if (_ujjayiPhaseIndex == 0) {
+        title = 'UJJAYI PURAKA (OCEAN INHALE)';
+        count = '${_secondsElapsed + 1}s / 4s';
+        sub = 'Gently constrict glottis • Whispering ocean sound';
+        color = Colors.blueAccent;
+      } else if (hasHold && _ujjayiPhaseIndex == 1) {
+        title = 'ANTAR KUMBHAKA (HOLD)';
+        count = '${_secondsElapsed + 1}s / ${antarHold}s';
+        sub = 'Gentle throat lock (Jalandhara) retention';
+        color = const Color(0xFF9D4EDD);
+      } else {
+        title = 'UJJAYI RECHAKA (OCEAN EXHALE)';
+        count = '${_secondsElapsed + 1}s / 5s';
+        sub = 'Smooth, unbroken exhalation like ocean surf';
+        color = Colors.tealAccent;
+      }
       return _buildPacerRing(title: title, count: count, subtitle: sub, color: color, size: 210);
     }
 
