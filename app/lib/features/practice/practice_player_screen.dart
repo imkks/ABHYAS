@@ -82,9 +82,6 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       _secondsElapsed = seconds;
       _totalSecondsElapsed++;
 
-      // Matra pulse on each tick
-      _hapticService.pulseForMatra(widget.weaningStage);
-
       int currentPhaseTarget = 0;
       switch (_currentPhase) {
         case PracticePhase.puraka:

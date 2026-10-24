@@ -6,6 +6,8 @@ import '../../core/audio_service.dart';
 import '../../core/theme.dart';
 import '../../data/session_repository.dart';
 import 'yoga_nidra_screen.dart';
+import 'breath_awareness_screen.dart';
+import 'progressive_japa_screen.dart';
 
 class CustomMantra {
   final String id;
@@ -437,6 +439,34 @@ class _DhyanScreenState extends State<DhyanScreen> {
             ),
           ),
 
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AbhyasTheme.saffron,
+              foregroundColor: Colors.black,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            icon: const Icon(Icons.all_inclusive, size: 20),
+            label: const Text(
+              'Guided 3-Stage Japa (Vaikhari ➔ Upamshu ➔ Manasika)',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProgressiveJapaScreen(
+                    mantra: _selectedMantra,
+                    targetBeads: _targetBeads > 0 ? _targetBeads : 108,
+                    isCountBased: _targetBeads > 0,
+                    totalMinutes: 15,
+                  ),
+                ),
+              );
+            },
+          ),
+
           const SizedBox(height: 28),
           const Text('Guided Meditation Practices', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
@@ -447,8 +477,11 @@ class _DhyanScreenState extends State<DhyanScreen> {
             color: Colors.teal,
             duration: '10 min',
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Starting Breath Awareness practice...')),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const BreathAwarenessScreen(initialMinutes: 10),
+                ),
               );
             },
           ),
