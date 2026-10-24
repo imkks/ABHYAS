@@ -71,5 +71,58 @@ As per the task brief, the following assumptions were made regarding the design,
 * Integrated `BreathCapacityTestScreen` (Sopana Pariksha): a 1-minute guided breath exercise (3 centering breaths -> 1 deep inhale -> comfortable hold until first urge) to measure Comfortable Hold Time (CHT).
 * The diagnostic maps CHT to the practitioner's apt Sopana level (<15s -> Level 1, 15-25s -> Level 2, 25-40s -> Level 3, 40-60s -> Level 4, 60s+ -> Level 5), calibrates their active rank in `ProgressionService`, and sets the safe hold cap (`CHT * 0.60`).
 
+## Classical Pranayama & Dhyan Segregation and Authentic Pacing Mechanics
+* **Strict Pranayama vs. Dhyan Segregation**: Pranayama techniques (breath control: Kapalbhati, Nadi Shodhana, Ujjayi, Bhramari, Bhastrika, Sheetali) are strictly isolated in the "Abhyas" tab. Meditation, Dharana, and Mantra practices (Naam Japa, Breath Awareness / Nostril Dhyan, Yoga Nidra) reside strictly in the "Dhyan" tab.
+* **Kapalbhati Bahir Kumbhaka (External Hold)**: Following classical Hatha Yoga mechanics (*Gheranda Samhita*), each round of 30–50 rapid active strokes concludes with a complete exhalation into a **10s Bahir Kumbhaka (hold outside on empty lungs)** with *Maha Bandha* (Jalandhara & Uddiyana lock), followed by a slow *Puraka* release and natural breath recovery.
+* **Ujjayi & Bhramari Antar Kumbhaka**: In advanced practice, both Ujjayi and Bhramari support an optional internal retention (*Antar Kumbhaka* of 4–8s) with *Jalandhara Bandha* / *Shanmukhi Mudra* brow focus before exhalation, accessible via an in-card toggle/stepper.
+* **Dhyan Studio Redesign & 1-Tap Combined Flow**:
+  - The oversized 190px manual mala touch disc was moved into an accessible modal sheet (`_openDigitalMalaSheet`), freeing up the screen for guided sadhanas.
+  - Added the top 1-tap **"Complete Meditation Flow: 3-Stage Naam Japa ➔ Nostril Dhyan" (18 min)** combining audible/whisper Naam Japa (e.g. *Radha Radha*) to calm sensory ripples, smoothly transitioning into silent natural breath awareness at the nostril rims (*Nasagra Prana Dharana*).
+  - Trataka and Antar Mouna are kept as quiet, unobtrusive classical dharana notes without distracting from primary meditation flows.
+* **3-Phase Yogic Journey Progression**:
+  - The 7 Sopana levels in `ProgressionService` are officially mapped to the classical 3-Phase developmental journey:
+    - *Phase 1: Foundation (Weeks 1–4, Levels 1–2)*: Equal breath 4:4, extended exhalation 1:0:2:0, gentle Kapalbhati (30–45 strokes, no hold), silent So-Hum / Naam Japa, Nostril Breath Awareness (5–10m), Yoga Nidra (10–15m).
+    - *Phase 2: Deepening (Weeks 5–12, Levels 3–4)*: Antar Kumbhaka 1:1:2:0 to 1:2:2:0, Kapalbhati with Bahir Kumbhaka, Ujjayi & Bhramari with internal hold, 108-bead Japa.
+    - *Phase 3: Advanced (Month 4+, Levels 5–7)*: Classical 1:4:2:0 to 1:4:2:2 Kumbhaka ladders with Maha Bandha, Bhastrika, Surya/Chandra Bhedana, effortless Manasika repetition, extended 30–45m Yoga Nidra.
+
+## Routine Planner Technique-Specific Customizers (No Bogus Ratios)
+* **Strict Ratio Isolation to Nadi Shodhana**: The 4-part ratio stepper (`Puraka : Antar : Rechaka : Bahya`) is strictly restricted to Nadi Shodhana, the only classical practice employing 4-phase alternate nostril retention.
+* **Working Customizers for All Practices**: Non-ratio practices no longer display `Ratio 1:0:1:0` or open irrelevant ratio modals. Every practice step in `CycleComposerScreen` is equipped with a functioning adjust button and an interactive modal sheet:
+  - **Kapalbhati**: Customizes strokes per round (30, 45, 60, 80) and Bahir Kumbhaka empty lung retention (0s, 5s, 10s, 15s).
+  - **Ujjayi**: Customizes breath pacing (Equal 4:4, Extended 4:8, Deep 5:5) and optional Antar Kumbhaka internal hold (0s, 4s, 8s).
+  - **Bhramari**: Customizes mudra (Shanmukhi Mudra, Ear Tragus Press, Jnana Mudra) and optional Antar Kumbhaka internal hold before humming (0s, 3s, 5s).
+  - **3-Stage Naam Japa**: Customizes sacred Naam (*Radha Radha, Om Namah Shivaya, So-Hum, Hare Krishna, Om, Gayatri*) and target mala beads (27, 54, 108).
+  - **Silent Nostril Dhyan**: Customizes somatic anchor (*Nostril Rim / Nasagra, Ajna Chakra, Anahata, Manipura*) and hand mudra (*Jnana, Chin, Dhyana*).
+  - **General / Restorative**: Customizes practice intention and pacing focus.
+* **Subtitle & Parameter Persistence**: Customizations update step subtitles and relevant parameters, seamlessly passed to `CyclePlayerScreen` so users see their customized settings in the player.
+
+## Abhyas Studio Adjust UI Alignment & Audio Synchronization Overhaul
+* **Unified Adjust UI across Abhyas Tab and Routine Planner**:
+  - The "Adjust" buttons on the Abhyas tab (`PracticeListScreen`) now open dedicated interactive modal bottom sheets that match the design and options of the Routine Planner (`CycleComposerScreen`).
+  - Previously, Kapalbhati, Ujjayi, Bhramari, and Sheetali had silent inline toggles without any popup dialog, and Bhastrika lacked an adjust button. All six classical Pranayama practices now feature dedicated modal sheets:
+    - *Nadi Shodhana*: Classical ratio stepper (Puraka, Antar, Rechaka, Bahya) with classical presets and 1-min breath test link.
+    - *Kapalbhati*: Strokes per round (30, 45, 60, 80), Bahir Kumbhaka empty lung retention (0s, 5s, 10s, 15s), and rounds (3, 4, 5).
+    - *Ujjayi*: Pacing (4:4, 4:8, 5:5), Antar Kumbhaka internal hold (0s, 4s, 8s), and breath count (5, 7, 10, 15).
+    - *Bhramari*: Mudra (*Shanmukhi Mudra*, *Ear Tragus*, *Jnana Mudra*), Antar Kumbhaka internal hold (0s, 3s, 5s), and humming cycles (5, 7, 10, 12).
+    - *Bhastrika*: Bellows per round (15, 20, 25, 30), Antar Kumbhaka hold (0s, 8s, 12s, 16s), and rounds (3, 4, 5).
+    - *Sheetali & Sheetkari*: Technique (*Sheetali Tongue Curl*, *Sheetkari Teeth Inhale*) and cooling cycles (9, 12, 15, 21).
+  - Tapping "Practice" directly executes the session with the customized parameters.
+* **Audio Guidance & Breath Phase Synchrony**:
+  - Previously, calling `playTick()` on the shared `_bellPlayer` every 1000ms caused audio decoding latency, stutter, and prematurely truncated ringing singing bowl gongs.
+  - Decoupled ticking from singing bowl playback: ticking uses zero-latency system click, preserving bowl resonance without channel lag.
+  - Added precise phase transition audio cue dispatching in `CyclePlayerScreen` and `PracticePlayerScreen`:
+    - Puraka inhale starts: triggers `singingBowl_puraka_inhale.wav` with brightening resonance.
+    - Antar Kumbhaka internal hold starts: triggers `singingBowl_kumbhaka_hold.wav` harmonic ring.
+    - Rechaka exhale starts: triggers `singingBowl_rechaka_exhale.wav` descending calming chime.
+    - Bahya Kumbhaka (and Kapalbhati Bahir Kumbhaka empty hold) starts: triggers `singingBowl_bahya_pause.wav` grounding pause.
+    - Audio cues, haptics, and visual circle counters are now locked in exact second-by-second mathematical synchrony.
+* **Dynamic Parameter Reflection in Practice & Cycle Players**:
+  - `PracticePlayerScreen` dynamically reflects user-adjusted Kapalbhati strokes (e.g. 30, 45, 60, 80) and Bahir Kumbhaka empty hold (0s, 5s, 10s, 15s) in visual counters, header displays, and tick logic rather than using hardcoded values.
+  - Holds are uncapped in open-access self-mastery mode (`holdCapFractionOfCht: 1.0, userChtSeconds: 60`), allowing practitioner-chosen 1:4:2:1 or custom retentions to run without premature termination.
+  - `CyclePlayerScreen` parses customized strokes, mudras, and retentions directly from `CycleStepItem` parameters and subtitles, dynamically sizing the round duration and countdown rings for Kapalbhati and Ujjayi.
+  - Eliminated audio cue 1-second modulo lag by using state-keyed phase change detection (`_lastPhaseKey`), ensuring Tibetan singing bowl gongs and haptic pulses trigger precisely on the exact second boundary when a new breath phase begins.
+
+
+
 
 

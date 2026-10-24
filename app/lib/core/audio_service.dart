@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
+import '../engine/player/player_engine.dart';
 
 /// Types of bell sounds used for practice cues.
 enum BellType {
@@ -90,13 +92,39 @@ class AudioService {
     } catch (_) {}
   }
 
-  /// Play a subtle click/tick sound.
-  Future<void> playTick() async {
+  /// Play a phase-specific harmonic Singing Bowl cue (Puraka, Kumbhaka, Rechaka, Bahya)
+  Future<void> playPhaseCue(PracticePhase phase) async {
     try {
       if (!_initialized) await init();
-      if (_bellPlayer != null) {
-        await _bellPlayer!.play(AssetSource('audio/singingBowl_tick_soft.wav'));
+      String asset;
+      switch (phase) {
+        case PracticePhase.puraka:
+          asset = 'audio/singingBowl_puraka_inhale.wav';
+          break;
+        case PracticePhase.antarKumbhaka:
+          asset = 'audio/singingBowl_kumbhaka_hold.wav';
+          break;
+        case PracticePhase.rechaka:
+          asset = 'audio/singingBowl_rechaka_exhale.wav';
+          break;
+        case PracticePhase.bahyaKumbhaka:
+          asset = 'audio/singingBowl_bahya_pause.wav';
+          break;
+        case PracticePhase.naturalBreath:
+          asset = 'audio/singingBowl_grounding_bell.wav';
+          break;
       }
+      if (_bellPlayer != null) {
+        await _bellPlayer!.stop();
+        await _bellPlayer!.play(AssetSource(asset));
+      }
+    } catch (_) {}
+  }
+
+  /// Play a subtle click/tick sound using zero-latency system click so it never cuts off singing bowls
+  Future<void> playTick() async {
+    try {
+      await SystemSound.play(SystemSoundType.click);
     } catch (_) {}
   }
 

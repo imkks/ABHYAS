@@ -15,6 +15,7 @@ class PracticePlayerScreen extends StatefulWidget {
   final int weaningStage; // 1 to 5
   final List<int>? ratio; // [puraka, antar, rechaka, bahya]
   final int rounds;
+  final int strokes;
 
   const PracticePlayerScreen({
     super.key,
@@ -24,6 +25,7 @@ class PracticePlayerScreen extends StatefulWidget {
     this.weaningStage = 1,
     this.ratio,
     this.rounds = 5,
+    this.strokes = 30,
   });
 
   @override
@@ -46,15 +48,20 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   bool _isIntegrating = false;
   Timer? _bufferTimer;
 
+  // Specialized phase trackers
+  int _kapalbhatiPhaseIndex = 0; // 0: strokes, 1: hold empty, 2: puraka, 3: recovery
+  int _bhramariPhaseIndex = 0; // 0: puraka, 1: hold, 2: humming
+  int _ujjayiPhaseIndex = 0; // 0: puraka, 1: hold, 2: rechaka
+
   @override
   void initState() {
     super.initState();
     _activeRatio = widget.ratio ?? [4, 0, 4, 0];
 
     _engine = PlayerEngine(
-      holdCapFractionOfCht: 0.6,
-      levelCapSeconds: 30,
-      userChtSeconds: 20,
+      holdCapFractionOfCht: 1.0,
+      levelCapSeconds: 64,
+      userChtSeconds: 60,
     );
 
     _audioEngine = AudioGuidanceEngine(
@@ -70,8 +77,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     final cht = await UserRepository().loadChtBenchmark();
     if (cht != null && mounted) {
       _engine = PlayerEngine(
-        holdCapFractionOfCht: 0.6,
-        levelCapSeconds: 30,
+        holdCapFractionOfCht: 1.0,
+        levelCapSeconds: 64,
         userChtSeconds: cht.toInt(),
       );
     }
@@ -82,19 +89,182 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       _secondsElapsed = seconds;
       _totalSecondsElapsed++;
 
+      final isKapal = widget.practiceId.contains('kapal');
+      final isBhramari = widget.practiceId.contains('bhramari');
+      final isUjjayi = widget.practiceId.contains('ujjayi');
+
+      // 1. Specialized Kapalbhati mechanics
+      if (isKapal) {
+        final strokeTarget = widget.strokes > 0 ? widget.strokes : 30;
+        final holdTarget = (_activeRatio.length > 3 && _activeRatio[3] > 0) ? _activeRatio[3] : 10;
+        int target = strokeTarget;
+
+        if (_kapalbhatiPhaseIndex == 0) {
+          target = strokeTarget;
+          _hapticService.pulseForMatra(widget.weaningStage);
+        } else if (_kapalbhatiPhaseIndex == 1) {
+          target = holdTarget; // Bahir Kumbhaka (hold empty)
+        } else if (_kapalbhatiPhaseIndex == 2) {
+          target = 4; // Puraka release
+        } else {
+          target = 6; // Natural rest
+        }
+
+        if (_secondsElapsed >= target) {
+          _secondsElapsed = 0;
+          _engine.stopTimer();
+
+          if (_kapalbhatiPhaseIndex == 3) {
+            _kapalbhatiPhaseIndex = 0;
+            _hapticService.roundCompletePulse(widget.weaningStage);
+            if (_currentRound >= widget.rounds) {
+              _startIntegrationBuffer();
+              return;
+            } else {
+              _currentRound++;
+              _audioService.dispatchCue(_audioEngine.getCueForPhaseTransition(
+                phase: PracticePhase.puraka,
+                cycleNumber: _currentRound,
+              ));
+            }
+          } else {
+            _kapalbhatiPhaseIndex++;
+            _hapticService.phaseTransitionPulse(widget.weaningStage);
+            final nextPhase = _kapalbhatiPhaseIndex == 1
+                ? PracticePhase.bahyaKumbhaka
+                : (_kapalbhatiPhaseIndex == 2 ? PracticePhase.puraka : PracticePhase.naturalBreath);
+            _audioService.dispatchCue(_audioEngine.getCueForPhaseTransition(
+              phase: nextPhase,
+              cycleNumber: _currentRound,
+            ));
+          }
+
+          if (_isPlaying) {
+            _engine.startTimer(_onTick);
+          }
+        }
+        return;
+      }
+
+      // 2. Specialized Bhramari mechanics
+      if (isBhramari) {
+        final puraka = _activeRatio.isNotEmpty ? _activeRatio[0] : 4;
+        final antarHold = _activeRatio.length > 1 ? _activeRatio[1] : 0;
+        final hasHold = antarHold > 0;
+        int target = puraka;
+
+        if (_bhramariPhaseIndex == 0) {
+          target = puraka; // Puraka
+        } else if (hasHold && _bhramariPhaseIndex == 1) {
+          target = antarHold; // Antar Kumbhaka
+        } else {
+          target = 8; // Humming Exhale
+        }
+
+        if (_secondsElapsed >= target) {
+          _secondsElapsed = 0;
+          _engine.stopTimer();
+
+          final isLastPhase = hasHold ? (_bhramariPhaseIndex == 2) : (_bhramariPhaseIndex == 1);
+          if (isLastPhase) {
+            _bhramariPhaseIndex = 0;
+            _hapticService.roundCompletePulse(widget.weaningStage);
+            if (_currentRound >= widget.rounds) {
+              _startIntegrationBuffer();
+              return;
+            } else {
+              _currentRound++;
+              _audioService.dispatchCue(_audioEngine.getCueForPhaseTransition(
+                phase: PracticePhase.puraka,
+                cycleNumber: _currentRound,
+              ));
+            }
+          } else {
+            _bhramariPhaseIndex++;
+            _hapticService.phaseTransitionPulse(widget.weaningStage);
+            final nextPhase = (hasHold && _bhramariPhaseIndex == 1)
+                ? PracticePhase.antarKumbhaka
+                : PracticePhase.rechaka;
+            _audioService.dispatchCue(_audioEngine.getCueForPhaseTransition(
+              phase: nextPhase,
+              cycleNumber: _currentRound,
+            ));
+          }
+
+          if (_isPlaying) {
+            _engine.startTimer(_onTick);
+          }
+        }
+        return;
+      }
+
+      // 3. Specialized Ujjayi mechanics
+      if (isUjjayi) {
+        final puraka = _activeRatio.isNotEmpty ? _activeRatio[0] : 4;
+        final antarHold = _activeRatio.length > 1 ? _activeRatio[1] : 0;
+        final rechaka = _activeRatio.length > 2 ? _activeRatio[2] : 5;
+        final hasHold = antarHold > 0;
+        int target = puraka;
+
+        if (_ujjayiPhaseIndex == 0) {
+          target = puraka; // Puraka
+        } else if (hasHold && _ujjayiPhaseIndex == 1) {
+          target = antarHold; // Antar Kumbhaka
+        } else {
+          target = rechaka; // Rechaka
+        }
+
+        if (_secondsElapsed >= target) {
+          _secondsElapsed = 0;
+          _engine.stopTimer();
+
+          final isLastPhase = hasHold ? (_ujjayiPhaseIndex == 2) : (_ujjayiPhaseIndex == 1);
+          if (isLastPhase) {
+            _ujjayiPhaseIndex = 0;
+            _hapticService.roundCompletePulse(widget.weaningStage);
+            if (_currentRound >= widget.rounds) {
+              _startIntegrationBuffer();
+              return;
+            } else {
+              _currentRound++;
+              _audioService.dispatchCue(_audioEngine.getCueForPhaseTransition(
+                phase: PracticePhase.puraka,
+                cycleNumber: _currentRound,
+              ));
+            }
+          } else {
+            _ujjayiPhaseIndex++;
+            _hapticService.phaseTransitionPulse(widget.weaningStage);
+            final nextPhase = (hasHold && _ujjayiPhaseIndex == 1)
+                ? PracticePhase.antarKumbhaka
+                : PracticePhase.rechaka;
+            _audioService.dispatchCue(_audioEngine.getCueForPhaseTransition(
+              phase: nextPhase,
+              cycleNumber: _currentRound,
+            ));
+          }
+
+          if (_isPlaying) {
+            _engine.startTimer(_onTick);
+          }
+        }
+        return;
+      }
+
+      // 4. Standard / Nadi Shodhana Ratio Mechanics
       int currentPhaseTarget = 0;
       switch (_currentPhase) {
         case PracticePhase.puraka:
           currentPhaseTarget = _activeRatio[0] > 0 ? _activeRatio[0] : 4;
           break;
         case PracticePhase.antarKumbhaka:
-          currentPhaseTarget = _engine.scheduleHold(_activeRatio[1]);
+          currentPhaseTarget = _activeRatio[1];
           break;
         case PracticePhase.rechaka:
           currentPhaseTarget = _activeRatio[2] > 0 ? _activeRatio[2] : 4;
           break;
         case PracticePhase.bahyaKumbhaka:
-          currentPhaseTarget = _engine.scheduleHold(_activeRatio[3]);
+          currentPhaseTarget = _activeRatio[3];
           break;
         case PracticePhase.naturalBreath:
           currentPhaseTarget = 4;
@@ -393,9 +563,26 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                       style: const TextStyle(fontSize: 16, color: Colors.orange, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 6),
-                    Text(
-                      'Ratio: ${_activeRatio.join(" : ")}',
-                      style: const TextStyle(color: Colors.grey, fontSize: 13),
+                    Builder(
+                      builder: (context) {
+                        final kStrokes = widget.strokes > 0 ? widget.strokes : 30;
+                        final kHold = (_activeRatio.length > 3 && _activeRatio[3] > 0) ? _activeRatio[3] : 10;
+                        final bHold = (_activeRatio.length > 1 && _activeRatio[1] > 0) ? _activeRatio[1] : 0;
+                        final uInhale = _activeRatio.isNotEmpty ? _activeRatio[0] : 4;
+                        final uHold = (_activeRatio.length > 1 && _activeRatio[1] > 0) ? _activeRatio[1] : 0;
+                        final uExhale = _activeRatio.length > 2 ? _activeRatio[2] : 5;
+
+                        return Text(
+                          widget.practiceId.contains('kapal')
+                              ? '$kStrokes Strokes ➔ ${kHold > 0 ? "${kHold}s Bahir Kumbhaka" : "No Hold"} ➔ Puraka'
+                              : (widget.practiceId.contains('bhramari')
+                                  ? '4s Inhale ➔ ${bHold > 0 ? "${bHold}s Hold ➔ " : ""}8s Humming Exhale'
+                                  : (widget.practiceId.contains('ujjayi')
+                                      ? '${uInhale}s Inhale ➔ ${uHold > 0 ? "${uHold}s Hold ➔ " : ""}${uExhale}s Exhale'
+                                      : 'Ratio: ${_activeRatio.join(" : ")}')),
+                          style: const TextStyle(color: Colors.grey, fontSize: 13),
+                        );
+                      },
                     ),
                     const SizedBox(height: 16),
 
@@ -414,31 +601,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                     const SizedBox(height: 20),
 
                     if (showVisualPacer)
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 500),
-                        width: _currentPhase == PracticePhase.puraka
-                            ? 220
-                            : (_currentPhase == PracticePhase.rechaka ? 120 : 170),
-                        height: _currentPhase == PracticePhase.puraka
-                            ? 220
-                            : (_currentPhase == PracticePhase.rechaka ? 120 : 170),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _getPhaseColor(_currentPhase).withValues(alpha: 0.3),
-                          border: Border.all(color: _getPhaseColor(_currentPhase), width: 3),
-                        ),
-                        child: Center(
-                          child: Text(
-                            _currentPhase.name.toUpperCase(),
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      )
+                      _buildDynamicPracticePacer()
                     else
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 40.0),
@@ -449,12 +612,6 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                         ),
                       ),
 
-                    const SizedBox(height: 24),
-                    if (showCounts)
-                      Text(
-                        '${_secondsElapsed}s',
-                        style: const TextStyle(fontSize: 48, fontWeight: FontWeight.w300, color: Colors.white),
-                      ),
                     const SizedBox(height: 30),
 
                     Row(
@@ -500,6 +657,197 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDynamicPracticePacer() {
+    final isKapal = widget.practiceId.contains('kapal');
+    final isBhramari = widget.practiceId.contains('bhramari');
+    final isUjjayi = widget.practiceId.contains('ujjayi');
+    final isNadi = widget.practiceId.contains('nadi');
+
+    if (isKapal) {
+      final kStrokes = widget.strokes > 0 ? widget.strokes : 30;
+      final kHold = (_activeRatio.length > 3 && _activeRatio[3] > 0) ? _activeRatio[3] : 10;
+
+      String title;
+      String count;
+      String sub;
+      Color color;
+
+      if (_kapalbhatiPhaseIndex == 0) {
+        title = 'ACTIVE EXHALATIONS';
+        count = 'Stroke ${_secondsElapsed + 1}/$kStrokes';
+        sub = 'Sharp abdominal pumping • Chin Mudra';
+        color = Colors.orangeAccent;
+      } else if (_kapalbhatiPhaseIndex == 1) {
+        title = 'BAHIR KUMBHAKA (HOLD EMPTY)';
+        count = '${kHold - _secondsElapsed}s EMPTY';
+        sub = 'Exhale completely • Hold outside • Maha Bandha';
+        color = const Color(0xFF9D4EDD);
+      } else if (_kapalbhatiPhaseIndex == 2) {
+        title = 'PURAKA RELEASE';
+        count = '${_secondsElapsed + 1}s / 4s';
+        sub = 'Release locks • Take one deep, smooth diaphragmatic breath in';
+        color = Colors.blueAccent;
+      } else {
+        title = 'NATURAL REST';
+        count = '${6 - _secondsElapsed}s';
+        sub = 'Gentle natural breathing before next round';
+        color = Colors.tealAccent;
+      }
+
+      return _buildPacerRing(title: title, count: count, subtitle: sub, color: color, size: 210);
+    }
+
+    if (isBhramari) {
+      final antarHold = _activeRatio.length > 1 ? _activeRatio[1] : 0;
+      final hasHold = antarHold > 0;
+      String title;
+      String count;
+      String sub;
+      Color color;
+
+      if (_bhramariPhaseIndex == 0) {
+        title = 'PURAKA (SMOOTH INHALE)';
+        count = '${_secondsElapsed + 1}s / 4s';
+        sub = 'Shanmukhi Mudra: Thumbs ready • Deep smooth breath';
+        color = Colors.blueAccent;
+      } else if (hasHold && _bhramariPhaseIndex == 1) {
+        title = 'ANTAR KUMBHAKA (INTERNAL HOLD)';
+        count = '${_secondsElapsed + 1}s / ${antarHold}s';
+        sub = 'Soft retention • Stillness at brow center';
+        color = const Color(0xFF9D4EDD);
+      } else {
+        title = 'BHRAMARI (HUMMING BEE)';
+        count = '${_secondsElapsed + 1}s / 8s';
+        sub = 'Close ears with thumbs • Continuous humming vibrating skull';
+        color = Colors.orangeAccent;
+      }
+      return _buildPacerRing(title: title, count: count, subtitle: sub, color: color, size: 210);
+    }
+
+    if (isUjjayi) {
+      final antarHold = _activeRatio.length > 1 ? _activeRatio[1] : 0;
+      final hasHold = antarHold > 0;
+      String title;
+      String count;
+      String sub;
+      Color color;
+
+      if (_ujjayiPhaseIndex == 0) {
+        title = 'UJJAYI PURAKA (OCEAN INHALE)';
+        count = '${_secondsElapsed + 1}s / 4s';
+        sub = 'Gently constrict glottis • Whispering ocean sound';
+        color = Colors.blueAccent;
+      } else if (hasHold && _ujjayiPhaseIndex == 1) {
+        title = 'ANTAR KUMBHAKA (HOLD)';
+        count = '${_secondsElapsed + 1}s / ${antarHold}s';
+        sub = 'Gentle throat lock (Jalandhara) retention';
+        color = const Color(0xFF9D4EDD);
+      } else {
+        title = 'UJJAYI RECHAKA (OCEAN EXHALE)';
+        count = '${_secondsElapsed + 1}s / 5s';
+        sub = 'Smooth, unbroken exhalation like ocean surf';
+        color = Colors.tealAccent;
+      }
+      return _buildPacerRing(title: title, count: count, subtitle: sub, color: color, size: 210);
+    }
+
+    // Nadi Shodhana & general ratio pranayama
+    String nostrilCue;
+    if (isNadi) {
+      if (_currentPhase == PracticePhase.puraka) {
+        nostrilCue = _currentRound.isOdd
+            ? 'Inhale Left (Ida) • Thumb closes right'
+            : 'Inhale Right (Pingala) • Ring closes left';
+      } else if (_currentPhase == PracticePhase.antarKumbhaka) {
+        nostrilCue = 'Both Nostrils Closed • Jalandhara Bandha';
+      } else if (_currentPhase == PracticePhase.rechaka) {
+        nostrilCue = _currentRound.isOdd
+            ? 'Exhale Right (Pingala) • Open right nostril'
+            : 'Exhale Left (Ida) • Open left nostril';
+      } else {
+        nostrilCue = 'Both Closed • Hold Empty (Maha Bandha)';
+      }
+    } else {
+      nostrilCue = 'Follow steady rhythm';
+    }
+
+    final pColor = _getPhaseColor(_currentPhase);
+    return _buildPacerRing(
+      title: _currentPhase.name.toUpperCase(),
+      count: '${_secondsElapsed}s',
+      subtitle: nostrilCue,
+      color: pColor,
+      size: _currentPhase == PracticePhase.puraka ? 220 : (_currentPhase == PracticePhase.rechaka ? 140 : 180),
+    );
+  }
+
+  Widget _buildPacerRing({
+    required String title,
+    required String count,
+    required String subtitle,
+    required Color color,
+    required double size,
+  }) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 350),
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color.withValues(alpha: 0.18),
+        border: Border.all(color: color, width: 3.5),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.25),
+            blurRadius: 28,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 10,
+                  letterSpacing: 1.1,
+                  color: color,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                count,
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w300,
+                  color: Colors.white,
+                  fontFeatures: [FontFeature.tabularFigures()],
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w500,
+                  color: color,
+                ),
+                maxLines: 2,
+              ),
+            ],
           ),
         ),
       ),
