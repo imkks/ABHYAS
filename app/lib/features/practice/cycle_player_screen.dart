@@ -109,58 +109,500 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
   }
 
   Widget _buildPacerOrTimer(CycleStepItem currentStep, int stepRemaining) {
-    final ratio = currentStep.ratio;
-    final isPacer = currentStep.isPranayamaWithPacer && ratio != null && ratio.length >= 3;
+    final id = currentStep.id.toLowerCase();
 
-    if (!isPacer) {
-      // Standard countdown circle
-      return Container(
-        width: 200,
-        height: 200,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: AbhyasTheme.darkSurface,
-          border: Border.all(
-            color: _isPaused ? Colors.grey : AbhyasTheme.saffron,
-            width: 4,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: AbhyasTheme.saffron.withValues(alpha: _isPaused ? 0.05 : 0.25),
-              blurRadius: 30,
-              spreadRadius: 2,
+    // 1. Kapalbhati: Cleansing active strokes + deep Puraka + 10s soft Antar Kumbhaka
+    if (id.contains('kapal')) {
+      return _buildKapalbhatiPacer(currentStep, stepRemaining);
+    }
+
+    // 2. Bhramari: Shanmukhi Mudra with humming bee cranial resonance
+    if (id.contains('bhramari')) {
+      return _buildBhramariPacer(currentStep, stepRemaining);
+    }
+
+    // 3. Ujjayi: Ocean wave breath with glottis throat whisper
+    if (id.contains('ujjayi')) {
+      return _buildUjjayiPacer(currentStep, stepRemaining);
+    }
+
+    // 4. Nostril Dhyan / Breath Awareness: Jnana Mudra stillness at nostril rims & Ajna Chakra
+    if (id.contains('breath_awareness') || id.contains('dhyan') || id.contains('nostril')) {
+      return _buildNostrilDhyanPacer(currentStep, stepRemaining);
+    }
+
+    // 5. Nadi Shodhana / Ratio Pranayama: Vishnu Mudra alternate nostril ratios
+    if (id.contains('nadi') || (currentStep.isPranayamaWithPacer && currentStep.ratio != null && currentStep.ratio!.length >= 3)) {
+      return _buildNadiShodhanaPacer(currentStep, stepRemaining, currentStep.ratio ?? [4, 8, 8, 4]);
+    }
+
+    // 6. Default step timer (Sankalp, Sukshma Vyayama, Yoga Nidra, Savasana, Shanti Path)
+    return _buildDefaultTimer(currentStep, stepRemaining);
+  }
+
+  /// Kapalbhati Specialized Pacer: 3 Rounds (Strokes -> Deep Puraka -> 10s Antar Kumbhaka -> Relax)
+  Widget _buildKapalbhatiPacer(CycleStepItem currentStep, int stepRemaining) {
+    const roundDuration = 55; // 35s strokes + 4s puraka + 10s hold + 6s recovery
+    final currentRoundNum = (_stepSeconds ~/ roundDuration) + 1;
+    final secInRound = _stepSeconds % roundDuration;
+
+    String phaseTitle;
+    String countText;
+    String subtitle;
+    Color phaseColor;
+
+    if (currentRoundNum > 3) {
+      phaseTitle = 'KAPALBHATI COMPLETE';
+      countText = 'STILL';
+      subtitle = 'Rest in natural breath • Observe frontal brain clarity';
+      phaseColor = Colors.tealAccent;
+    } else if (secInRound < 35) {
+      // 35 sharp strokes (~1 per second)
+      final strokeNum = secInRound + 1;
+      phaseTitle = 'ROUND $currentRoundNum: ACTIVE EXHALATIONS';
+      countText = 'Stroke $strokeNum/35';
+      subtitle = 'Sharp abdominal contraction • Chin Mudra • Passive inhale';
+      phaseColor = AbhyasTheme.saffron;
+    } else if (secInRound < 39) {
+      // Deep Puraka (4s)
+      final purakaSec = (secInRound - 35) + 1;
+      phaseTitle = 'ROUND $currentRoundNum: DEEP PURAKA';
+      countText = '${purakaSec}s / 4s';
+      subtitle = 'Exhale completely, then take one deep, smooth inhalation';
+      phaseColor = AbhyasTheme.sky;
+    } else if (secInRound < 49) {
+      // Antar Kumbhaka (10s Soft Hold)
+      final holdLeft = 49 - secInRound;
+      phaseTitle = 'ROUND $currentRoundNum: ANTAR KUMBHAKA';
+      countText = '${holdLeft}s HOLD';
+      subtitle = 'Soft 10s internal hold • Jalandhara Bandha (Chin Lock)';
+      phaseColor = const Color(0xFF9D4EDD);
+    } else {
+      // Recovery (6s)
+      final recLeft = 55 - secInRound;
+      phaseTitle = 'ROUND $currentRoundNum: NATURAL REST';
+      countText = '${recLeft}s';
+      subtitle = 'Slow release • Breathe naturally before next round';
+      phaseColor = Colors.tealAccent;
+    }
+
+    return Column(
+      children: [
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          width: 210,
+          height: 210,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AbhyasTheme.darkSurface,
+            border: Border.all(
+              color: _isPaused ? Colors.grey : phaseColor,
+              width: 5,
             ),
-          ],
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                _formatSeconds(stepRemaining),
-                style: const TextStyle(
-                  fontSize: 48,
-                  fontWeight: FontWeight.w300,
-                  color: Colors.white,
-                  fontFeatures: [FontFeature.tabularFigures()],
-                ),
-              ),
-              Text(
-                _isPaused ? 'PAUSED' : 'REMAINING',
-                style: const TextStyle(
-                  color: AbhyasTheme.darkInkSoft,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.5,
-                ),
+            boxShadow: [
+              BoxShadow(
+                color: phaseColor.withValues(alpha: _isPaused ? 0.05 : 0.35),
+                blurRadius: 30,
+                spreadRadius: 2,
               ),
             ],
           ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  phaseTitle,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.1,
+                    color: phaseColor,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  countText,
+                  style: const TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    fontFeatures: [FontFeature.tabularFigures()],
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14.0),
+                  child: Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: phaseColor,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-      );
-    }
+        const SizedBox(height: 14),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AbhyasTheme.darkSurface,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AbhyasTheme.line),
+              ),
+              child: Text(
+                'Round ${currentRoundNum.clamp(1, 3)} of 3 · Chin Mudra',
+                style: const TextStyle(fontSize: 11, color: Colors.white70),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AbhyasTheme.darkSurface,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AbhyasTheme.line),
+              ),
+              child: Text(
+                'Step Left: ${_formatSeconds(stepRemaining)}',
+                style: const TextStyle(fontSize: 11, color: AbhyasTheme.darkInkSoft),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
 
-    // Dynamic Pranayama Pacer (e.g. Nadi Shodhana with level-scaled Kumbhaka)
+  /// Bhramari Specialized Pacer: Shanmukhi Mudra & Humming Bee Skull Resonance
+  Widget _buildBhramariPacer(CycleStepItem currentStep, int stepRemaining) {
+    const cycleTotal = 12; // 4s inhale + 8s humming exhale
+    final secInCycle = _stepSeconds % cycleTotal;
+    final roundNum = (_stepSeconds ~/ cycleTotal) + 1;
+
+    final isInhale = secInCycle < 4;
+    final phaseTitle = isInhale ? 'PURAKA (SMOOTH INHALE)' : 'BHRAMARI RECHAKA (HUMMING)';
+    final phaseColor = isInhale ? AbhyasTheme.sky : AbhyasTheme.saffron;
+    final secondsInPhase = isInhale ? secInCycle + 1 : (secInCycle - 4) + 1;
+    final totalInPhase = isInhale ? 4 : 8;
+    final cue = isInhale
+        ? 'Shanmukhi Mudra · Deep smooth Ujjayi inhalation'
+        : 'Close ears with thumbs · Long humming (Mmm...) vibrating skull';
+
+    return Column(
+      children: [
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          width: 210,
+          height: 210,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AbhyasTheme.darkSurface,
+            border: Border.all(
+              color: _isPaused ? Colors.grey : phaseColor,
+              width: 5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: phaseColor.withValues(alpha: _isPaused ? 0.05 : 0.35),
+                blurRadius: 32,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  phaseTitle,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.1,
+                    color: phaseColor,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${secondsInPhase}s',
+                  style: const TextStyle(
+                    fontSize: 44,
+                    fontWeight: FontWeight.w300,
+                    color: Colors.white,
+                    fontFeatures: [FontFeature.tabularFigures()],
+                  ),
+                ),
+                Text(
+                  'of ${totalInPhase}s',
+                  style: const TextStyle(fontSize: 12, color: AbhyasTheme.darkInkSoft),
+                ),
+                const SizedBox(height: 6),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14.0),
+                  child: Text(
+                    cue,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: phaseColor,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AbhyasTheme.darkSurface,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AbhyasTheme.line),
+              ),
+              child: Text(
+                'Breath $roundNum · Shanmukhi Mudra',
+                style: const TextStyle(fontSize: 11, color: Colors.white70),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AbhyasTheme.darkSurface,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AbhyasTheme.line),
+              ),
+              child: Text(
+                'Left: ${_formatSeconds(stepRemaining)}',
+                style: const TextStyle(fontSize: 11, color: AbhyasTheme.darkInkSoft),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  /// Ujjayi Specialized Pacer: Ocean Wave Whispering Breath
+  Widget _buildUjjayiPacer(CycleStepItem currentStep, int stepRemaining) {
+    const cycleTotal = 9; // 4s inhale + 5s exhale
+    final secInCycle = _stepSeconds % cycleTotal;
+    final roundNum = (_stepSeconds ~/ cycleTotal) + 1;
+
+    final isInhale = secInCycle < 4;
+    final phaseTitle = isInhale ? 'UJJAYI PURAKA (OCEAN INHALE)' : 'UJJAYI RECHAKA (OCEAN EXHALE)';
+    final phaseColor = isInhale ? AbhyasTheme.sky : AbhyasTheme.clay;
+    final secondsInPhase = isInhale ? secInCycle + 1 : (secInCycle - 4) + 1;
+    final totalInPhase = isInhale ? 4 : 5;
+    final cue = isInhale
+        ? 'Gently constrict back of throat (glottis) • Soft ocean wave sound'
+        : 'Smooth continuous exhalation like calm ocean surf';
+
+    return Column(
+      children: [
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          width: 210,
+          height: 210,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AbhyasTheme.darkSurface,
+            border: Border.all(
+              color: _isPaused ? Colors.grey : phaseColor,
+              width: 5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: phaseColor.withValues(alpha: _isPaused ? 0.05 : 0.35),
+                blurRadius: 30,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  phaseTitle,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.1,
+                    color: phaseColor,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${secondsInPhase}s',
+                  style: const TextStyle(
+                    fontSize: 44,
+                    fontWeight: FontWeight.w300,
+                    color: Colors.white,
+                    fontFeatures: [FontFeature.tabularFigures()],
+                  ),
+                ),
+                Text(
+                  'of ${totalInPhase}s',
+                  style: const TextStyle(fontSize: 12, color: AbhyasTheme.darkInkSoft),
+                ),
+                const SizedBox(height: 6),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14.0),
+                  child: Text(
+                    cue,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: phaseColor,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AbhyasTheme.darkSurface,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AbhyasTheme.line),
+              ),
+              child: Text(
+                'Breath $roundNum · Throat Resonance',
+                style: const TextStyle(fontSize: 11, color: Colors.white70),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AbhyasTheme.darkSurface,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AbhyasTheme.line),
+              ),
+              child: Text(
+                'Left: ${_formatSeconds(stepRemaining)}',
+                style: const TextStyle(fontSize: 11, color: AbhyasTheme.darkInkSoft),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  /// Nostril Dhyan & Prana Dharana Pacer: Witnessing natural breath touch at nostril rim
+  Widget _buildNostrilDhyanPacer(CycleStepItem currentStep, int stepRemaining) {
+    const cycleTotal = 8; // 4s natural expansion, 4s natural settling
+    final secInCycle = _stepSeconds % cycleTotal;
+    final isInflow = secInCycle < 4;
+
+    return Column(
+      children: [
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 500),
+          width: 210,
+          height: 210,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AbhyasTheme.darkSurface,
+            border: Border.all(
+              color: _isPaused ? Colors.grey : Colors.tealAccent,
+              width: 4,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.tealAccent.withValues(alpha: _isPaused ? 0.05 : 0.25),
+                blurRadius: 35,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  'PRANA DHARANA',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.5,
+                    color: Colors.tealAccent,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  _formatSeconds(stepRemaining),
+                  style: const TextStyle(
+                    fontSize: 46,
+                    fontWeight: FontWeight.w200,
+                    color: Colors.white,
+                    fontFeatures: [FontFeature.tabularFigures()],
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14.0),
+                  child: Text(
+                    isInflow
+                        ? 'Feel cool touch of breath entering nostrils'
+                        : 'Feel warm touch of breath gently leaving nostrils',
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.tealAccent,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          decoration: BoxDecoration(
+            color: AbhyasTheme.darkSurface,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: AbhyasTheme.line),
+          ),
+          child: const Text(
+            'Jnana Mudra · Observe complete stillness at brow center (Ajna Chakra)',
+            style: TextStyle(fontSize: 11, color: Colors.white70),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Nadi Shodhana Dynamic Pacer with Vishnu Mudra
+  Widget _buildNadiShodhanaPacer(CycleStepItem currentStep, int stepRemaining, List<int> ratio) {
     final puraka = ratio[0];
     final antar = ratio[1];
     final rechaka = ratio[2];
@@ -185,43 +627,37 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
       phaseColor = AbhyasTheme.sky;
       phaseTarget = puraka;
       secondsInPhase = secondInCycle + 1;
-      if (currentStep.id.contains('nadi')) {
-        nostrilCue = breathRound.isOdd ? 'Inhale Left (Ida)' : 'Inhale Right (Pingala)';
-      } else {
-        nostrilCue = 'Deep diaphragmatic breath';
-      }
+      nostrilCue = breathRound.isOdd
+          ? 'Inhale Left (Ida) • Thumb closes right nostril'
+          : 'Inhale Right (Pingala) • Ring finger closes left';
     } else if (secondInCycle < puraka + antar) {
       phaseTitle = 'ANTAR KUMBHAKA (HOLD)';
       phaseColor = AbhyasTheme.saffron;
       phaseTarget = antar;
       secondsInPhase = (secondInCycle - puraka) + 1;
-      nostrilCue = currentStep.id.contains('nadi')
-          ? 'Both Closed • Jalandhara Bandha'
-          : 'Internal Hold • Throat Lock';
+      nostrilCue = 'Both Nostrils Closed • Jalandhara Bandha (Chin Lock)';
     } else if (secondInCycle < puraka + antar + rechaka) {
       phaseTitle = 'RECHAKA (EXHALE)';
       phaseColor = AbhyasTheme.clay;
       phaseTarget = rechaka;
       secondsInPhase = (secondInCycle - puraka - antar) + 1;
-      if (currentStep.id.contains('nadi')) {
-        nostrilCue = breathRound.isOdd ? 'Exhale Right (Pingala)' : 'Exhale Left (Ida)';
-      } else {
-        nostrilCue = 'Smooth, slow exhalation';
-      }
+      nostrilCue = breathRound.isOdd
+          ? 'Exhale Right (Pingala) • Release right thumb'
+          : 'Exhale Left (Ida) • Release left ring finger';
     } else {
       phaseTitle = 'BAHYA KUMBHAKA (HOLD)';
       phaseColor = const Color(0xFF9D4EDD);
       phaseTarget = bahya;
       secondsInPhase = (secondInCycle - puraka - antar - rechaka) + 1;
-      nostrilCue = 'External Hold • Maha Bandha';
+      nostrilCue = 'Both Nostrils Closed • Hold Empty • Maha Bandha';
     }
 
     return Column(
       children: [
         AnimatedContainer(
           duration: const Duration(milliseconds: 300),
-          width: 200,
-          height: 200,
+          width: 210,
+          height: 210,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: AbhyasTheme.darkSurface,
@@ -320,6 +756,54 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
           ],
         ),
       ],
+    );
+  }
+
+  /// Default countdown circle for preparation & restorative steps
+  Widget _buildDefaultTimer(CycleStepItem currentStep, int stepRemaining) {
+    return Container(
+      width: 200,
+      height: 200,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: AbhyasTheme.darkSurface,
+        border: Border.all(
+          color: _isPaused ? Colors.grey : AbhyasTheme.saffron,
+          width: 4,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AbhyasTheme.saffron.withValues(alpha: _isPaused ? 0.05 : 0.25),
+            blurRadius: 30,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              _formatSeconds(stepRemaining),
+              style: const TextStyle(
+                fontSize: 48,
+                fontWeight: FontWeight.w300,
+                color: Colors.white,
+                fontFeatures: [FontFeature.tabularFigures()],
+              ),
+            ),
+            Text(
+              _isPaused ? 'PAUSED' : 'REMAINING',
+              style: const TextStyle(
+                color: AbhyasTheme.darkInkSoft,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.5,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

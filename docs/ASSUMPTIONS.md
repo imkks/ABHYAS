@@ -71,5 +71,20 @@ As per the task brief, the following assumptions were made regarding the design,
 * Integrated `BreathCapacityTestScreen` (Sopana Pariksha): a 1-minute guided breath exercise (3 centering breaths -> 1 deep inhale -> comfortable hold until first urge) to measure Comfortable Hold Time (CHT).
 * The diagnostic maps CHT to the practitioner's apt Sopana level (<15s -> Level 1, 15-25s -> Level 2, 25-40s -> Level 3, 40-60s -> Level 4, 60s+ -> Level 5), calibrates their active rank in `ProgressionService`, and sets the safe hold cap (`CHT * 0.60`).
 
+## Classical Pranayama & Dhyan Segregation and Authentic Pacing Mechanics
+* **Strict Pranayama vs. Dhyan Segregation**: Pranayama techniques (breath control: Kapalbhati, Nadi Shodhana, Ujjayi, Bhramari, Bhastrika, Sheetali) are strictly isolated in the "Abhyas" tab. Meditation, Dharana, and Mantra practices (Naam Japa, Breath Awareness / Nostril Dhyan, Yoga Nidra, Trataka, Antar Mouna) reside strictly in the "Dhyan" tab. Redundant variant duplications (`nadi_shodhana_basic`, `nadi_shodhana_nasika`, etc.) were consolidated into canonical entries with modular customization.
+* **The Complete Classical Master Sequence (15–20 Min)**: Structured according to classical Hatha Yoga progression:
+  1. *Phase 1 (Cleansing & Awakening)*: Kapalbhati (3 rounds of 30–50 sharp abdominal contractions with Chin Mudra, followed after each round by complete exhale, deep Puraka, and a 10s soft Antar Kumbhaka hold).
+  2. *Phase 2 (Channel Purification)*: Nadi Shodhana with Antar & Bahya Kumbhaka (Vishnu Mudra, 4s Puraka -> 8–16s Antar Kumbhaka with Jalandhara Bandha -> 8s Rechaka -> 4s Bahya Kumbhaka with Maha Bandha; 5–7 rounds).
+  3. *Phase 3 (Soothing & Mind Focus)*: Ujjayi ocean wave breath (5–10 deep breaths with throat constriction) -> Bhramari Pranayama (5–7 breaths with Shanmukhi Mudra and continuous skull vibration humming).
+  4. *Phase 4 (Integration & Stillness)*: Silent Nostril Dhyan (Jnana Mudra, witnessing subtle air flow at nostril rim, stillness at Ajna Chakra).
+* **Technique-Specific Pacing Engines**: In both `PracticePlayerScreen` and `CyclePlayerScreen`, generalized equal Puraka/Rechaka holds were replaced with technique-authentic engines:
+  - *Kapalbhati*: Rhythmic 1 stroke/sec exhalation counter with abdominal pulsation -> deep Puraka prompt -> 10s Antar Kumbhaka countdown -> natural breath recovery.
+  - *Bhramari*: 4s smooth Puraka -> 8s humming Rechaka with cranial resonance cues.
+  - *Ujjayi*: Smooth oscillating ocean wave breath (4s in, 5s out) with glottis whisper constriction.
+  - *Nadi Shodhana*: Alternate nostril mudra cues (Ida vs. Pingala) paired with user's configured ratio and bandhas.
+  - *Dhyan*: Calm breathing ring observing nostril touch (Nasagra) and stillness.
+
+
 
 

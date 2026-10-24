@@ -321,7 +321,7 @@ class _TodayScreenState extends State<TodayScreen> {
             ),
             const SizedBox(height: 6),
             Text(
-              '⚡ Level ${prog.level} Scaled: Kapalbhati (${prog.kapalbhatiStrokes}) → Nadi Shodhana (${prog.ratioDescription}) → Dhyan',
+              'Classical Master Sequence: Kapalbhati (3 rounds) → Nadi Shodhana (${prog.ratioDescription}) → Ujjayi & Bhramari → Nostril Dhyan',
               style: const TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 12),
             ),
             const SizedBox(height: 14),
@@ -421,7 +421,7 @@ class _TodayScreenState extends State<TodayScreen> {
             ),
             const SizedBox(height: 6),
             const Text(
-              'Naam Jaap (108 beads) → Bhramari → Guided Yoga Nidra for sleep',
+              '3-Stage Naam Jaap (Vaikhari ➔ Upamshu ➔ Manasika) → Bhramari → Guided Yoga Nidra',
               style: TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 12),
             ),
             const SizedBox(height: 14),
