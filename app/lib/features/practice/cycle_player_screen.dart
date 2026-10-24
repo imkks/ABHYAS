@@ -32,6 +32,8 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
   int _totalSeconds = 0;
   int _currentStepIndex = 0;
   bool _isPaused = false;
+  String _lastPhaseKey = '';
+  int _lastStepForCue = -1;
 
   @override
   void initState() {
@@ -58,6 +60,7 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
         }
       },
       onStepComplete: (completedIndex) {
+        _lastPhaseKey = '';
         _audioService.playBell(BellType.transition);
         _hapticService.phaseTransitionPulse(widget.weaningStage);
       },
@@ -66,63 +69,121 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
   }
 
   void _checkAndPlayPhaseCue(CycleStepItem currentStep, int stepSeconds) {
+    if (_lastStepForCue != _currentStepIndex) {
+      _lastStepForCue = _currentStepIndex;
+      _lastPhaseKey = '';
+    }
+
     final id = currentStep.id.toLowerCase();
 
-    // 1. Kapalbhati: 35s strokes + 10s Bahir Kumbhaka (empty hold) + 4s Puraka + 6s rest = 55s round
+    // 1. Kapalbhati
     if (id.contains('kapal')) {
-      const roundDuration = 55;
+      int strokes = 30;
+      if (currentStep.subtitle.contains('45 strokes') || currentStep.subtitle.contains('45')) strokes = 45;
+      if (currentStep.subtitle.contains('60 strokes') || currentStep.subtitle.contains('60')) strokes = 60;
+      if (currentStep.subtitle.contains('80 strokes') || currentStep.subtitle.contains('80')) strokes = 80;
+
+      int hold = 10;
+      if (currentStep.ratio != null && currentStep.ratio!.length > 3 && currentStep.ratio![3] > 0) {
+        hold = currentStep.ratio![3];
+      } else if (currentStep.subtitle.contains('0s') || currentStep.subtitle.contains('No hold')) {
+        hold = 0;
+      } else if (currentStep.subtitle.contains('5s')) {
+        hold = 5;
+      } else if (currentStep.subtitle.contains('15s')) {
+        hold = 15;
+      }
+
+      final roundDuration = strokes + hold + 4 + 6;
+      final cycleNumber = stepSeconds ~/ roundDuration;
       final secInRound = stepSeconds % roundDuration;
-      if (secInRound == 0) {
-        _audioService.playBell(BellType.start);
-        _hapticService.phaseTransitionPulse(widget.weaningStage);
-      } else if (secInRound == 35) {
-        // Bahir Kumbhaka: Hold outside on empty lungs!
-        _audioService.playPhaseCue(PracticePhase.bahyaKumbhaka);
-        _hapticService.phaseTransitionPulse(widget.weaningStage);
-      } else if (secInRound == 45) {
-        // Deep Puraka release
-        _audioService.playPhaseCue(PracticePhase.puraka);
-        _hapticService.phaseTransitionPulse(widget.weaningStage);
-      } else if (secInRound == 49) {
-        // Natural breath recovery
-        _audioService.playPhaseCue(PracticePhase.naturalBreath);
+
+      String currentPhaseKey;
+      if (secInRound < strokes) {
+        currentPhaseKey = 'kapal_strokes_$cycleNumber';
+      } else if (secInRound < strokes + hold) {
+        currentPhaseKey = 'kapal_bahir_$cycleNumber';
+      } else if (secInRound < strokes + hold + 4) {
+        currentPhaseKey = 'kapal_puraka_$cycleNumber';
+      } else {
+        currentPhaseKey = 'kapal_recovery_$cycleNumber';
+      }
+
+      if (currentPhaseKey != _lastPhaseKey) {
+        _lastPhaseKey = currentPhaseKey;
+        if (currentPhaseKey.startsWith('kapal_strokes')) {
+          _audioService.playBell(BellType.start);
+          _hapticService.phaseTransitionPulse(widget.weaningStage);
+        } else if (currentPhaseKey.startsWith('kapal_bahir')) {
+          _audioService.playPhaseCue(PracticePhase.bahyaKumbhaka);
+          _hapticService.phaseTransitionPulse(widget.weaningStage);
+        } else if (currentPhaseKey.startsWith('kapal_puraka')) {
+          _audioService.playPhaseCue(PracticePhase.puraka);
+          _hapticService.phaseTransitionPulse(widget.weaningStage);
+        } else if (currentPhaseKey.startsWith('kapal_recovery')) {
+          _audioService.playPhaseCue(PracticePhase.naturalBreath);
+        }
       }
       return;
     }
 
-    // 2. Bhramari: 4s Puraka -> [optional Antar Hold] -> 8s Humming Exhale
+    // 2. Bhramari
     if (id.contains('bhramari')) {
       final antarHold = (currentStep.ratio != null && currentStep.ratio!.length > 1) ? currentStep.ratio![1] : 0;
-      final cycleTotal = 4 + antarHold + 8;
+      const puraka = 4;
+      const humming = 8;
+      final cycleTotal = puraka + antarHold + humming;
+      final cycleNumber = stepSeconds ~/ cycleTotal;
       final secInCycle = stepSeconds % cycleTotal;
-      if (secInCycle == 0) {
-        _audioService.playPhaseCue(PracticePhase.puraka);
-        _hapticService.phaseTransitionPulse(widget.weaningStage);
-      } else if (antarHold > 0 && secInCycle == 4) {
-        _audioService.playPhaseCue(PracticePhase.antarKumbhaka);
-        _hapticService.phaseTransitionPulse(widget.weaningStage);
-      } else if (secInCycle == (4 + antarHold)) {
-        _audioService.playPhaseCue(PracticePhase.rechaka);
+
+      String currentPhaseKey;
+      PracticePhase currentPhase;
+      if (secInCycle < puraka) {
+        currentPhaseKey = 'bhramari_puraka_$cycleNumber';
+        currentPhase = PracticePhase.puraka;
+      } else if (antarHold > 0 && secInCycle < puraka + antarHold) {
+        currentPhaseKey = 'bhramari_antar_$cycleNumber';
+        currentPhase = PracticePhase.antarKumbhaka;
+      } else {
+        currentPhaseKey = 'bhramari_humming_$cycleNumber';
+        currentPhase = PracticePhase.rechaka;
+      }
+
+      if (currentPhaseKey != _lastPhaseKey) {
+        _lastPhaseKey = currentPhaseKey;
+        _audioService.playPhaseCue(currentPhase);
         _hapticService.phaseTransitionPulse(widget.weaningStage);
       }
       return;
     }
 
-    // 3. Ujjayi: 4s Ocean Inhale -> [optional Antar Hold] -> 5s Ocean Exhale
+    // 3. Ujjayi
     if (id.contains('ujjayi')) {
-      final antarHold = (currentStep.ratio != null && currentStep.ratio!.length > 1) ? currentStep.ratio![1] : 0;
       final puraka = (currentStep.ratio != null && currentStep.ratio!.isNotEmpty) ? currentStep.ratio![0] : 4;
-      final rechaka = (currentStep.ratio != null && currentStep.ratio!.length > 2) ? currentStep.ratio![2] : 4;
+      final antarHold = (currentStep.ratio != null && currentStep.ratio!.length > 1) ? currentStep.ratio![1] : 0;
+      final rechaka = (currentStep.ratio != null && currentStep.ratio!.length > 2)
+          ? currentStep.ratio![2]
+          : (currentStep.subtitle.contains('4s : 8s') ? 8 : (currentStep.subtitle.contains('5s : 5s') ? 5 : 4));
       final cycleTotal = puraka + antarHold + rechaka;
+      final cycleNumber = stepSeconds ~/ cycleTotal;
       final secInCycle = stepSeconds % cycleTotal;
-      if (secInCycle == 0) {
-        _audioService.playPhaseCue(PracticePhase.puraka);
-        _hapticService.phaseTransitionPulse(widget.weaningStage);
-      } else if (antarHold > 0 && secInCycle == puraka) {
-        _audioService.playPhaseCue(PracticePhase.antarKumbhaka);
-        _hapticService.phaseTransitionPulse(widget.weaningStage);
-      } else if (secInCycle == (puraka + antarHold)) {
-        _audioService.playPhaseCue(PracticePhase.rechaka);
+
+      String currentPhaseKey;
+      PracticePhase currentPhase;
+      if (secInCycle < puraka) {
+        currentPhaseKey = 'ujjayi_puraka_$cycleNumber';
+        currentPhase = PracticePhase.puraka;
+      } else if (antarHold > 0 && secInCycle < puraka + antarHold) {
+        currentPhaseKey = 'ujjayi_antar_$cycleNumber';
+        currentPhase = PracticePhase.antarKumbhaka;
+      } else {
+        currentPhaseKey = 'ujjayi_rechaka_$cycleNumber';
+        currentPhase = PracticePhase.rechaka;
+      }
+
+      if (currentPhaseKey != _lastPhaseKey) {
+        _lastPhaseKey = currentPhaseKey;
+        _audioService.playPhaseCue(currentPhase);
         _hapticService.phaseTransitionPulse(widget.weaningStage);
       }
       return;
@@ -138,18 +199,28 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
       final cycleTotal = puraka + antar + rechaka + bahya;
       if (cycleTotal <= 0) return;
 
+      final cycleNumber = stepSeconds ~/ cycleTotal;
       final secInCycle = stepSeconds % cycleTotal;
-      if (secInCycle == 0) {
-        _audioService.playPhaseCue(PracticePhase.puraka);
-        _hapticService.phaseTransitionPulse(widget.weaningStage);
-      } else if (antar > 0 && secInCycle == puraka) {
-        _audioService.playPhaseCue(PracticePhase.antarKumbhaka);
-        _hapticService.phaseTransitionPulse(widget.weaningStage);
-      } else if (secInCycle == (puraka + antar)) {
-        _audioService.playPhaseCue(PracticePhase.rechaka);
-        _hapticService.phaseTransitionPulse(widget.weaningStage);
-      } else if (bahya > 0 && secInCycle == (puraka + antar + rechaka)) {
-        _audioService.playPhaseCue(PracticePhase.bahyaKumbhaka);
+
+      String currentPhaseKey;
+      PracticePhase currentPhase;
+      if (secInCycle < puraka) {
+        currentPhaseKey = 'nadi_puraka_$cycleNumber';
+        currentPhase = PracticePhase.puraka;
+      } else if (secInCycle < puraka + antar) {
+        currentPhaseKey = 'nadi_antar_$cycleNumber';
+        currentPhase = PracticePhase.antarKumbhaka;
+      } else if (secInCycle < puraka + antar + rechaka) {
+        currentPhaseKey = 'nadi_rechaka_$cycleNumber';
+        currentPhase = PracticePhase.rechaka;
+      } else {
+        currentPhaseKey = 'nadi_bahya_$cycleNumber';
+        currentPhase = PracticePhase.bahyaKumbhaka;
+      }
+
+      if (currentPhaseKey != _lastPhaseKey) {
+        _lastPhaseKey = currentPhaseKey;
+        _audioService.playPhaseCue(currentPhase);
         _hapticService.phaseTransitionPulse(widget.weaningStage);
       }
       return;
@@ -243,7 +314,23 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
 
   /// Kapalbhati Specialized Pacer: 3 Rounds (Strokes -> Bahir Kumbhaka (Empty Hold) -> Puraka -> Relax)
   Widget _buildKapalbhatiPacer(CycleStepItem currentStep, int stepRemaining) {
-    const roundDuration = 55; // 35s strokes + 10s Bahir Kumbhaka + 4s Puraka + 6s rest
+    int strokes = 30;
+    if (currentStep.subtitle.contains('45 strokes') || currentStep.subtitle.contains('45')) strokes = 45;
+    if (currentStep.subtitle.contains('60 strokes') || currentStep.subtitle.contains('60')) strokes = 60;
+    if (currentStep.subtitle.contains('80 strokes') || currentStep.subtitle.contains('80')) strokes = 80;
+
+    int hold = 10;
+    if (currentStep.ratio != null && currentStep.ratio!.length > 3 && currentStep.ratio![3] > 0) {
+      hold = currentStep.ratio![3];
+    } else if (currentStep.subtitle.contains('0s') || currentStep.subtitle.contains('No hold')) {
+      hold = 0;
+    } else if (currentStep.subtitle.contains('5s')) {
+      hold = 5;
+    } else if (currentStep.subtitle.contains('15s')) {
+      hold = 15;
+    }
+
+    final roundDuration = strokes + hold + 4 + 6; // Strokes + Bahir Kumbhaka + 4s Puraka + 6s rest
     final currentRoundNum = (_stepSeconds ~/ roundDuration) + 1;
     final secInRound = _stepSeconds % roundDuration;
 
@@ -257,30 +344,30 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
       countText = 'STILL';
       subtitle = 'Rest in natural breath • Observe frontal brain luminosity (Kapala Bhati)';
       phaseColor = Colors.tealAccent;
-    } else if (secInRound < 35) {
-      // 35 active sharp exhalations (~1 per second)
+    } else if (secInRound < strokes) {
+      // Active sharp exhalations (~1 per second)
       final strokeNum = secInRound + 1;
       phaseTitle = 'ROUND $currentRoundNum: ACTIVE EXHALATIONS';
-      countText = 'Stroke $strokeNum/35';
+      countText = 'Stroke $strokeNum/$strokes';
       subtitle = 'Sharp abdominal pumping • Chin Mudra • Passive inhalation';
       phaseColor = AbhyasTheme.saffron;
-    } else if (secInRound < 45) {
-      // Bahir Kumbhaka (10s External Hold on Empty Lungs)
-      final holdLeft = 45 - secInRound;
+    } else if (hold > 0 && secInRound < strokes + hold) {
+      // Bahir Kumbhaka (External Hold on Empty Lungs)
+      final holdLeft = (strokes + hold) - secInRound;
       phaseTitle = 'ROUND $currentRoundNum: BAHIR KUMBHAKA (HOLD EMPTY)';
       countText = '${holdLeft}s EMPTY';
       subtitle = 'Exhale completely • Hold outside • Maha Bandha (Chin & Navel lock)';
       phaseColor = const Color(0xFF9D4EDD);
-    } else if (secInRound < 49) {
+    } else if (secInRound < strokes + hold + 4) {
       // Deep Puraka Release (4s)
-      final purakaSec = (secInRound - 45) + 1;
+      final purakaSec = (secInRound - (strokes + hold)) + 1;
       phaseTitle = 'ROUND $currentRoundNum: PURAKA RELEASE';
       countText = '${purakaSec}s / 4s';
       subtitle = 'Release locks gently • Take one slow, deep diaphragmatic inhalation';
       phaseColor = AbhyasTheme.sky;
     } else {
       // Natural Breath Rest (6s)
-      final recLeft = 55 - secInRound;
+      final recLeft = roundDuration - secInRound;
       phaseTitle = 'ROUND $currentRoundNum: NATURAL REST';
       countText = '${recLeft}s';
       subtitle = 'Breathe naturally • Feel still prana before next round';
@@ -524,8 +611,14 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
 
   /// Ujjayi Specialized Pacer: Ocean Wave Whispering Breath with optional Antar Kumbhaka
   Widget _buildUjjayiPacer(CycleStepItem currentStep, int stepRemaining) {
+    final puraka = (currentStep.ratio != null && currentStep.ratio!.isNotEmpty && currentStep.ratio![0] > 0)
+        ? currentStep.ratio![0]
+        : (currentStep.subtitle.contains('5s') ? 5 : 4);
     final antarHold = (currentStep.ratio != null && currentStep.ratio!.length > 1) ? currentStep.ratio![1] : 0;
-    final cycleTotal = 4 + antarHold + 5; // Puraka (4s) + [Antar Kumbhaka] + Rechaka (5s)
+    final rechaka = (currentStep.ratio != null && currentStep.ratio!.length > 2 && currentStep.ratio![2] > 0)
+        ? currentStep.ratio![2]
+        : (currentStep.subtitle.contains('4s : 8s') ? 8 : (currentStep.subtitle.contains('5s : 5s') ? 5 : 4));
+    final cycleTotal = puraka + antarHold + rechaka;
     final secInCycle = _stepSeconds % cycleTotal;
     final roundNum = (_stepSeconds ~/ cycleTotal) + 1;
 
@@ -535,26 +628,26 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
     int totalInPhase;
     String cue;
 
-    if (secInCycle < 4) {
+    if (secInCycle < puraka) {
       // Inhale
       phaseTitle = 'UJJAYI PURAKA (OCEAN INHALE)';
       phaseColor = AbhyasTheme.sky;
       secondsInPhase = secInCycle + 1;
-      totalInPhase = 4;
+      totalInPhase = puraka;
       cue = 'Gently constrict back of throat (glottis) • Soft ocean wave sound';
-    } else if (antarHold > 0 && secInCycle < 4 + antarHold) {
+    } else if (antarHold > 0 && secInCycle < puraka + antarHold) {
       // Antar Kumbhaka (Advanced)
       phaseTitle = 'ANTAR KUMBHAKA (INTERNAL HOLD)';
       phaseColor = const Color(0xFF9D4EDD);
-      secondsInPhase = (secInCycle - 4) + 1;
+      secondsInPhase = (secInCycle - puraka) + 1;
       totalInPhase = antarHold;
-      cue = 'Gentle chin lock (Jalandhara Bandha) • Throat throat lock retention';
+      cue = 'Gentle chin lock (Jalandhara Bandha) • Throat lock retention';
     } else {
       // Exhale
       phaseTitle = 'UJJAYI RECHAKA (OCEAN EXHALE)';
       phaseColor = AbhyasTheme.clay;
-      secondsInPhase = (secInCycle - 4 - antarHold) + 1;
-      totalInPhase = 5;
+      secondsInPhase = (secInCycle - puraka - antarHold) + 1;
+      totalInPhase = rechaka;
       cue = 'Smooth continuous exhalation like calm ocean surf';
     }
 

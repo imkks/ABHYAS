@@ -116,6 +116,11 @@ As per the task brief, the following assumptions were made regarding the design,
     - Rechaka exhale starts: triggers `singingBowl_rechaka_exhale.wav` descending calming chime.
     - Bahya Kumbhaka (and Kapalbhati Bahir Kumbhaka empty hold) starts: triggers `singingBowl_bahya_pause.wav` grounding pause.
     - Audio cues, haptics, and visual circle counters are now locked in exact second-by-second mathematical synchrony.
+* **Dynamic Parameter Reflection in Practice & Cycle Players**:
+  - `PracticePlayerScreen` dynamically reflects user-adjusted Kapalbhati strokes (e.g. 30, 45, 60, 80) and Bahir Kumbhaka empty hold (0s, 5s, 10s, 15s) in visual counters, header displays, and tick logic rather than using hardcoded values.
+  - Holds are uncapped in open-access self-mastery mode (`holdCapFractionOfCht: 1.0, userChtSeconds: 60`), allowing practitioner-chosen 1:4:2:1 or custom retentions to run without premature termination.
+  - `CyclePlayerScreen` parses customized strokes, mudras, and retentions directly from `CycleStepItem` parameters and subtitles, dynamically sizing the round duration and countdown rings for Kapalbhati and Ujjayi.
+  - Eliminated audio cue 1-second modulo lag by using state-keyed phase change detection (`_lastPhaseKey`), ensuring Tibetan singing bowl gongs and haptic pulses trigger precisely on the exact second boundary when a new breath phase begins.
 
 
 

@@ -1039,6 +1039,7 @@ class _PracticeListScreenState extends State<PracticeListScreen> {
                     practiceName: 'Kapalbhati',
                     practiceId: 'kapalbhati',
                     ratio: [0, 0, 0, _kapalbhatiHold],
+                    strokes: _kapalbhatiStrokes,
                     rounds: _kapalbhatiRounds,
                   ),
                 ),
@@ -1058,6 +1059,8 @@ class _PracticeListScreenState extends State<PracticeListScreen> {
             accentColor: AbhyasTheme.sky,
             onCustomize: _showUjjayiDialog,
             onPlay: () {
+              final puraka = _ujjayiPace.contains('5s') ? 5 : 4;
+              final rechaka = _ujjayiPace.contains('8s') ? 8 : (_ujjayiPace.contains('5s') ? 5 : 4);
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -1065,7 +1068,7 @@ class _PracticeListScreenState extends State<PracticeListScreen> {
                     safetyProfile: widget.safetyProfile,
                     practiceName: 'Ujjayi Pranayama',
                     practiceId: 'ujjayi',
-                    ratio: [4, _ujjayiAntarKumbhaka, 5, 0],
+                    ratio: [puraka, _ujjayiAntarKumbhaka, rechaka, 0],
                     rounds: _ujjayiBreaths,
                   ),
                 ),
@@ -1120,6 +1123,7 @@ class _PracticeListScreenState extends State<PracticeListScreen> {
                     practiceName: 'Bhastrika',
                     practiceId: 'bhastrika',
                     ratio: [2, _bhastrikaHold, 2, 0],
+                    strokes: _bhastrikaBellows,
                     rounds: _bhastrikaRounds,
                   ),
                 ),

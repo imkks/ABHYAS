@@ -15,6 +15,7 @@ class PracticePlayerScreen extends StatefulWidget {
   final int weaningStage; // 1 to 5
   final List<int>? ratio; // [puraka, antar, rechaka, bahya]
   final int rounds;
+  final int strokes;
 
   const PracticePlayerScreen({
     super.key,
@@ -24,6 +25,7 @@ class PracticePlayerScreen extends StatefulWidget {
     this.weaningStage = 1,
     this.ratio,
     this.rounds = 5,
+    this.strokes = 30,
   });
 
   @override
@@ -47,9 +49,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   Timer? _bufferTimer;
 
   // Specialized phase trackers
-  int _kapalbhatiPhaseIndex = 0; // 0: strokes (35s), 1: puraka (4s), 2: antar (10s), 3: recovery (6s)
-  int _bhramariPhaseIndex = 0; // 0: puraka (4s), 1: humming (8s)
-  int _ujjayiPhaseIndex = 0; // 0: puraka (4s), 1: rechaka (5s)
+  int _kapalbhatiPhaseIndex = 0; // 0: strokes, 1: hold empty, 2: puraka, 3: recovery
+  int _bhramariPhaseIndex = 0; // 0: puraka, 1: hold, 2: humming
+  int _ujjayiPhaseIndex = 0; // 0: puraka, 1: hold, 2: rechaka
 
   @override
   void initState() {
@@ -57,9 +59,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     _activeRatio = widget.ratio ?? [4, 0, 4, 0];
 
     _engine = PlayerEngine(
-      holdCapFractionOfCht: 0.6,
-      levelCapSeconds: 30,
-      userChtSeconds: 20,
+      holdCapFractionOfCht: 1.0,
+      levelCapSeconds: 64,
+      userChtSeconds: 60,
     );
 
     _audioEngine = AudioGuidanceEngine(
@@ -75,8 +77,8 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     final cht = await UserRepository().loadChtBenchmark();
     if (cht != null && mounted) {
       _engine = PlayerEngine(
-        holdCapFractionOfCht: 0.6,
-        levelCapSeconds: 30,
+        holdCapFractionOfCht: 1.0,
+        levelCapSeconds: 64,
         userChtSeconds: cht.toInt(),
       );
     }
@@ -91,14 +93,17 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       final isBhramari = widget.practiceId.contains('bhramari');
       final isUjjayi = widget.practiceId.contains('ujjayi');
 
-      // 1. Specialized Kapalbhati mechanics (35 strokes -> 10s Bahir Kumbhaka (empty hold) -> 4s deep inhale -> 6s recovery)
+      // 1. Specialized Kapalbhati mechanics
       if (isKapal) {
-        int target = 35;
+        final strokeTarget = widget.strokes > 0 ? widget.strokes : 30;
+        final holdTarget = (_activeRatio.length > 3 && _activeRatio[3] > 0) ? _activeRatio[3] : 10;
+        int target = strokeTarget;
+
         if (_kapalbhatiPhaseIndex == 0) {
-          target = 35;
+          target = strokeTarget;
           _hapticService.pulseForMatra(widget.weaningStage);
         } else if (_kapalbhatiPhaseIndex == 1) {
-          target = 10; // Bahir Kumbhaka (hold empty)
+          target = holdTarget; // Bahir Kumbhaka (hold empty)
         } else if (_kapalbhatiPhaseIndex == 2) {
           target = 4; // Puraka release
         } else {
@@ -141,14 +146,15 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         return;
       }
 
-      // 2. Specialized Bhramari mechanics (4s inhale -> [optional Antar Kumbhaka] -> 8s humming bee exhale)
+      // 2. Specialized Bhramari mechanics
       if (isBhramari) {
+        final puraka = _activeRatio.isNotEmpty ? _activeRatio[0] : 4;
         final antarHold = _activeRatio.length > 1 ? _activeRatio[1] : 0;
         final hasHold = antarHold > 0;
-        int target = 4;
+        int target = puraka;
 
         if (_bhramariPhaseIndex == 0) {
-          target = 4; // Puraka
+          target = puraka; // Puraka
         } else if (hasHold && _bhramariPhaseIndex == 1) {
           target = antarHold; // Antar Kumbhaka
         } else {
@@ -192,18 +198,20 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         return;
       }
 
-      // 3. Specialized Ujjayi mechanics (4s ocean inhale -> [optional Antar Kumbhaka] -> 5s ocean exhale)
+      // 3. Specialized Ujjayi mechanics
       if (isUjjayi) {
+        final puraka = _activeRatio.isNotEmpty ? _activeRatio[0] : 4;
         final antarHold = _activeRatio.length > 1 ? _activeRatio[1] : 0;
+        final rechaka = _activeRatio.length > 2 ? _activeRatio[2] : 5;
         final hasHold = antarHold > 0;
-        int target = 4;
+        int target = puraka;
 
         if (_ujjayiPhaseIndex == 0) {
-          target = 4; // Puraka
+          target = puraka; // Puraka
         } else if (hasHold && _ujjayiPhaseIndex == 1) {
           target = antarHold; // Antar Kumbhaka
         } else {
-          target = 5; // Rechaka
+          target = rechaka; // Rechaka
         }
 
         if (_secondsElapsed >= target) {
@@ -250,13 +258,13 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           currentPhaseTarget = _activeRatio[0] > 0 ? _activeRatio[0] : 4;
           break;
         case PracticePhase.antarKumbhaka:
-          currentPhaseTarget = _engine.scheduleHold(_activeRatio[1]);
+          currentPhaseTarget = _activeRatio[1];
           break;
         case PracticePhase.rechaka:
           currentPhaseTarget = _activeRatio[2] > 0 ? _activeRatio[2] : 4;
           break;
         case PracticePhase.bahyaKumbhaka:
-          currentPhaseTarget = _engine.scheduleHold(_activeRatio[3]);
+          currentPhaseTarget = _activeRatio[3];
           break;
         case PracticePhase.naturalBreath:
           currentPhaseTarget = 4;
@@ -555,15 +563,26 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                       style: const TextStyle(fontSize: 16, color: Colors.orange, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 6),
-                    Text(
-                      widget.practiceId.contains('kapal')
-                          ? '35 Strokes ➔ Deep Inhale ➔ 10s Kumbhaka'
-                          : (widget.practiceId.contains('bhramari')
-                              ? '4s Inhale ➔ 8s Humming Bee Exhale'
-                              : (widget.practiceId.contains('ujjayi')
-                                  ? '4s Ocean Inhale ➔ 5s Ocean Exhale'
-                                  : 'Ratio: ${_activeRatio.join(" : ")}')),
-                      style: const TextStyle(color: Colors.grey, fontSize: 13),
+                    Builder(
+                      builder: (context) {
+                        final kStrokes = widget.strokes > 0 ? widget.strokes : 30;
+                        final kHold = (_activeRatio.length > 3 && _activeRatio[3] > 0) ? _activeRatio[3] : 10;
+                        final bHold = (_activeRatio.length > 1 && _activeRatio[1] > 0) ? _activeRatio[1] : 0;
+                        final uInhale = _activeRatio.isNotEmpty ? _activeRatio[0] : 4;
+                        final uHold = (_activeRatio.length > 1 && _activeRatio[1] > 0) ? _activeRatio[1] : 0;
+                        final uExhale = _activeRatio.length > 2 ? _activeRatio[2] : 5;
+
+                        return Text(
+                          widget.practiceId.contains('kapal')
+                              ? '$kStrokes Strokes ➔ ${kHold > 0 ? "${kHold}s Bahir Kumbhaka" : "No Hold"} ➔ Puraka'
+                              : (widget.practiceId.contains('bhramari')
+                                  ? '4s Inhale ➔ ${bHold > 0 ? "${bHold}s Hold ➔ " : ""}8s Humming Exhale'
+                                  : (widget.practiceId.contains('ujjayi')
+                                      ? '${uInhale}s Inhale ➔ ${uHold > 0 ? "${uHold}s Hold ➔ " : ""}${uExhale}s Exhale'
+                                      : 'Ratio: ${_activeRatio.join(" : ")}')),
+                          style: const TextStyle(color: Colors.grey, fontSize: 13),
+                        );
+                      },
                     ),
                     const SizedBox(height: 16),
 
@@ -651,6 +670,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     final isNadi = widget.practiceId.contains('nadi');
 
     if (isKapal) {
+      final kStrokes = widget.strokes > 0 ? widget.strokes : 30;
+      final kHold = (_activeRatio.length > 3 && _activeRatio[3] > 0) ? _activeRatio[3] : 10;
+
       String title;
       String count;
       String sub;
@@ -658,12 +680,12 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
 
       if (_kapalbhatiPhaseIndex == 0) {
         title = 'ACTIVE EXHALATIONS';
-        count = 'Stroke ${_secondsElapsed + 1}/35';
+        count = 'Stroke ${_secondsElapsed + 1}/$kStrokes';
         sub = 'Sharp abdominal pumping • Chin Mudra';
         color = Colors.orangeAccent;
       } else if (_kapalbhatiPhaseIndex == 1) {
         title = 'BAHIR KUMBHAKA (HOLD EMPTY)';
-        count = '${10 - _secondsElapsed}s EMPTY';
+        count = '${kHold - _secondsElapsed}s EMPTY';
         sub = 'Exhale completely • Hold outside • Maha Bandha';
         color = const Color(0xFF9D4EDD);
       } else if (_kapalbhatiPhaseIndex == 2) {
