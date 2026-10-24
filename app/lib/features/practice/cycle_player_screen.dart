@@ -3,6 +3,7 @@ import '../../core/audio_service.dart';
 import '../../core/haptic_service.dart';
 import '../../core/theme.dart';
 import '../../engine/player/cycle_sequencer.dart';
+import '../../engine/player/player_engine.dart';
 import '../../engine/safety/safety_rules_engine.dart';
 import 'post_session_checkin_screen.dart';
 
@@ -48,9 +49,13 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
           _totalSeconds = totalSeconds;
         });
 
-        // Haptic and audio feedback
+        // Haptic feedback for matra pulse
         _hapticService.pulseForMatra(widget.weaningStage);
-        _audioService.playTick();
+
+        // Precise phase transition sound cues aligned with breath pacing
+        if (_currentStepIndex < widget.steps.length) {
+          _checkAndPlayPhaseCue(widget.steps[_currentStepIndex], stepSeconds);
+        }
       },
       onStepComplete: (completedIndex) {
         _audioService.playBell(BellType.transition);
@@ -58,6 +63,97 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
       },
       onCycleComplete: _handleCycleComplete,
     );
+  }
+
+  void _checkAndPlayPhaseCue(CycleStepItem currentStep, int stepSeconds) {
+    final id = currentStep.id.toLowerCase();
+
+    // 1. Kapalbhati: 35s strokes + 10s Bahir Kumbhaka (empty hold) + 4s Puraka + 6s rest = 55s round
+    if (id.contains('kapal')) {
+      const roundDuration = 55;
+      final secInRound = stepSeconds % roundDuration;
+      if (secInRound == 0) {
+        _audioService.playBell(BellType.start);
+        _hapticService.phaseTransitionPulse(widget.weaningStage);
+      } else if (secInRound == 35) {
+        // Bahir Kumbhaka: Hold outside on empty lungs!
+        _audioService.playPhaseCue(PracticePhase.bahyaKumbhaka);
+        _hapticService.phaseTransitionPulse(widget.weaningStage);
+      } else if (secInRound == 45) {
+        // Deep Puraka release
+        _audioService.playPhaseCue(PracticePhase.puraka);
+        _hapticService.phaseTransitionPulse(widget.weaningStage);
+      } else if (secInRound == 49) {
+        // Natural breath recovery
+        _audioService.playPhaseCue(PracticePhase.naturalBreath);
+      }
+      return;
+    }
+
+    // 2. Bhramari: 4s Puraka -> [optional Antar Hold] -> 8s Humming Exhale
+    if (id.contains('bhramari')) {
+      final antarHold = (currentStep.ratio != null && currentStep.ratio!.length > 1) ? currentStep.ratio![1] : 0;
+      final cycleTotal = 4 + antarHold + 8;
+      final secInCycle = stepSeconds % cycleTotal;
+      if (secInCycle == 0) {
+        _audioService.playPhaseCue(PracticePhase.puraka);
+        _hapticService.phaseTransitionPulse(widget.weaningStage);
+      } else if (antarHold > 0 && secInCycle == 4) {
+        _audioService.playPhaseCue(PracticePhase.antarKumbhaka);
+        _hapticService.phaseTransitionPulse(widget.weaningStage);
+      } else if (secInCycle == (4 + antarHold)) {
+        _audioService.playPhaseCue(PracticePhase.rechaka);
+        _hapticService.phaseTransitionPulse(widget.weaningStage);
+      }
+      return;
+    }
+
+    // 3. Ujjayi: 4s Ocean Inhale -> [optional Antar Hold] -> 5s Ocean Exhale
+    if (id.contains('ujjayi')) {
+      final antarHold = (currentStep.ratio != null && currentStep.ratio!.length > 1) ? currentStep.ratio![1] : 0;
+      final puraka = (currentStep.ratio != null && currentStep.ratio!.isNotEmpty) ? currentStep.ratio![0] : 4;
+      final rechaka = (currentStep.ratio != null && currentStep.ratio!.length > 2) ? currentStep.ratio![2] : 4;
+      final cycleTotal = puraka + antarHold + rechaka;
+      final secInCycle = stepSeconds % cycleTotal;
+      if (secInCycle == 0) {
+        _audioService.playPhaseCue(PracticePhase.puraka);
+        _hapticService.phaseTransitionPulse(widget.weaningStage);
+      } else if (antarHold > 0 && secInCycle == puraka) {
+        _audioService.playPhaseCue(PracticePhase.antarKumbhaka);
+        _hapticService.phaseTransitionPulse(widget.weaningStage);
+      } else if (secInCycle == (puraka + antarHold)) {
+        _audioService.playPhaseCue(PracticePhase.rechaka);
+        _hapticService.phaseTransitionPulse(widget.weaningStage);
+      }
+      return;
+    }
+
+    // 4. Nadi Shodhana (or 4-part breath ratio)
+    if (id.contains('nadi') || (currentStep.isPranayamaWithPacer && currentStep.ratio != null && currentStep.ratio!.length >= 3)) {
+      final ratio = currentStep.ratio ?? [4, 8, 8, 4];
+      final puraka = ratio[0];
+      final antar = ratio[1];
+      final rechaka = ratio[2];
+      final bahya = ratio.length > 3 ? ratio[3] : 0;
+      final cycleTotal = puraka + antar + rechaka + bahya;
+      if (cycleTotal <= 0) return;
+
+      final secInCycle = stepSeconds % cycleTotal;
+      if (secInCycle == 0) {
+        _audioService.playPhaseCue(PracticePhase.puraka);
+        _hapticService.phaseTransitionPulse(widget.weaningStage);
+      } else if (antar > 0 && secInCycle == puraka) {
+        _audioService.playPhaseCue(PracticePhase.antarKumbhaka);
+        _hapticService.phaseTransitionPulse(widget.weaningStage);
+      } else if (secInCycle == (puraka + antar)) {
+        _audioService.playPhaseCue(PracticePhase.rechaka);
+        _hapticService.phaseTransitionPulse(widget.weaningStage);
+      } else if (bahya > 0 && secInCycle == (puraka + antar + rechaka)) {
+        _audioService.playPhaseCue(PracticePhase.bahyaKumbhaka);
+        _hapticService.phaseTransitionPulse(widget.weaningStage);
+      }
+      return;
+    }
   }
 
   void _handleCycleComplete() {

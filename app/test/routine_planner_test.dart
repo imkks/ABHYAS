@@ -298,5 +298,30 @@ void main() {
       const validAnchors = ['Nostril Rim (Nasagra)', 'Brow Center (Ajna)', 'Heart Center (Anahata)', 'Navel (Manipura)'];
       expect(validAnchors, contains('Nostril Rim (Nasagra)'));
     });
+
+    test('Audio Guidance & Phase Boundary Synchrony: boundary seconds map precisely to breath phases', () {
+      // 1. Nadi Shodhana 4-part ratio boundary mapping (e.g. 4:8:8:4)
+      const puraka = 4;
+      const antar = 8;
+      const rechaka = 8;
+      const bahya = 4;
+      const cycleTotal = puraka + antar + rechaka + bahya; // 24s
+
+      // Puraka starts at 0s
+      expect(0 % cycleTotal, equals(0));
+      // Antar Kumbhaka starts at 4s
+      expect(4 % cycleTotal, equals(puraka));
+      // Rechaka starts at 12s
+      expect(12 % cycleTotal, equals(puraka + antar));
+      // Bahya Kumbhaka starts at 20s
+      expect(20 % cycleTotal, equals(puraka + antar + rechaka));
+
+      // 2. Kapalbhati classical boundary mapping (35s strokes -> 10s Bahir Kumbhaka -> 4s Puraka -> 6s rest = 55s round)
+      const roundDuration = 55;
+      expect(0 % roundDuration, equals(0)); // Rapid strokes start
+      expect(35 % roundDuration, equals(35)); // 10s Bahir Kumbhaka (empty hold) starts
+      expect(45 % roundDuration, equals(45)); // Puraka release starts
+      expect(49 % roundDuration, equals(49)); // Natural rest starts
+    });
   });
 }

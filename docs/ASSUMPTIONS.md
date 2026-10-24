@@ -96,6 +96,27 @@ As per the task brief, the following assumptions were made regarding the design,
   - **General / Restorative**: Customizes practice intention and pacing focus.
 * **Subtitle & Parameter Persistence**: Customizations update step subtitles and relevant parameters, seamlessly passed to `CyclePlayerScreen` so users see their customized settings in the player.
 
+## Abhyas Studio Adjust UI Alignment & Audio Synchronization Overhaul
+* **Unified Adjust UI across Abhyas Tab and Routine Planner**:
+  - The "Adjust" buttons on the Abhyas tab (`PracticeListScreen`) now open dedicated interactive modal bottom sheets that match the design and options of the Routine Planner (`CycleComposerScreen`).
+  - Previously, Kapalbhati, Ujjayi, Bhramari, and Sheetali had silent inline toggles without any popup dialog, and Bhastrika lacked an adjust button. All six classical Pranayama practices now feature dedicated modal sheets:
+    - *Nadi Shodhana*: Classical ratio stepper (Puraka, Antar, Rechaka, Bahya) with classical presets and 1-min breath test link.
+    - *Kapalbhati*: Strokes per round (30, 45, 60, 80), Bahir Kumbhaka empty lung retention (0s, 5s, 10s, 15s), and rounds (3, 4, 5).
+    - *Ujjayi*: Pacing (4:4, 4:8, 5:5), Antar Kumbhaka internal hold (0s, 4s, 8s), and breath count (5, 7, 10, 15).
+    - *Bhramari*: Mudra (*Shanmukhi Mudra*, *Ear Tragus*, *Jnana Mudra*), Antar Kumbhaka internal hold (0s, 3s, 5s), and humming cycles (5, 7, 10, 12).
+    - *Bhastrika*: Bellows per round (15, 20, 25, 30), Antar Kumbhaka hold (0s, 8s, 12s, 16s), and rounds (3, 4, 5).
+    - *Sheetali & Sheetkari*: Technique (*Sheetali Tongue Curl*, *Sheetkari Teeth Inhale*) and cooling cycles (9, 12, 15, 21).
+  - Tapping "Practice" directly executes the session with the customized parameters.
+* **Audio Guidance & Breath Phase Synchrony**:
+  - Previously, calling `playTick()` on the shared `_bellPlayer` every 1000ms caused audio decoding latency, stutter, and prematurely truncated ringing singing bowl gongs.
+  - Decoupled ticking from singing bowl playback: ticking uses zero-latency system click, preserving bowl resonance without channel lag.
+  - Added precise phase transition audio cue dispatching in `CyclePlayerScreen` and `PracticePlayerScreen`:
+    - Puraka inhale starts: triggers `singingBowl_puraka_inhale.wav` with brightening resonance.
+    - Antar Kumbhaka internal hold starts: triggers `singingBowl_kumbhaka_hold.wav` harmonic ring.
+    - Rechaka exhale starts: triggers `singingBowl_rechaka_exhale.wav` descending calming chime.
+    - Bahya Kumbhaka (and Kapalbhati Bahir Kumbhaka empty hold) starts: triggers `singingBowl_bahya_pause.wav` grounding pause.
+    - Audio cues, haptics, and visual circle counters are now locked in exact second-by-second mathematical synchrony.
+
 
 
 

@@ -117,10 +117,21 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
               return;
             } else {
               _currentRound++;
+              _audioService.dispatchCue(_audioEngine.getCueForPhaseTransition(
+                phase: PracticePhase.puraka,
+                cycleNumber: _currentRound,
+              ));
             }
           } else {
             _kapalbhatiPhaseIndex++;
             _hapticService.phaseTransitionPulse(widget.weaningStage);
+            final nextPhase = _kapalbhatiPhaseIndex == 1
+                ? PracticePhase.bahyaKumbhaka
+                : (_kapalbhatiPhaseIndex == 2 ? PracticePhase.puraka : PracticePhase.naturalBreath);
+            _audioService.dispatchCue(_audioEngine.getCueForPhaseTransition(
+              phase: nextPhase,
+              cycleNumber: _currentRound,
+            ));
           }
 
           if (_isPlaying) {
@@ -157,10 +168,21 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
               return;
             } else {
               _currentRound++;
+              _audioService.dispatchCue(_audioEngine.getCueForPhaseTransition(
+                phase: PracticePhase.puraka,
+                cycleNumber: _currentRound,
+              ));
             }
           } else {
             _bhramariPhaseIndex++;
             _hapticService.phaseTransitionPulse(widget.weaningStage);
+            final nextPhase = (hasHold && _bhramariPhaseIndex == 1)
+                ? PracticePhase.antarKumbhaka
+                : PracticePhase.rechaka;
+            _audioService.dispatchCue(_audioEngine.getCueForPhaseTransition(
+              phase: nextPhase,
+              cycleNumber: _currentRound,
+            ));
           }
 
           if (_isPlaying) {
@@ -197,10 +219,21 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
               return;
             } else {
               _currentRound++;
+              _audioService.dispatchCue(_audioEngine.getCueForPhaseTransition(
+                phase: PracticePhase.puraka,
+                cycleNumber: _currentRound,
+              ));
             }
           } else {
             _ujjayiPhaseIndex++;
             _hapticService.phaseTransitionPulse(widget.weaningStage);
+            final nextPhase = (hasHold && _ujjayiPhaseIndex == 1)
+                ? PracticePhase.antarKumbhaka
+                : PracticePhase.rechaka;
+            _audioService.dispatchCue(_audioEngine.getCueForPhaseTransition(
+              phase: nextPhase,
+              cycleNumber: _currentRound,
+            ));
           }
 
           if (_isPlaying) {
