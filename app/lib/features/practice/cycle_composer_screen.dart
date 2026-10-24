@@ -144,28 +144,29 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
       if (duration <= 15) {
         _steps = [
           CycleStep(id: 'sankalp', title: 'Sankalp & Invocation', subtitle: 'Setting sacred intention', durationMinutes: 2),
-          CycleStep(id: 'kapalbhati', title: 'Kapalbhati (Level $level)', subtitle: kapalbhatiSub, durationMinutes: 3, isPranayamaWithPacer: true),
-          CycleStep(id: 'nadi_shodhana', title: 'Nadi Shodhana (Level $level)', subtitle: nadiSub, durationMinutes: 5, isPranayamaWithPacer: true, ratio: levelInfo.ratio),
-          CycleStep(id: 'breath_awareness', title: 'Breath Awareness Dhyan', subtitle: 'Witnessing natural stillness', durationMinutes: 5),
+          CycleStep(id: 'kapalbhati', title: 'Phase 1: Kapalbhati', subtitle: '3 Rounds + 10s Kumbhaka ($kapalbhatiSub)', durationMinutes: 3, isPranayamaWithPacer: true),
+          CycleStep(id: 'nadi_shodhana', title: 'Phase 2: Nadi Shodhana', subtitle: 'Vishnu Mudra · $nadiSub', durationMinutes: 5, isPranayamaWithPacer: true, ratio: levelInfo.ratio),
+          CycleStep(id: 'breath_awareness', title: 'Phase 4: Silent Nostril Dhyan', subtitle: 'Jnana Mudra · Ajna stillness', durationMinutes: 5),
         ];
       } else if (duration <= 25) {
         _steps = [
           CycleStep(id: 'sankalp', title: 'Sankalp & Invocation', subtitle: 'Setting intention', durationMinutes: 2),
-          CycleStep(id: 'kapalbhati', title: 'Kapalbhati (Level $level)', subtitle: kapalbhatiSub, durationMinutes: 4, isPranayamaWithPacer: true),
-          CycleStep(id: 'nadi_shodhana', title: 'Nadi Shodhana (Level $level)', subtitle: nadiSub, durationMinutes: 6, isPranayamaWithPacer: true, ratio: levelInfo.ratio),
-          CycleStep(id: 'ujjayi', title: 'Ujjayi Pranayama', subtitle: ujjayiSub, durationMinutes: 3, isPranayamaWithPacer: true),
-          CycleStep(id: 'breath_awareness', title: 'Breath Awareness Dhyan', subtitle: 'Stillness meditation', durationMinutes: 8),
-          CycleStep(id: 'shanti_path', title: 'Shanti Path', subtitle: 'Peace closing prayer', durationMinutes: 2),
+          CycleStep(id: 'kapalbhati', title: 'Phase 1: Kapalbhati', subtitle: '3 Rounds + 10s Kumbhaka ($kapalbhatiSub)', durationMinutes: 4, isPranayamaWithPacer: true),
+          CycleStep(id: 'nadi_shodhana', title: 'Phase 2: Nadi Shodhana', subtitle: 'Vishnu Mudra · $nadiSub', durationMinutes: 7, isPranayamaWithPacer: true, ratio: levelInfo.ratio),
+          CycleStep(id: 'ujjayi', title: 'Phase 3: Ujjayi Breath', subtitle: 'Throat whisper ocean sound', durationMinutes: 3, isPranayamaWithPacer: true),
+          CycleStep(id: 'bhramari', title: 'Phase 3: Bhramari', subtitle: 'Shanmukhi Mudra · Humming bee resonance', durationMinutes: 3, isPranayamaWithPacer: true),
+          CycleStep(id: 'breath_awareness', title: 'Phase 4: Silent Nostril Dhyan', subtitle: 'Witnessing breath stillness', durationMinutes: 6),
         ];
       } else if (duration <= 35) {
-        // Default 30 min morning routine
+        // Default 30 min morning routine: The Complete Classical Master Sequence
         _steps = [
           CycleStep(id: 'sankalp', title: 'Sankalp & Invocation', subtitle: 'Setting intention & Om', durationMinutes: 2),
           CycleStep(id: 'warmup', title: 'Sukshma Vyayama', subtitle: 'Gentle joint loosening', durationMinutes: 2),
-          CycleStep(id: 'kapalbhati', title: 'Kapalbhati (Level $level)', subtitle: kapalbhatiSub, durationMinutes: 4, isPranayamaWithPacer: true),
-          CycleStep(id: 'nadi_shodhana', title: 'Nadi Shodhana (Level $level)', subtitle: nadiSub, durationMinutes: 8, isPranayamaWithPacer: true, ratio: levelInfo.ratio),
-          CycleStep(id: 'ujjayi', title: 'Ujjayi Pranayama', subtitle: ujjayiSub, durationMinutes: 4, isPranayamaWithPacer: true),
-          CycleStep(id: 'breath_awareness', title: 'Breath Awareness Dhyan', subtitle: 'Witnessing stillness', durationMinutes: 8),
+          CycleStep(id: 'kapalbhati', title: 'Phase 1: Kapalbhati', subtitle: '3 Rounds + 10s Kumbhaka ($kapalbhatiSub)', durationMinutes: 4, isPranayamaWithPacer: true),
+          CycleStep(id: 'nadi_shodhana', title: 'Phase 2: Nadi Shodhana', subtitle: 'Vishnu Mudra · $nadiSub', durationMinutes: 8, isPranayamaWithPacer: true, ratio: levelInfo.ratio),
+          CycleStep(id: 'ujjayi', title: 'Phase 3: Ujjayi Ocean Breath', subtitle: 'Throat constriction wave', durationMinutes: 3, isPranayamaWithPacer: true),
+          CycleStep(id: 'bhramari', title: 'Phase 3: Bhramari Pranayama', subtitle: 'Shanmukhi Mudra · Humming bee', durationMinutes: 3, isPranayamaWithPacer: true),
+          CycleStep(id: 'breath_awareness', title: 'Phase 4: Silent Nostril Dhyan', subtitle: 'Ajna Chakra stillness', durationMinutes: 6),
           CycleStep(id: 'shanti_path', title: 'Shanti Path', subtitle: 'Universal peace chant', durationMinutes: 2),
         ];
       } else {
@@ -173,11 +174,12 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
         _steps = [
           CycleStep(id: 'sankalp', title: 'Sankalp & Invocation', subtitle: 'Setting sacred intention', durationMinutes: 3),
           CycleStep(id: 'warmup', title: 'Sukshma Vyayama', subtitle: 'Prana loosening', durationMinutes: 4),
-          CycleStep(id: 'kapalbhati', title: 'Kapalbhati (Level $level)', subtitle: kapalbhatiSub, durationMinutes: 6, isPranayamaWithPacer: true),
-          CycleStep(id: 'nadi_shodhana', title: 'Nadi Shodhana (Level $level)', subtitle: nadiSub, durationMinutes: 10, isPranayamaWithPacer: true, ratio: levelInfo.ratio),
-          CycleStep(id: 'bhastrika', title: 'Bhastrika / Surya Bhedana', subtitle: 'Vital solar activation', durationMinutes: 5, isPranayamaWithPacer: true),
-          CycleStep(id: 'ujjayi', title: 'Ujjayi Pranayama', subtitle: ujjayiSub, durationMinutes: 5, isPranayamaWithPacer: true),
-          CycleStep(id: 'breath_awareness', title: 'Antar Mouna / Dhyan', subtitle: 'Deep meditative stillness', durationMinutes: 10),
+          CycleStep(id: 'kapalbhati', title: 'Phase 1: Kapalbhati', subtitle: '3 Rounds + 10s Kumbhaka ($kapalbhatiSub)', durationMinutes: 5, isPranayamaWithPacer: true),
+          CycleStep(id: 'nadi_shodhana', title: 'Phase 2: Nadi Shodhana', subtitle: 'Vishnu Mudra · $nadiSub', durationMinutes: 10, isPranayamaWithPacer: true, ratio: levelInfo.ratio),
+          CycleStep(id: 'bhastrika', title: 'Bhastrika / Surya Bhedana', subtitle: 'Vital solar activation', durationMinutes: 4, isPranayamaWithPacer: true),
+          CycleStep(id: 'ujjayi', title: 'Phase 3: Ujjayi Ocean Breath', subtitle: 'Throat resonance', durationMinutes: 4, isPranayamaWithPacer: true),
+          CycleStep(id: 'bhramari', title: 'Phase 3: Bhramari', subtitle: 'Shanmukhi Mudra cranial vibration', durationMinutes: 4, isPranayamaWithPacer: true),
+          CycleStep(id: 'breath_awareness', title: 'Phase 4: Silent Nostril Dhyan', subtitle: 'Deep meditative stillness', durationMinutes: 9),
           CycleStep(id: 'shanti_path', title: 'Shanti Path', subtitle: 'Closing integration', durationMinutes: 2),
         ];
       }
@@ -185,34 +187,35 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
       // 🌙 Chandra Abhyas: Night Bedtime Routine
       if (duration <= 20) {
         _steps = [
-          CycleStep(id: 'naam_jaap', title: 'Naam Jaap (Digital Mala)', subtitle: '108 bead sacred recitation', durationMinutes: 5),
+          CycleStep(id: 'naam_jaap', title: '3-Stage Naam Jaap', subtitle: 'Vaikhari ➔ Upamshu ➔ Manasika', durationMinutes: 5),
           CycleStep(id: 'bhramari', title: 'Bhramari Pranayama', subtitle: 'Humming bee breath for calming', durationMinutes: 5, isPranayamaWithPacer: true),
           CycleStep(id: 'yoga_nidra', title: 'Yoga Nidra', subtitle: 'Conscious deep relaxation for sleep', durationMinutes: 10),
         ];
       } else if (duration <= 30) {
         // Default 25-30 min evening routine
         _steps = [
-          CycleStep(id: 'naam_jaap', title: 'Naam Jaap (Digital Mala)', subtitle: '108 bead meditative japa', durationMinutes: 5),
+          CycleStep(id: 'naam_jaap', title: '3-Stage Naam Jaap', subtitle: 'Vaikhari ➔ Upamshu ➔ Manasika (108 beads)', durationMinutes: 6),
+          CycleStep(id: 'sheetali', title: 'Sheetali / Chandra Bhedana', subtitle: 'Cooling breath to calm body heat', durationMinutes: 3, isPranayamaWithPacer: true),
           CycleStep(id: 'bhramari', title: 'Bhramari Pranayama', subtitle: 'Humming bee breath to soothe nerves', durationMinutes: 5, isPranayamaWithPacer: true),
           CycleStep(id: 'yoga_nidra', title: 'Yoga Nidra', subtitle: 'Guided deep conscious sleep', durationMinutes: 15),
         ];
       } else {
         // 40m - 45m extended evening relaxation
         _steps = [
-          CycleStep(id: 'naam_jaap', title: 'Naam Jaap (Digital Mala)', subtitle: 'Extended Japa recitation', durationMinutes: 10),
+          CycleStep(id: 'naam_jaap', title: '3-Stage Naam Jaap', subtitle: 'Extended Japa recitation (Vaikhari ➔ Manasika)', durationMinutes: 10),
           CycleStep(id: 'sheetali', title: 'Sheetali / Chandra Bhedana', subtitle: 'Cooling lunar breath', durationMinutes: 5, isPranayamaWithPacer: true),
           CycleStep(id: 'bhramari', title: 'Bhramari Pranayama', subtitle: 'Deep humming vibration', durationMinutes: 5, isPranayamaWithPacer: true),
           CycleStep(id: 'yoga_nidra', title: 'Yoga Nidra', subtitle: 'Full 20-min psychic sleep induction', durationMinutes: 20),
         ];
       }
     } else {
-      // ⚙️ Custom / Modular Routine
+      // ⚙️ Custom / Modular Routine: The Master Sequence Blueprint
       _steps = [
         CycleStep(id: 'sankalp', title: 'Sankalp & Invocation', subtitle: 'Intention setting', durationMinutes: 2),
-        CycleStep(id: 'kapalbhati', title: 'Kapalbhati', subtitle: 'Active cleansing', durationMinutes: 4, isPranayamaWithPacer: true),
-        CycleStep(id: 'nadi_shodhana', title: 'Nadi Shodhana', subtitle: 'Channel balancing', durationMinutes: 6, isPranayamaWithPacer: true),
-        CycleStep(id: 'bhramari', title: 'Bhramari', subtitle: 'Calming vibration', durationMinutes: 3, isPranayamaWithPacer: true),
-        CycleStep(id: 'breath_awareness', title: 'Breath Awareness Dhyan', subtitle: 'Silent meditation', durationMinutes: 8),
+        CycleStep(id: 'kapalbhati', title: 'Kapalbhati (Cleansing)', subtitle: '3 Rounds + 10s Kumbhaka', durationMinutes: 4, isPranayamaWithPacer: true),
+        CycleStep(id: 'nadi_shodhana', title: 'Nadi Shodhana', subtitle: 'Vishnu Mudra · Alternate nostril', durationMinutes: 6, isPranayamaWithPacer: true, ratio: levelInfo.ratio),
+        CycleStep(id: 'bhramari', title: 'Bhramari', subtitle: 'Shanmukhi Mudra · Calming vibration', durationMinutes: 3, isPranayamaWithPacer: true),
+        CycleStep(id: 'breath_awareness', title: 'Silent Nostril Dhyan', subtitle: 'Silent meditation at nostril rims', durationMinutes: 6),
       ];
     }
   }
@@ -294,7 +297,7 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
           {'id': 'antar_mouna', 'title': 'Antar Mouna', 'category': 'Dhyan', 'sub': 'Inner silence & observing thought ripples', 'defaultMin': 10, 'isPacer': false},
           {'id': 'trataka', 'title': 'Trataka (Gazing)', 'category': 'Dhyan', 'sub': 'Single-point concentration meditation', 'defaultMin': 5, 'isPacer': false},
           // Mantra & Japa
-          {'id': 'naam_jaap', 'title': 'Naam Jaap (Digital Mala)', 'category': 'Mantra & Japa', 'sub': '108 bead meditative japa recitation', 'defaultMin': 5, 'isPacer': false},
+          {'id': 'naam_jaap', 'title': '3-Stage Naam Jaap', 'category': 'Mantra & Japa', 'sub': 'Vaikhari ➔ Upamshu ➔ Manasika (Digital Mala)', 'defaultMin': 5, 'isPacer': false},
           {'id': 'om_chant', 'title': 'Om Chanting', 'category': 'Mantra & Japa', 'sub': 'Primordial sound vibration (A-U-M)', 'defaultMin': 3, 'isPacer': false},
           {'id': 'gayatri_mantra', 'title': 'Gayatri Mantra', 'category': 'Mantra & Japa', 'sub': 'Illumination of the intellect', 'defaultMin': 5, 'isPacer': false},
           // Restorative

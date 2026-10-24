@@ -12,6 +12,8 @@ class LevelInfo {
   final int kapalbhatiStrokes;
   final List<String> unlockedSeals;
   final String featureHighlight;
+  final String journeyPhase;
+  final String phaseName;
 
   LevelInfo({
     required this.level,
@@ -24,6 +26,8 @@ class LevelInfo {
     required this.kapalbhatiStrokes,
     required this.unlockedSeals,
     required this.featureHighlight,
+    required this.journeyPhase,
+    required this.phaseName,
   });
 }
 
@@ -40,6 +44,8 @@ class UserProgression {
   final List<int> ratio;
   final int kapalbhatiStrokes;
   final String featureHighlight;
+  final String journeyPhase;
+  final String phaseName;
 
   UserProgression({
     required this.level,
@@ -54,6 +60,8 @@ class UserProgression {
     required this.ratio,
     required this.kapalbhatiStrokes,
     required this.featureHighlight,
+    required this.journeyPhase,
+    required this.phaseName,
   });
 }
 
@@ -76,6 +84,8 @@ class ProgressionService {
       kapalbhatiStrokes: 30,
       unlockedSeals: ['Gyan Mudra', 'Chin Mudra'],
       featureHighlight: 'Gentle 4s In : 4s Out breath pacer',
+      journeyPhase: 'Phase 1: Foundation (Weeks 1–4)',
+      phaseName: 'Foundation',
     ),
     LevelInfo(
       level: 2,
@@ -88,6 +98,8 @@ class ProgressionService {
       kapalbhatiStrokes: 45,
       unlockedSeals: ['Gyan Mudra', 'Chin Mudra', 'Dhyana Mudra'],
       featureHighlight: '1:0:2:0 Parasympathetic deep relaxation',
+      journeyPhase: 'Phase 1: Foundation (Weeks 1–4)',
+      phaseName: 'Foundation',
     ),
     LevelInfo(
       level: 3,
@@ -100,6 +112,8 @@ class ProgressionService {
       kapalbhatiStrokes: 60,
       unlockedSeals: ['Gyan Mudra', 'Chin Mudra', 'Dhyana Mudra', 'Nasika Mudra', 'Jalandhara Bandha'],
       featureHighlight: 'Internal breath hold + Jalandhara Bandha cue',
+      journeyPhase: 'Phase 2: Deepening (Weeks 5–12)',
+      phaseName: 'Deepening',
     ),
     LevelInfo(
       level: 4,
@@ -112,6 +126,8 @@ class ProgressionService {
       kapalbhatiStrokes: 80,
       unlockedSeals: ['Gyan Mudra', 'Chin Mudra', 'Dhyana Mudra', 'Nasika Mudra', 'Jalandhara Bandha', 'Shanmukhi Mudra', 'Mula Bandha'],
       featureHighlight: 'Bhastrika (Bellows breath) & Mula Bandha',
+      journeyPhase: 'Phase 2: Deepening (Weeks 5–12)',
+      phaseName: 'Deepening',
     ),
     LevelInfo(
       level: 5,
@@ -124,6 +140,8 @@ class ProgressionService {
       kapalbhatiStrokes: 100,
       unlockedSeals: ['Gyan Mudra', 'Chin Mudra', 'Dhyana Mudra', 'Nasika Mudra', 'Jalandhara Bandha', 'Shanmukhi Mudra', 'Mula Bandha', 'Prana Mudra'],
       featureHighlight: 'Deep classical 1:4:2:0 retention ladder',
+      journeyPhase: 'Phase 3: Advanced (Month 4+)',
+      phaseName: 'Advanced',
     ),
     LevelInfo(
       level: 6,
@@ -136,6 +154,8 @@ class ProgressionService {
       kapalbhatiStrokes: 120,
       unlockedSeals: ['Gyan Mudra', 'Chin Mudra', 'Dhyana Mudra', 'Nasika Mudra', 'Jalandhara Bandha', 'Shanmukhi Mudra', 'Mula Bandha', 'Uddiyana Bandha', 'Maha Bandha'],
       featureHighlight: 'Bahya Kumbhaka + Maha Bandha (Tri-lock)',
+      journeyPhase: 'Phase 3: Advanced (Month 4+)',
+      phaseName: 'Advanced',
     ),
     LevelInfo(
       level: 7,
@@ -148,6 +168,8 @@ class ProgressionService {
       kapalbhatiStrokes: 120,
       unlockedSeals: ['Gyan Mudra', 'Chin Mudra', 'Dhyana Mudra', 'Nasika Mudra', 'Jalandhara Bandha', 'Shanmukhi Mudra', 'Mula Bandha', 'Uddiyana Bandha', 'Maha Bandha', 'Shambhavi Mudra'],
       featureHighlight: 'Shambhavi Mudra & Silent Ajapa Japa',
+      journeyPhase: 'Phase 3: Advanced (Month 4+)',
+      phaseName: 'Advanced',
     ),
   ];
 
@@ -206,6 +228,8 @@ class ProgressionService {
       ratio: currentLevelInfo.ratio,
       kapalbhatiStrokes: currentLevelInfo.kapalbhatiStrokes,
       featureHighlight: currentLevelInfo.featureHighlight,
+      journeyPhase: currentLevelInfo.journeyPhase,
+      phaseName: currentLevelInfo.phaseName,
     );
   }
 

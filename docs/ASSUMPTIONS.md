@@ -71,5 +71,21 @@ As per the task brief, the following assumptions were made regarding the design,
 * Integrated `BreathCapacityTestScreen` (Sopana Pariksha): a 1-minute guided breath exercise (3 centering breaths -> 1 deep inhale -> comfortable hold until first urge) to measure Comfortable Hold Time (CHT).
 * The diagnostic maps CHT to the practitioner's apt Sopana level (<15s -> Level 1, 15-25s -> Level 2, 25-40s -> Level 3, 40-60s -> Level 4, 60s+ -> Level 5), calibrates their active rank in `ProgressionService`, and sets the safe hold cap (`CHT * 0.60`).
 
+## Classical Pranayama & Dhyan Segregation and Authentic Pacing Mechanics
+* **Strict Pranayama vs. Dhyan Segregation**: Pranayama techniques (breath control: Kapalbhati, Nadi Shodhana, Ujjayi, Bhramari, Bhastrika, Sheetali) are strictly isolated in the "Abhyas" tab. Meditation, Dharana, and Mantra practices (Naam Japa, Breath Awareness / Nostril Dhyan, Yoga Nidra) reside strictly in the "Dhyan" tab.
+* **Kapalbhati Bahir Kumbhaka (External Hold)**: Following classical Hatha Yoga mechanics (*Gheranda Samhita*), each round of 30–50 rapid active strokes concludes with a complete exhalation into a **10s Bahir Kumbhaka (hold outside on empty lungs)** with *Maha Bandha* (Jalandhara & Uddiyana lock), followed by a slow *Puraka* release and natural breath recovery.
+* **Ujjayi & Bhramari Antar Kumbhaka**: In advanced practice, both Ujjayi and Bhramari support an optional internal retention (*Antar Kumbhaka* of 4–8s) with *Jalandhara Bandha* / *Shanmukhi Mudra* brow focus before exhalation, accessible via an in-card toggle/stepper.
+* **Dhyan Studio Redesign & 1-Tap Combined Flow**:
+  - The oversized 190px manual mala touch disc was moved into an accessible modal sheet (`_openDigitalMalaSheet`), freeing up the screen for guided sadhanas.
+  - Added the top 1-tap **"Complete Meditation Flow: 3-Stage Naam Japa ➔ Nostril Dhyan" (18 min)** combining audible/whisper Naam Japa (e.g. *Radha Radha*) to calm sensory ripples, smoothly transitioning into silent natural breath awareness at the nostril rims (*Nasagra Prana Dharana*).
+  - Trataka and Antar Mouna are kept as quiet, unobtrusive classical dharana notes without distracting from primary meditation flows.
+* **3-Phase Yogic Journey Progression**:
+  - The 7 Sopana levels in `ProgressionService` are officially mapped to the classical 3-Phase developmental journey:
+    - *Phase 1: Foundation (Weeks 1–4, Levels 1–2)*: Equal breath 4:4, extended exhalation 1:0:2:0, gentle Kapalbhati (30–45 strokes, no hold), silent So-Hum / Naam Japa, Nostril Breath Awareness (5–10m), Yoga Nidra (10–15m).
+    - *Phase 2: Deepening (Weeks 5–12, Levels 3–4)*: Antar Kumbhaka 1:1:2:0 to 1:2:2:0, Kapalbhati with Bahir Kumbhaka, Ujjayi & Bhramari with internal hold, 108-bead Japa.
+    - *Phase 3: Advanced (Month 4+, Levels 5–7)*: Classical 1:4:2:0 to 1:4:2:2 Kumbhaka ladders with Maha Bandha, Bhastrika, Surya/Chandra Bhedana, effortless Manasika repetition, extended 30–45m Yoga Nidra.
+
+
+
 
 

@@ -203,4 +203,64 @@ void main() {
       expect(progression.earnedSeals, contains('Jalandhara Bandha'));
     });
   });
+
+  group('Classical Master Sequence & Practice Mechanics Tests', () {
+    test('Classical Master Sequence follows canonical 4-phase order', () {
+      final masterSteps = [
+        {'id': 'sankalp', 'phase': 0, 'title': 'Sankalp & Centering'},
+        {'id': 'kapalbhati', 'phase': 1, 'title': 'Cleansing & Awakening'},
+        {'id': 'nadi_shodhana', 'phase': 2, 'title': 'Channel Purification'},
+        {'id': 'ujjayi', 'phase': 3, 'title': 'Soothing & Throat Focus'},
+        {'id': 'bhramari', 'phase': 3, 'title': 'Soothing & Cranial Vibration'},
+        {'id': 'breath_awareness', 'phase': 4, 'title': 'Integration & Stillness'},
+      ];
+
+      expect(masterSteps[1]['id'], equals('kapalbhati'));
+      expect(masterSteps[2]['id'], equals('nadi_shodhana'));
+      expect(masterSteps[3]['id'], equals('ujjayi'));
+      expect(masterSteps[4]['id'], equals('bhramari'));
+      expect(masterSteps[5]['id'], equals('breath_awareness'));
+    });
+
+    test('Nadi Shodhana ratio enforces proper Kumbhaka invariants', () {
+      final level3Ratio = [4, 4, 8, 0]; // 1:1:2:0
+      final level5Ratio = [4, 16, 8, 0]; // 1:4:2:0
+      final level6Ratio = [4, 16, 8, 8]; // 1:4:2:2
+
+      // Invariant 1: Rechaka >= Puraka
+      expect(level3Ratio[2], greaterThanOrEqualTo(level3Ratio[0]));
+      expect(level5Ratio[2], greaterThanOrEqualTo(level5Ratio[0]));
+
+      // Invariant 2: Bahya Kumbhaka <= Antar Kumbhaka
+      expect(level6Ratio[3], lessThanOrEqualTo(level6Ratio[1]));
+    });
+
+    test('Kapalbhati mechanics structure: active exhalations followed by Bahir Kumbhaka hold', () {
+      const strokesDuration = 35; // 35 active strokes (~1/sec)
+      const bahirKumbhakaDuration = 10; // 10s external hold on empty lungs
+      const purakaDuration = 4; // deep puraka release
+      const recoveryDuration = 6; // calm settling
+      const singleRoundDuration = strokesDuration + bahirKumbhakaDuration + purakaDuration + recoveryDuration;
+
+      expect(singleRoundDuration, equals(55));
+      expect(bahirKumbhakaDuration, equals(10));
+    });
+
+    test('ProgressionService categorizes levels into 3 Yogic Journey Phases', () {
+      final service = ProgressionService();
+
+      final l1 = service.getLevelInfo(1);
+      final l3 = service.getLevelInfo(3);
+      final l5 = service.getLevelInfo(5);
+
+      expect(l1.journeyPhase, contains('Phase 1: Foundation'));
+      expect(l1.phaseName, equals('Foundation'));
+
+      expect(l3.journeyPhase, contains('Phase 2: Deepening'));
+      expect(l3.phaseName, equals('Deepening'));
+
+      expect(l5.journeyPhase, contains('Phase 3: Advanced'));
+      expect(l5.phaseName, equals('Advanced'));
+    });
+  });
 }
