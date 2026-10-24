@@ -85,6 +85,17 @@ As per the task brief, the following assumptions were made regarding the design,
     - *Phase 2: Deepening (Weeks 5–12, Levels 3–4)*: Antar Kumbhaka 1:1:2:0 to 1:2:2:0, Kapalbhati with Bahir Kumbhaka, Ujjayi & Bhramari with internal hold, 108-bead Japa.
     - *Phase 3: Advanced (Month 4+, Levels 5–7)*: Classical 1:4:2:0 to 1:4:2:2 Kumbhaka ladders with Maha Bandha, Bhastrika, Surya/Chandra Bhedana, effortless Manasika repetition, extended 30–45m Yoga Nidra.
 
+## Routine Planner Technique-Specific Customizers (No Bogus Ratios)
+* **Strict Ratio Isolation to Nadi Shodhana**: The 4-part ratio stepper (`Puraka : Antar : Rechaka : Bahya`) is strictly restricted to Nadi Shodhana, the only classical practice employing 4-phase alternate nostril retention.
+* **Working Customizers for All Practices**: Non-ratio practices no longer display `Ratio 1:0:1:0` or open irrelevant ratio modals. Every practice step in `CycleComposerScreen` is equipped with a functioning adjust button and an interactive modal sheet:
+  - **Kapalbhati**: Customizes strokes per round (30, 45, 60, 80) and Bahir Kumbhaka empty lung retention (0s, 5s, 10s, 15s).
+  - **Ujjayi**: Customizes breath pacing (Equal 4:4, Extended 4:8, Deep 5:5) and optional Antar Kumbhaka internal hold (0s, 4s, 8s).
+  - **Bhramari**: Customizes mudra (Shanmukhi Mudra, Ear Tragus Press, Jnana Mudra) and optional Antar Kumbhaka internal hold before humming (0s, 3s, 5s).
+  - **3-Stage Naam Japa**: Customizes sacred Naam (*Radha Radha, Om Namah Shivaya, So-Hum, Hare Krishna, Om, Gayatri*) and target mala beads (27, 54, 108).
+  - **Silent Nostril Dhyan**: Customizes somatic anchor (*Nostril Rim / Nasagra, Ajna Chakra, Anahata, Manipura*) and hand mudra (*Jnana, Chin, Dhyana*).
+  - **General / Restorative**: Customizes practice intention and pacing focus.
+* **Subtitle & Parameter Persistence**: Customizations update step subtitles and relevant parameters, seamlessly passed to `CyclePlayerScreen` so users see their customized settings in the player.
+
 
 
 

@@ -375,6 +375,9 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
                                 subtitle: item['sub'] as String,
                                 durationMinutes: item['defaultMin'] as int,
                                 isPranayamaWithPacer: item['isPacer'] as bool,
+                                ratio: (item['id'] as String) == 'nadi_shodhana'
+                                    ? ProgressionService().getLevelInfo(_effectiveLevel).ratio
+                                    : null,
                               ));
                             });
                             Navigator.pop(context);
@@ -405,7 +408,7 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
     final items = enabledSteps.map((s) => CycleStepItem(
       id: s.id,
       title: s.title,
-      subtitle: '${s.durationMinutes} min session',
+      subtitle: s.subtitle.isNotEmpty ? s.subtitle : '${s.durationMinutes} min session',
       durationSeconds: s.durationMinutes * 60,
       isRequired: s.isRequired,
       isPranayamaWithPacer: s.isPranayamaWithPacer,
@@ -671,86 +674,15 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
                           const Divider(height: 1, color: AbhyasTheme.line),
                           const SizedBox(height: 8),
 
-                          // ROW 2: Category Badge + Stepper Controls + Delete Action
+                          // ROW 2: Category Badge + Working Adjust Button + Stepper Controls + Delete Action
                           Row(
                             children: [
-                              // Category Badge
-                              if (step.isPranayamaWithPacer) ...[
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                  decoration: BoxDecoration(
-                                    color: AbhyasTheme.leaf.withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(color: AbhyasTheme.leaf.withValues(alpha: 0.35)),
-                                  ),
-                                  child: const Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.air, size: 12, color: AbhyasTheme.leaf),
-                                      SizedBox(width: 4),
-                                      Text(
-                                        'Pranayama',
-                                        style: TextStyle(
-                                          color: AbhyasTheme.leaf,
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                InkWell(
-                                  onTap: () => _showRatioCustomizer(index),
-                                  borderRadius: BorderRadius.circular(6),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                    decoration: BoxDecoration(
-                                      color: AbhyasTheme.saffron.withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(6),
-                                      border: Border.all(color: AbhyasTheme.saffron.withValues(alpha: 0.4)),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Icon(Icons.tune, size: 12, color: AbhyasTheme.saffron),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          step.ratio != null ? 'Ratio ${step.ratio!.join(":")}' : 'Ratio 1:0:1:0',
-                                          style: const TextStyle(
-                                            color: AbhyasTheme.saffron,
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ] else
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                  decoration: BoxDecoration(
-                                    color: AbhyasTheme.sky.withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(color: AbhyasTheme.sky.withValues(alpha: 0.35)),
-                                  ),
-                                  child: const Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.spa, size: 12, color: AbhyasTheme.sky),
-                                      SizedBox(width: 4),
-                                      Text(
-                                        'Meditation',
-                                        style: TextStyle(
-                                          color: AbhyasTheme.sky,
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                              // 1. Accurate Category Badge
+                              _buildCategoryBadge(step),
+                              const SizedBox(width: 8),
+
+                              // 2. Working Adjust Button specifically tailored for this step
+                              _buildStepAdjustButton(index, step),
 
                               const Spacer(),
 
@@ -1022,7 +954,388 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
     );
   }
 
-  void _showRatioCustomizer(int index) {
+  Widget _buildCategoryBadge(CycleStep step) {
+    final id = step.id.toLowerCase();
+    final isPranayama = step.isPranayamaWithPacer ||
+        id.contains('nadi') ||
+        id.contains('kapal') ||
+        id.contains('bhramari') ||
+        id.contains('ujjayi') ||
+        id.contains('sheetali') ||
+        id.contains('bhastrika') ||
+        id.contains('bhedana');
+
+    if (isPranayama) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: AbhyasTheme.leaf.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: AbhyasTheme.leaf.withValues(alpha: 0.35)),
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.air, size: 12, color: AbhyasTheme.leaf),
+            SizedBox(width: 4),
+            Text(
+              'Pranayama',
+              style: TextStyle(
+                color: AbhyasTheme.leaf,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final isMantra = id.contains('naam') ||
+        id.contains('jaap') ||
+        id.contains('japa') ||
+        id.contains('om') ||
+        id.contains('mantra');
+    if (isMantra) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE07A5F).withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: const Color(0xFFE07A5F).withValues(alpha: 0.35)),
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.record_voice_over, size: 12, color: Color(0xFFE07A5F)),
+            SizedBox(width: 4),
+            Text(
+              'Mantra',
+              style: TextStyle(
+                color: Color(0xFFE07A5F),
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final isRestorative = id.contains('nidra') || id.contains('savasana');
+    if (isRestorative) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: const Color(0xFF9D4EDD).withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: const Color(0xFF9D4EDD).withValues(alpha: 0.35)),
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.nightlight_round, size: 12, color: Color(0xFF9D4EDD)),
+            SizedBox(width: 4),
+            Text(
+              'Restorative',
+              style: TextStyle(
+                color: Color(0xFF9D4EDD),
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final isPrep = id.contains('sankalp') ||
+        id.contains('warmup') ||
+        id.contains('vyayama') ||
+        id.contains('shanti');
+    if (isPrep) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: AbhyasTheme.darkSurfaceAlt,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: AbhyasTheme.line),
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.self_improvement, size: 12, color: Colors.white70),
+            SizedBox(width: 4),
+            Text(
+              'Centering',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Default: Dhyan
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: AbhyasTheme.sky.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: AbhyasTheme.sky.withValues(alpha: 0.35)),
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.spa, size: 12, color: AbhyasTheme.sky),
+          SizedBox(width: 4),
+          Text(
+            'Dhyan',
+            style: TextStyle(
+              color: AbhyasTheme.sky,
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStepAdjustButton(int index, CycleStep step) {
+    final id = step.id.toLowerCase();
+
+    // 1. Nadi Shodhana: The ONLY practice with 4-part Kumbhaka ratio
+    if (id.contains('nadi')) {
+      final ratioStr = step.ratio != null ? step.ratio!.join(':') : '1:0:1:0';
+      return InkWell(
+        onTap: () => _showNadiRatioCustomizer(index),
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: AbhyasTheme.saffron.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: AbhyasTheme.saffron.withValues(alpha: 0.4)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.tune, size: 12, color: AbhyasTheme.saffron),
+              const SizedBox(width: 4),
+              Text(
+                'Ratio $ratioStr',
+                style: const TextStyle(
+                  color: AbhyasTheme.saffron,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // 2. Kapalbhati: Strokes + Bahir Kumbhaka (NO 4-part ratios!)
+    if (id.contains('kapal')) {
+      return InkWell(
+        onTap: () => _showKapalbhatiCustomizer(index),
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFF7043).withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: const Color(0xFFFF7043).withValues(alpha: 0.4)),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.tune, size: 12, color: Color(0xFFFF7043)),
+              SizedBox(width: 4),
+              Text(
+                'Strokes & Hold',
+                style: TextStyle(
+                  color: Color(0xFFFF7043),
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // 3. Ujjayi: Ocean breath + optional Antar Kumbhaka
+    if (id.contains('ujjayi')) {
+      return InkWell(
+        onTap: () => _showUjjayiCustomizer(index),
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: AbhyasTheme.sky.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: AbhyasTheme.sky.withValues(alpha: 0.4)),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.tune, size: 12, color: AbhyasTheme.sky),
+              SizedBox(width: 4),
+              Text(
+                'Ocean & Hold',
+                style: TextStyle(
+                  color: AbhyasTheme.sky,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // 4. Bhramari: Shanmukhi Mudra & Humming + Antar Kumbhaka
+    if (id.contains('bhramari')) {
+      return InkWell(
+        onTap: () => _showBhramariCustomizer(index),
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE9C46A).withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: const Color(0xFFE9C46A).withValues(alpha: 0.4)),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.tune, size: 12, color: Color(0xFFE9C46A)),
+              SizedBox(width: 4),
+              Text(
+                'Humming & Hold',
+                style: TextStyle(
+                  color: Color(0xFFE9C46A),
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // 5. 3-Stage Naam Japa / Mantra: Sacred Naam & Mala bead count
+    if (id.contains('naam') ||
+        id.contains('jaap') ||
+        id.contains('japa') ||
+        id.contains('om') ||
+        id.contains('mantra')) {
+      return InkWell(
+        onTap: () => _showNaamJapaCustomizer(index),
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE07A5F).withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: const Color(0xFFE07A5F).withValues(alpha: 0.4)),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.tune, size: 12, color: Color(0xFFE07A5F)),
+              SizedBox(width: 4),
+              Text(
+                'Naam & Beads',
+                style: TextStyle(
+                  color: Color(0xFFE07A5F),
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // 6. Breath Awareness / Nostril Dhyan: Somatic Anchor
+    if (id.contains('breath_awareness') ||
+        id.contains('dhyan') ||
+        id.contains('nostril') ||
+        id.contains('antar') ||
+        id.contains('trataka')) {
+      return InkWell(
+        onTap: () => _showDhyanAnchorCustomizer(index),
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: AbhyasTheme.sky.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: AbhyasTheme.sky.withValues(alpha: 0.4)),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.tune, size: 12, color: AbhyasTheme.sky),
+              SizedBox(width: 4),
+              Text(
+                'Focus Anchor',
+                style: TextStyle(
+                  color: AbhyasTheme.sky,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // 7. General Customizer (Sankalp, Sukshma Vyayama, Yoga Nidra, Savasana, Sheetali, etc.)
+    return InkWell(
+      onTap: () => _showGeneralCustomizer(index),
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: AbhyasTheme.darkSurfaceAlt,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: AbhyasTheme.line),
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.tune, size: 12, color: Colors.white70),
+            SizedBox(width: 4),
+            Text(
+              'Customize',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showRatioCustomizer(int index) => _showNadiRatioCustomizer(index);
+
+  void _showNadiRatioCustomizer(int index) {
     final step = _steps[index];
     final currentRatio = List<int>.from(step.ratio ?? [4, 0, 4, 0]);
     while (currentRatio.length < 4) {
@@ -1083,9 +1396,9 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Customize Breath Ratio', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                          const Text('Nadi Shodhana Ratio', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                           const SizedBox(height: 2),
-                          Text(step.title, style: const TextStyle(fontSize: 12, color: AbhyasTheme.darkInkSoft)),
+                          Text('Vishnu Mudra · Puraka:Antar:Rechaka:Bahya', style: const TextStyle(fontSize: 12, color: AbhyasTheme.darkInkSoft)),
                         ],
                       ),
                       Container(
@@ -1195,12 +1508,862 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
                         setState(() {
                           _steps[index] = step.copyWith(
                             ratio: [puraka, antar, rechaka, bahya],
-                            subtitle: '$puraka:$antar:$rechaka:$bahya ratio (${cycleTotal}s cycle)',
+                            subtitle: 'Vishnu Mudra · $puraka:$antar:$rechaka:$bahya ratio (${cycleTotal}s cycle)',
                           );
                         });
                         Navigator.pop(ctx);
                       },
                       child: Text('Save Ratio ($puraka:$antar:$rechaka:$bahya)', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showKapalbhatiCustomizer(int index) {
+    final step = _steps[index];
+    int selectedStrokes = 30;
+    if (step.subtitle.contains('45')) selectedStrokes = 45;
+    if (step.subtitle.contains('60')) selectedStrokes = 60;
+    if (step.subtitle.contains('80')) selectedStrokes = 80;
+
+    int selectedHold = 10;
+    if (step.subtitle.contains('0s') || step.subtitle.contains('No hold')) selectedHold = 0;
+    if (step.subtitle.contains('5s')) selectedHold = 5;
+    if (step.subtitle.contains('15s')) selectedHold = 15;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AbhyasTheme.darkSurface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 16,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AbhyasTheme.line,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Kapalbhati Cleansing', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                          SizedBox(height: 2),
+                          Text('Abdominal exhalations & Bahir Kumbhaka', style: TextStyle(fontSize: 12, color: AbhyasTheme.darkInkSoft)),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFF7043).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFFFF7043).withValues(alpha: 0.4)),
+                        ),
+                        child: Text(
+                          '$selectedStrokes strokes · ${selectedHold}s hold',
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFFF7043), fontSize: 12),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+
+                  const Text('STROKES PER ROUND (3 ROUNDS TOTAL)', style: TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildPresetChip('30 Strokes (Gentle)', selectedStrokes == 30, () => setModalState(() => selectedStrokes = 30)),
+                      _buildPresetChip('45 Strokes (Rhythmic)', selectedStrokes == 45, () => setModalState(() => selectedStrokes = 45)),
+                      _buildPresetChip('60 Strokes (Classical)', selectedStrokes == 60, () => setModalState(() => selectedStrokes = 60)),
+                      _buildPresetChip('80 Strokes (Energizing)', selectedStrokes == 80, () => setModalState(() => selectedStrokes = 80)),
+                    ],
+                  ),
+
+                  const SizedBox(height: 18),
+                  const Text('BAHIR KUMBHAKA (EMPTY LUNG HOLD AFTER ROUND)', style: TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildPresetChip('0s (Continuous)', selectedHold == 0, () => setModalState(() => selectedHold = 0)),
+                      _buildPresetChip('5s Gentle Hold', selectedHold == 5, () => setModalState(() => selectedHold = 5)),
+                      _buildPresetChip('10s Classical Hold', selectedHold == 10, () => setModalState(() => selectedHold = 10)),
+                      _buildPresetChip('15s Advanced Hold', selectedHold == 15, () => setModalState(() => selectedHold = 15)),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AbhyasTheme.darkSurfaceAlt,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AbhyasTheme.line),
+                    ),
+                    child: const Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.info_outline, size: 16, color: AbhyasTheme.saffron),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Classical Master Sequence: 30–50 rapid, sharp abdominal exhalations. After each round, exhale completely and hold softly in Bahir Kumbhaka for 10 seconds before smooth Puraka release.',
+                            style: TextStyle(color: Colors.white70, fontSize: 11, height: 1.4),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFF7043),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _steps[index] = step.copyWith(
+                            subtitle: '3 Rounds · $selectedStrokes strokes · ${selectedHold > 0 ? "${selectedHold}s Bahir Kumbhaka" : "Natural flow"}',
+                            ratio: [0, 0, 0, selectedHold],
+                          );
+                        });
+                        Navigator.pop(ctx);
+                      },
+                      child: const Text('Save Kapalbhati Settings', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showUjjayiCustomizer(int index) {
+    final step = _steps[index];
+    int selectedHold = 0;
+    if (step.subtitle.contains('4s')) selectedHold = 4;
+    if (step.subtitle.contains('8s')) selectedHold = 8;
+
+    String selectedPace = 'Equal 4s : 4s';
+    if (step.subtitle.contains('5s : 5s')) selectedPace = 'Deep 5s : 5s';
+    if (step.subtitle.contains('4s : 8s')) selectedPace = 'Extended 4s : 8s';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AbhyasTheme.darkSurface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 16,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AbhyasTheme.line,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Ujjayi Ocean Breath', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                          SizedBox(height: 2),
+                          Text('Throat whisper & internal hold', style: TextStyle(fontSize: 12, color: AbhyasTheme.darkInkSoft)),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: AbhyasTheme.sky.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AbhyasTheme.sky.withValues(alpha: 0.4)),
+                        ),
+                        child: Text(
+                          selectedHold > 0 ? '${selectedHold}s Antar Hold' : 'Flowing',
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: AbhyasTheme.sky, fontSize: 12),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+
+                  const Text('BREATHING PACING', style: TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildPresetChip('Equal 4s : 4s (Calming)', selectedPace == 'Equal 4s : 4s', () => setModalState(() => selectedPace = 'Equal 4s : 4s')),
+                      _buildPresetChip('Extended 4s : 8s (Relaxing)', selectedPace == 'Extended 4s : 8s', () => setModalState(() => selectedPace = 'Extended 4s : 8s')),
+                      _buildPresetChip('Deep 5s : 5s (Expanding)', selectedPace == 'Deep 5s : 5s', () => setModalState(() => selectedPace = 'Deep 5s : 5s')),
+                    ],
+                  ),
+
+                  const SizedBox(height: 18),
+                  const Text('ANTAR KUMBHAKA (INTERNAL HOLD)', style: TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildPresetChip('No Hold (Natural Ocean Wave)', selectedHold == 0, () => setModalState(() => selectedHold = 0)),
+                      _buildPresetChip('4s Gentle Internal Hold', selectedHold == 4, () => setModalState(() => selectedHold = 4)),
+                      _buildPresetChip('8s Classical Internal Hold', selectedHold == 8, () => setModalState(() => selectedHold = 8)),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AbhyasTheme.darkSurfaceAlt,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AbhyasTheme.line),
+                    ),
+                    child: const Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.info_outline, size: 16, color: AbhyasTheme.sky),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Slightly constrict the back of the glottis (throat) as if fogging a mirror with mouth closed. Creates a smooth ocean resonance that soothes the vagus nerve.',
+                            style: TextStyle(color: Colors.white70, fontSize: 11, height: 1.4),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AbhyasTheme.sky,
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          final puraka = selectedPace.contains('5s') ? 5 : 4;
+                          final rechaka = selectedPace.contains('8s') ? 8 : (selectedPace.contains('5s') ? 5 : 4);
+                          _steps[index] = step.copyWith(
+                            subtitle: 'Ocean breath · $selectedPace · ${selectedHold > 0 ? "${selectedHold}s Antar Hold" : "Continuous"}',
+                            ratio: [puraka, selectedHold, rechaka, 0],
+                          );
+                        });
+                        Navigator.pop(ctx);
+                      },
+                      child: const Text('Save Ujjayi Settings', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showBhramariCustomizer(int index) {
+    final step = _steps[index];
+    int selectedHold = 0;
+    if (step.subtitle.contains('3s')) selectedHold = 3;
+    if (step.subtitle.contains('5s')) selectedHold = 5;
+
+    String selectedMudra = 'Shanmukhi Mudra';
+    if (step.subtitle.contains('Ear Tragus')) selectedMudra = 'Ear Tragus Press';
+    if (step.subtitle.contains('Jnana')) selectedMudra = 'Jnana Mudra';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AbhyasTheme.darkSurface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 16,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AbhyasTheme.line,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Bhramari Humming Bee', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                          SizedBox(height: 2),
+                          Text('Cranial vibration & internal hold', style: TextStyle(fontSize: 12, color: AbhyasTheme.darkInkSoft)),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE9C46A).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFFE9C46A).withValues(alpha: 0.4)),
+                        ),
+                        child: Text(
+                          selectedHold > 0 ? '${selectedHold}s Hold' : 'Continuous',
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFE9C46A), fontSize: 12),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+
+                  const Text('MUDRA & GESTURE', style: TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildPresetChip('Shanmukhi Mudra (Thumbs on ears)', selectedMudra == 'Shanmukhi Mudra', () => setModalState(() => selectedMudra = 'Shanmukhi Mudra')),
+                      _buildPresetChip('Ear Tragus Press (Simple)', selectedMudra == 'Ear Tragus Press', () => setModalState(() => selectedMudra = 'Ear Tragus Press')),
+                      _buildPresetChip('Jnana Mudra (Open ears)', selectedMudra == 'Jnana Mudra', () => setModalState(() => selectedMudra = 'Jnana Mudra')),
+                    ],
+                  ),
+
+                  const SizedBox(height: 18),
+                  const Text('ANTAR KUMBHAKA (INTERNAL HOLD BEFORE HUMMING)', style: TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildPresetChip('No Hold (Direct Humming Exhale)', selectedHold == 0, () => setModalState(() => selectedHold = 0)),
+                      _buildPresetChip('3s Soft Internal Hold', selectedHold == 3, () => setModalState(() => selectedHold = 3)),
+                      _buildPresetChip('5s Deep Internal Hold', selectedHold == 5, () => setModalState(() => selectedHold = 5)),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AbhyasTheme.darkSurfaceAlt,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AbhyasTheme.line),
+                    ),
+                    child: const Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.info_outline, size: 16, color: Color(0xFFE9C46A)),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Adopt Shanmukhi Mudra to close sensory gates. Inhale deeply through both nostrils. On exhalation, emit a low-pitch humming bee sound, concentrating vibrations in the crown.',
+                            style: TextStyle(color: Colors.white70, fontSize: 11, height: 1.4),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFE9C46A),
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _steps[index] = step.copyWith(
+                            subtitle: '$selectedMudra · ${selectedHold > 0 ? "${selectedHold}s Antar Hold" : "Natural Humming"}',
+                            ratio: [4, selectedHold, 8, 0],
+                          );
+                        });
+                        Navigator.pop(ctx);
+                      },
+                      child: const Text('Save Bhramari Settings', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showNaamJapaCustomizer(int index) {
+    final step = _steps[index];
+    String selectedNaam = 'Radha Radha';
+    if (step.subtitle.contains('Om Namah Shivaya')) selectedNaam = 'Om Namah Shivaya';
+    if (step.subtitle.contains('So-Hum')) selectedNaam = 'So-Hum';
+    if (step.subtitle.contains('Hare Krishna')) selectedNaam = 'Hare Krishna';
+    if (step.subtitle.contains('Gayatri')) selectedNaam = 'Gayatri Mantra';
+
+    int selectedBeads = 108;
+    if (step.subtitle.contains('27')) selectedBeads = 27;
+    if (step.subtitle.contains('54')) selectedBeads = 54;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AbhyasTheme.darkSurface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 16,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AbhyasTheme.line,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('3-Stage Naam Jaap', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                          SizedBox(height: 2),
+                          Text('Vaikhari ➔ Upamshu ➔ Manasika', style: TextStyle(fontSize: 12, color: AbhyasTheme.darkInkSoft)),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE07A5F).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFFE07A5F).withValues(alpha: 0.4)),
+                        ),
+                        child: Text(
+                          '$selectedBeads Beads',
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFE07A5F), fontSize: 12),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+
+                  const Text('SACRED NAAM / MANTRA', style: TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildPresetChip('Radha Radha', selectedNaam == 'Radha Radha', () => setModalState(() => selectedNaam = 'Radha Radha')),
+                      _buildPresetChip('Om Namah Shivaya', selectedNaam == 'Om Namah Shivaya', () => setModalState(() => selectedNaam = 'Om Namah Shivaya')),
+                      _buildPresetChip('So-Hum', selectedNaam == 'So-Hum', () => setModalState(() => selectedNaam = 'So-Hum')),
+                      _buildPresetChip('Hare Krishna', selectedNaam == 'Hare Krishna', () => setModalState(() => selectedNaam = 'Hare Krishna')),
+                      _buildPresetChip('Gayatri Mantra', selectedNaam == 'Gayatri Mantra', () => setModalState(() => selectedNaam = 'Gayatri Mantra')),
+                      _buildPresetChip('Om', selectedNaam == 'Om', () => setModalState(() => selectedNaam = 'Om')),
+                    ],
+                  ),
+
+                  const SizedBox(height: 18),
+                  const Text('TARGET MALA BEADS', style: TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildPresetChip('27 Beads (Quarter Mala · Quick)', selectedBeads == 27, () => setModalState(() => selectedBeads = 27)),
+                      _buildPresetChip('54 Beads (Half Mala · Balanced)', selectedBeads == 54, () => setModalState(() => selectedBeads = 54)),
+                      _buildPresetChip('108 Beads (Full Classical Mala)', selectedBeads == 108, () => setModalState(() => selectedBeads = 108)),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AbhyasTheme.darkSurfaceAlt,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AbhyasTheme.line),
+                    ),
+                    child: const Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.info_outline, size: 16, color: Color(0xFFE07A5F)),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Three classical stages: 1) Vaikhari (audible vocal recitation to anchor the restless mind), 2) Upamshu (subtle lip-whisper as senses turn inward), 3) Manasika (effortless silent mental repetition).',
+                            style: TextStyle(color: Colors.white70, fontSize: 11, height: 1.4),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFE07A5F),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _steps[index] = step.copyWith(
+                            subtitle: '$selectedNaam · 3-Stage Japa ($selectedBeads beads)',
+                          );
+                        });
+                        Navigator.pop(ctx);
+                      },
+                      child: const Text('Save Naam Jaap Settings', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showDhyanAnchorCustomizer(int index) {
+    final step = _steps[index];
+    String selectedAnchor = 'Nostril Rim (Nasagra)';
+    if (step.subtitle.contains('Ajna') || step.subtitle.contains('Brow')) selectedAnchor = 'Brow Center (Ajna)';
+    if (step.subtitle.contains('Heart') || step.subtitle.contains('Anahata')) selectedAnchor = 'Heart Center (Anahata)';
+    if (step.subtitle.contains('Navel') || step.subtitle.contains('Manipura')) selectedAnchor = 'Navel Center (Manipura)';
+
+    String selectedMudra = 'Jnana Mudra';
+    if (step.subtitle.contains('Dhyana Mudra')) selectedMudra = 'Dhyana Mudra';
+    if (step.subtitle.contains('Chin Mudra')) selectedMudra = 'Chin Mudra';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AbhyasTheme.darkSurface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 16,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AbhyasTheme.line,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Silent Nostril Dhyan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                          SizedBox(height: 2),
+                          Text('Somatic focus & meditative witnessing', style: TextStyle(fontSize: 12, color: AbhyasTheme.darkInkSoft)),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: AbhyasTheme.sky.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AbhyasTheme.sky.withValues(alpha: 0.4)),
+                        ),
+                        child: Text(
+                          selectedMudra,
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: AbhyasTheme.sky, fontSize: 12),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+
+                  const Text('PRIMARY SOMATIC ANCHOR', style: TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildPresetChip('Nostril Rim (Nasagra)', selectedAnchor == 'Nostril Rim (Nasagra)', () => setModalState(() => selectedAnchor = 'Nostril Rim (Nasagra)')),
+                      _buildPresetChip('Brow Center (Ajna)', selectedAnchor == 'Brow Center (Ajna)', () => setModalState(() => selectedAnchor = 'Brow Center (Ajna)')),
+                      _buildPresetChip('Heart Center (Anahata)', selectedAnchor == 'Heart Center (Anahata)', () => setModalState(() => selectedAnchor = 'Heart Center (Anahata)')),
+                      _buildPresetChip('Navel (Manipura)', selectedAnchor == 'Navel (Manipura)', () => setModalState(() => selectedAnchor = 'Navel (Manipura)')),
+                    ],
+                  ),
+
+                  const SizedBox(height: 18),
+                  const Text('HAND MUDRA', style: TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildPresetChip('Jnana Mudra (Palms down on knees)', selectedMudra == 'Jnana Mudra', () => setModalState(() => selectedMudra = 'Jnana Mudra')),
+                      _buildPresetChip('Chin Mudra (Palms up receiving)', selectedMudra == 'Chin Mudra', () => setModalState(() => selectedMudra = 'Chin Mudra')),
+                      _buildPresetChip('Dhyana Mudra (Hands cupped in lap)', selectedMudra == 'Dhyana Mudra', () => setModalState(() => selectedMudra = 'Dhyana Mudra')),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AbhyasTheme.darkSurfaceAlt,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AbhyasTheme.line),
+                    ),
+                    child: const Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.info_outline, size: 16, color: AbhyasTheme.sky),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Rest as the detached witness (Sakshi Bhav). Feel the touch of air at the nostril rims without controlling breath. When the mind wanders, gently welcome it back.',
+                            style: TextStyle(color: Colors.white70, fontSize: 11, height: 1.4),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AbhyasTheme.sky,
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _steps[index] = step.copyWith(
+                            subtitle: '$selectedMudra · Anchor: $selectedAnchor',
+                          );
+                        });
+                        Navigator.pop(ctx);
+                      },
+                      child: const Text('Save Dhyan Anchor', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showGeneralCustomizer(int index) {
+    final step = _steps[index];
+    String selectedFocus = 'Gentle & Restorative';
+    if (step.subtitle.contains('Deepening')) selectedFocus = 'Deepening Presence';
+    if (step.subtitle.contains('Traditional')) selectedFocus = 'Traditional Classical Flow';
+    if (step.subtitle.contains('Sankalpa') || step.subtitle.contains('Intention')) selectedFocus = 'Sankalpa & Pure Intention';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AbhyasTheme.darkSurface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 16,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AbhyasTheme.line,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(step.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                            const SizedBox(height: 2),
+                            const Text('Customize practice focus & pacing', style: TextStyle(fontSize: 12, color: AbhyasTheme.darkInkSoft)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+
+                  const Text('PRACTICE FOCUS & INTENTION', style: TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildPresetChip('Gentle & Restorative', selectedFocus == 'Gentle & Restorative', () => setModalState(() => selectedFocus = 'Gentle & Restorative')),
+                      _buildPresetChip('Deepening Presence', selectedFocus == 'Deepening Presence', () => setModalState(() => selectedFocus = 'Deepening Presence')),
+                      _buildPresetChip('Traditional Classical Flow', selectedFocus == 'Traditional Classical Flow', () => setModalState(() => selectedFocus = 'Traditional Classical Flow')),
+                      _buildPresetChip('Sankalpa & Pure Intention', selectedFocus == 'Sankalpa & Pure Intention', () => setModalState(() => selectedFocus = 'Sankalpa & Pure Intention')),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AbhyasTheme.saffron,
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _steps[index] = step.copyWith(
+                            subtitle: selectedFocus,
+                          );
+                        });
+                        Navigator.pop(ctx);
+                      },
+                      child: const Text('Save Settings', style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],

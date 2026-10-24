@@ -63,7 +63,7 @@ class _PracticeListScreenState extends State<PracticeListScreen> {
       CycleStepItem(
         id: 'kapalbhati',
         title: 'Phase 1: Kapalbhati',
-        subtitle: '3 Rounds of $_kapalbhatiStrokes strokes + 10s Antar Kumbhaka',
+        subtitle: '3 Rounds of $_kapalbhatiStrokes strokes + 10s Bahir Kumbhaka',
         durationSeconds: 240,
         isPranayamaWithPacer: true,
       ),

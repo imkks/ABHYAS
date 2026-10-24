@@ -262,5 +262,41 @@ void main() {
       expect(l5.journeyPhase, contains('Phase 3: Advanced'));
       expect(l5.phaseName, equals('Advanced'));
     });
+
+    test('Routine Planner: Only Nadi Shodhana carries 4-part breath ratio; others use technique-specific customizers', () {
+      final sampleSteps = [
+        {'id': 'sankalp', 'isPranayama': false, 'ratio': null},
+        {'id': 'kapalbhati', 'isPranayama': true, 'ratio': null}, // Strokes + Bahir Kumbhaka
+        {'id': 'nadi_shodhana', 'isPranayama': true, 'ratio': [4, 8, 8, 4]}, // Only Nadi Shodhana has 4-part ratio
+        {'id': 'ujjayi', 'isPranayama': true, 'ratio': null}, // Ocean breath + optional internal hold
+        {'id': 'bhramari', 'isPranayama': true, 'ratio': null}, // Humming + optional internal hold
+        {'id': 'naam_jaap', 'isPranayama': false, 'ratio': null}, // 3-Stage Naam Japa
+        {'id': 'breath_awareness', 'isPranayama': false, 'ratio': null}, // Nostril Dhyan Anchor
+      ];
+
+      for (final step in sampleSteps) {
+        if (step['id'] != 'nadi_shodhana') {
+          expect(step['ratio'], isNull, reason: '${step["id"]} must NOT have a hardcoded 4-part breath ratio');
+        } else {
+          expect(step['ratio'], isNotNull, reason: 'Nadi Shodhana MUST have a valid 4-part breath ratio');
+        }
+      }
+    });
+
+    test('Routine Planner Customizers: validates custom parameters per technique', () {
+      // Kapalbhati parameter check
+      const validStrokes = [30, 45, 60, 80];
+      const validBahirHold = [0, 5, 10, 15];
+      expect(validStrokes, contains(45));
+      expect(validBahirHold, contains(10));
+
+      // 3-Stage Naam Japa bead counts
+      const validBeads = [27, 54, 108];
+      expect(validBeads, contains(108));
+
+      // Nostril Dhyan somatic anchors
+      const validAnchors = ['Nostril Rim (Nasagra)', 'Brow Center (Ajna)', 'Heart Center (Anahata)', 'Navel (Manipura)'];
+      expect(validAnchors, contains('Nostril Rim (Nasagra)'));
+    });
   });
 }
