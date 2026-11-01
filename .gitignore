@@ -16,6 +16,14 @@ app/build/
 build/
 target/
 
+# Local signing material and credentials
+*.jks
+*.keystore
+/app/android/key.properties
+.env
+.env.*
+!.env.example
+
 # OS specific
 .DS_Store
 Thumbs.db
