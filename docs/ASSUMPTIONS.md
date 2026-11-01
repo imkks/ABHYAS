@@ -15,12 +15,17 @@ As per the task brief, the following assumptions were made regarding the design,
 
 ## CI/CD & Workflow
 * We build `apk` using `ubuntu-latest` inside Github Actions.
-* GitHub Actions workflow `build-apk.yml` triggers specifically on `pull_request` targeting `main` and manual `workflow_dispatch` to prevent redundant runs on non-main commit pushes.
-* GitHub Actions workflow `deploy-console.yml` deploys the Teacher Console to GitHub Pages on every push to `main` affecting `console/**` (or manual trigger).
+* GitHub Actions workflow `build-apk.yml` runs the debug/test flow for pull requests to `main`; the console checks in that workflow are commented out while the web component is paused.
+* GitHub Actions workflow `release-apk.yml` builds a signed release APK on Android app changes pushed to `main` (including merges), and on manual dispatch from `main`. It reads the upload keystore and credentials from repository secrets `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`, and `ANDROID_STORE_PASSWORD`. The APK is uploaded as a workflow artifact for manual Play Console upload; CI does not publish it. Its version code uses the workflow run number plus one and must be higher than any version code already uploaded to Play Console.
+* GitHub Pages deployment in `deploy-console.yml` is fully commented out while the web component is paused.
+* The Teacher Console frontend displays a temporary-unavailable message while paused; previously published Pages content, if any, remains hosted until Pages hosting is disabled in repository settings or replaced.
 * `"homepage": "."` configured in `console/package.json` to allow static assets to resolve relatively on GitHub Pages subdirectory paths.
 
 ## Audio & Haptics
 * `AudioService` uses an injectable interface abstraction layer with logging stubs pending external audio dependency (`just_audio`).
+* Screen lock is treated as a supported audio playback state for practice and routine sessions (SRS NFR-02 / FR-PL-02). Android requests foreground media playback and wake lock permissions so native service can keep practice timers active while the display sleeps. Calls and other audio interruptions must still pause safely to natural breath as specified in UI_SPEC.md; the screen-lock case must not be treated as an interruption.
+* Android practice and routine playback uses a foreground service with a partial wake lock while the session is active, so existing Dart timers can dispatch cues with the screen off. The service is stopped on manual pause, safety stop, completion or screen disposal. It must be checked on a physical Android device before pilot distribution.
+* iOS background playback remains a separate implementation and requires validation on physical iOS devices before pilot distribution.
 * `HapticService` dynamically suppresses or scales haptic feedback in accordance with weaning stages 1 through 5 (e.g. stage 5 independent practice suppresses all haptic guidance).
 
 ## Modern Flutter Standards & Lints

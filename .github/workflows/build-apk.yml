@@ -46,7 +46,7 @@ jobs:
         run: flutter test --coverage
 
   flutter-build-apk:
-    name: Build Release APK
+    name: Build Debug APK
     needs: flutter-test
     runs-on: ubuntu-latest
 
@@ -71,52 +71,54 @@ jobs:
         working-directory: ./app
         run: flutter pub get
 
-      - name: Build APK (Release)
+      - name: Build APK (Debug)
         working-directory: ./app
-        run: flutter build apk --release
+        run: flutter build apk --debug
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: abhyas-release-apk
-          path: app/build/app/outputs/flutter-apk/app-release.apk
+          name: abhyas-debug-apk
+          path: app/build/app/outputs/flutter-apk/app-debug.apk
           retention-days: 14
 
-  console-check:
-    name: Teacher Console Lint & Build
-    runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        working-directory: ./console
-        run: |
-          if [ -f package-lock.json ]; then
-            npm ci
-          else
-            npm install
-          fi
-
-      - name: Run tests
-        working-directory: ./console
-        run: npm test -- --watchAll=false
-        env:
-          CI: true
-
-      - name: Build web console
-        working-directory: ./console
-        run: npm run build
-
-      - name: Upload console build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: abhyas-console-web
-          path: console/build
-          retention-days: 7
+# Temporarily disabled: Teacher Console checks are paused while the web component is out of scope.
+#   console-check:
+#     name: Teacher Console Lint & Build
+#     runs-on: ubuntu-latest
+#
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
+#
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: '20'
+#
+#       - name: Install dependencies
+#         working-directory: ./console
+#         run: |
+#           if [ -f package-lock.json ]; then
+#             npm ci
+#           else
+#             npm install
+#           fi
+#
+#       - name: Run tests
+#         working-directory: ./console
+#         run: npm test -- --watchAll=false
+#         env:
+#           CI: true
+#
+#       - name: Build web console
+#         working-directory: ./console
+#         run: npm run build
+#
+#       - name: Upload console build artifact
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: abhyas-console-web
+#           path: console/build
+#           retention-days: 7
