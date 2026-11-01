@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../core/audio/android_practice_playback.dart';
 import '../../core/audio/practice_audio_service.dart';
 import '../../core/haptic_service.dart';
 import '../../data/user_repository.dart';
@@ -352,6 +353,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   }
 
   void _beginActivePractice() {
+    AndroidPracticePlayback.start();
     setState(() {
       _isPlaying = true;
       _secondsElapsed = 0;
@@ -382,6 +384,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
     setState(() {
       _isPlaying = !_isPlaying;
       if (_isPlaying) {
+        AndroidPracticePlayback.start();
         _engine.resumeTimer(_onTick);
         final cue = _audioEngine.getCueForPhaseTransition(
           phase: _currentPhase,
@@ -389,6 +392,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         );
         _audioService.dispatchCue(cue);
       } else {
+        AndroidPracticePlayback.stop();
         _engine.pauseTimer();
       }
     });
@@ -396,6 +400,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
 
   /// Emergency Exit: AC-9 Immediate Return to Natural Breath
   void _returnToNaturalBreath() {
+    AndroidPracticePlayback.stop();
     _bufferTimer?.cancel();
     _audioService.stopAll();
     setState(() {
@@ -412,6 +417,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
 
   /// Starts post-session integration buffer before navigating to check-in
   void _startIntegrationBuffer() {
+    AndroidPracticePlayback.stop();
     _engine.stopTimer();
     setState(() {
       _isPlaying = false;
@@ -438,6 +444,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   }
 
   void _finishPracticeNow() {
+    AndroidPracticePlayback.stop();
     _bufferTimer?.cancel();
     _engine.stopTimer();
     _audioService.stopAll();
@@ -456,6 +463,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
 
   @override
   void dispose() {
+    AndroidPracticePlayback.stop();
     _bufferTimer?.cancel();
     _engine.stopTimer();
     _audioService.stopAll();

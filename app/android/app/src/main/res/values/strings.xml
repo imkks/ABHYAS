@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Abhyas</string>
+    <string name="practice_playback_channel">Practice playback</string>
+    <string name="practice_playback_notification">Practice audio is active</string>
+</resources>

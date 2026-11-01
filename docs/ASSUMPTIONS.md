@@ -21,8 +21,9 @@ As per the task brief, the following assumptions were made regarding the design,
 
 ## Audio & Haptics
 * `AudioService` uses an injectable interface abstraction layer with logging stubs pending external audio dependency (`just_audio`).
-* Screen lock is treated as a supported audio playback state for practice and routine sessions (SRS NFR-02 / FR-PL-02). iOS declares the audio background mode and Android requests the wake lock permission so native audio can continue when the display sleeps. Calls and other audio interruptions must still pause safely to natural breath as specified in UI_SPEC.md; the screen-lock case must not be treated as an interruption.
-* Platform background playback metadata alone cannot guarantee Dart timer callbacks on every OS/device, especially between short cue sounds. Full reliable background phase scheduling requires a native-backed audio session/foreground service and must be validated on physical iOS and Android devices before pilot distribution.
+* Screen lock is treated as a supported audio playback state for practice and routine sessions (SRS NFR-02 / FR-PL-02). Android requests foreground media playback and wake lock permissions so native service can keep practice timers active while the display sleeps. Calls and other audio interruptions must still pause safely to natural breath as specified in UI_SPEC.md; the screen-lock case must not be treated as an interruption.
+* Android practice and routine playback uses a foreground service with a partial wake lock while the session is active, so existing Dart timers can dispatch cues with the screen off. The service is stopped on manual pause, safety stop, completion or screen disposal. It must be checked on a physical Android device before pilot distribution.
+* iOS background playback remains a separate implementation and requires validation on physical iOS devices before pilot distribution.
 * `HapticService` dynamically suppresses or scales haptic feedback in accordance with weaning stages 1 through 5 (e.g. stage 5 independent practice suppresses all haptic guidance).
 
 ## Modern Flutter Standards & Lints

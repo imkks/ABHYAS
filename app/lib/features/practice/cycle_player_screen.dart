@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/audio/android_practice_playback.dart';
 import '../../core/audio_service.dart';
 import '../../core/haptic_service.dart';
 import '../../core/theme.dart';
@@ -38,6 +39,7 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
   @override
   void initState() {
     super.initState();
+    AndroidPracticePlayback.start();
     _sequencer = CycleSequencer(steps: widget.steps);
 
     _audioService.playBell(BellType.start);
@@ -228,6 +230,7 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
   }
 
   void _handleCycleComplete() {
+    AndroidPracticePlayback.stop();
     _audioService.playBell(BellType.end);
     _hapticService.completionPulse();
 
@@ -249,9 +252,11 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
   void _togglePause() {
     setState(() {
       if (_isPaused) {
+        AndroidPracticePlayback.start();
         _sequencer.resume();
         _isPaused = false;
       } else {
+        AndroidPracticePlayback.stop();
         _sequencer.pause();
         _isPaused = true;
       }
@@ -264,6 +269,7 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
   }
 
   void _abortPractice() {
+    AndroidPracticePlayback.stop();
     _sequencer.stop();
     _audioService.stopAll();
     Navigator.pop(context);
@@ -1158,6 +1164,7 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
 
   @override
   void dispose() {
+    AndroidPracticePlayback.stop();
     _sequencer.stop();
     _audioService.stopAll();
     super.dispose();
