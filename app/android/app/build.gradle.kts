@@ -5,6 +5,23 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val uploadStoreFile = System.getenv("ANDROID_KEYSTORE_PATH")
+val uploadStorePassword = System.getenv("ANDROID_STORE_PASSWORD")
+val uploadKeyAlias = System.getenv("ANDROID_KEY_ALIAS")
+val uploadKeyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+val uploadSigningValues = listOf(
+    uploadStoreFile,
+    uploadStorePassword,
+    uploadKeyAlias,
+    uploadKeyPassword,
+)
+val hasAnyUploadSigningValue = uploadSigningValues.any { !it.isNullOrBlank() }
+val hasCompleteUploadSigning = uploadSigningValues.all { !it.isNullOrBlank() }
+
+if (hasAnyUploadSigningValue && !hasCompleteUploadSigning) {
+    throw GradleException("Android upload signing requires all keystore environment variables.")
+}
+
 android {
     namespace = "com.example.abhyas"
     compileSdk = flutter.compileSdkVersion
@@ -32,11 +49,26 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (hasCompleteUploadSigning) {
+            create("upload") {
+                storeFile = file(uploadStoreFile!!)
+                storePassword = uploadStorePassword
+                keyAlias = uploadKeyAlias
+                keyPassword = uploadKeyPassword
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // The main-branch workflow supplies upload credentials; local releases
+            // remain usable with the debug key.
+            signingConfig = if (hasCompleteUploadSigning) {
+                signingConfigs.getByName("upload")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }
