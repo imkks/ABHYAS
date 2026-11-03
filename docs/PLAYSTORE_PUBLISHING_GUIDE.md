@@ -1,6 +1,6 @@
-# Google Play Store Publishing Guide for Abhyas
+# Google Play Store Publishing Guide for PranaFlow
 
-This guide provides end-to-end instructions for releasing the **Abhyas** mobile app to the Google Play Store, including setting up automated CI/CD builds, repository secrets, triggering the manual release workflow, and ready-to-use answers for every Google Play Console questionnaire and policy declaration.
+This guide provides end-to-end instructions for releasing the **PranaFlow** mobile app to the Google Play Store, including setting up automated CI/CD builds, repository secrets, triggering the manual release workflow, and ready-to-use answers for every Google Play Console questionnaire and policy declaration.
 
 ---
 
@@ -32,11 +32,12 @@ This guide provides end-to-end instructions for releasing the **Abhyas** mobile 
 ## 1. Prerequisites & Repository Secrets Setup
 
 ### 1.1 Application Package Name
-Google Play rejects package names that begin with `com.example.*`. The repository configuration in `app/android/app/build.gradle.kts` is set to:
+The app package ID in `app/android/app/build.gradle.kts` is set to:
 ```kotlin
-applicationId = "com.abhyas.app"
+applicationId = "come.evertrail.pranaflow"
 ```
-*(If you wish to use a custom reverse-domain such as `org.yourorg.abhyas`, ensure you update `applicationId` in `app/android/app/build.gradle.kts` before building).*
+> [!NOTE]
+> If your Google Play Console app was registered as `com.evertrail.pranaflow` (with `com` instead of `come`), you can simply adjust `applicationId = "com.evertrail.pranaflow"` in `app/android/app/build.gradle.kts`.
 
 ### 1.2 GitHub Actions Secrets
 The GitHub Actions workflow requires 4 secrets to sign the Android App Bundle (`.aab`):
@@ -114,7 +115,7 @@ The workflow will:
 2. Sign in with your Google Play Developer Account.
 3. Click **Create app** (top-right).
 4. Enter the initial details:
-   - **App name**: `Abhyas: Pranayama & Dhyan`
+   - **App name**: `PranaFlow` (or `PranaFlow: Pranayama & Dhyan`)
    - **Default language**: `English (United States) – en-US` (or `English (India) – en-IN`)
    - **App or game**: Select `App`
    - **Free or paid**: Select `Free`
@@ -134,14 +135,14 @@ Under the left menu, scroll down to **Policy and programs** ➔ **App content**.
 * **Privacy Policy URL**: Host the policy on GitHub Pages or your domain (e.g., `https://<your-username>.github.io/ABHYAS/privacy.html`).
 * **Privacy Policy Content Template**:
 ```markdown
-# Privacy Policy for Abhyas
+# Privacy Policy for PranaFlow
 
 Effective Date: November 2026
 
-Abhyas ("we", "our", or "the app") is committed to respecting and protecting your privacy. This privacy policy explains our practices regarding user information.
+PranaFlow ("we", "our", or "the app") is committed to respecting and protecting your privacy. This privacy policy explains our practices regarding user information.
 
 1. Offline-First Architecture
-Abhyas operates primarily offline. All your pranayama logs, comfortable hold time (CHT) diagnostics, meditation japa counts, and calmness reflection scores are stored locally on your device in secure local application storage. We do not transmit or store your personal health and meditation data on external cloud servers without explicit user initiation.
+PranaFlow operates primarily offline. All your pranayama logs, comfortable hold time (CHT) diagnostics, meditation japa counts, and calmness reflection scores are stored locally on your device in secure local application storage. We do not transmit or store your personal health and meditation data on external cloud servers without explicit user initiation.
 
 2. Location Data
 The app requests access to coarse and fine location (ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION) solely to calculate the exact astronomical sunrise and Brahma Muhurta (auspicious dawn meditation hours) based on your geographic coordinates. This calculation occurs entirely offline on your device. Your location coordinates are never logged, tracked, transmitted to remote servers, or shared with third parties.
@@ -150,13 +151,13 @@ The app requests access to coarse and fine location (ACCESS_COARSE_LOCATION, ACC
 The app utilizes a foreground service (FOREGROUND_SERVICE_MEDIA_PLAYBACK) with a wake lock to play acoustic breath chimes, bells, and timing cues while the screen is locked or turned off during meditation sessions. No audio or microphone input is recorded.
 
 4. Third-Party Tracking and Analytics
-Abhyas contains NO commercial advertising SDKs, NO tracking beacons, and NO behavioral analytics engines. We do not sell, rent, or share personal data with data brokers or ad networks.
+PranaFlow contains NO commercial advertising SDKs, NO tracking beacons, and NO behavioral analytics engines. We do not sell, rent, or share personal data with data brokers or ad networks.
 
 5. Data Deletion
 Since all personal sadhana records reside on your local device, you can delete all stored records at any time by selecting "Clear Data" inside the app settings or by clearing the app's storage via Android Settings.
 
 6. Contact
-For any questions regarding this policy, contact us at: support@abhyas.app
+For any questions regarding this policy, contact us at: support@evertrail.com
 ```
 
 ---
@@ -164,7 +165,7 @@ For any questions regarding this policy, contact us at: support@abhyas.app
 ### 5.2 App Access
 * **Question**: Is any part of your app restricted by credentials, two-factor authentication, or paywalls?
 * **Answer**: Select **"All functionality is available without special access"**.
-* *(Explanation: Abhyas opens directly into the home screen with open-access practice modules and does not lock core features behind a login wall).*
+* *(Explanation: PranaFlow opens directly into the home screen with open-access practice modules and does not lock core features behind a login wall).*
 
 ---
 
@@ -248,7 +249,7 @@ Google Play requires developers to complete the Data Safety declaration:
    - *Is your app a regulated medical device or does it offer clinical diagnosis / medical treatment?*
    - Select **No**.
    - Reviewer Note / Disclaimer:
-     > *"Abhyas is a traditional wellness, pranayama breath pacing, and meditation aid. It does not provide medical diagnosis, treatment, or clinical health advice. All practices are non-medical wellness exercises rooted in classical yoga."*
+     > *"PranaFlow is a traditional wellness, pranayama breath pacing, and meditation aid. It does not provide medical diagnosis, treatment, or clinical health advice. All practices are non-medical wellness exercises rooted in classical yoga."*
 
 ---
 
@@ -266,7 +267,7 @@ Google Play requires developers to complete the Data Safety declaration:
 
 ### 5.12 Foreground Service & Location Permissions Declarations
 
-In `AndroidManifest.xml`, Abhyas declares:
+In `AndroidManifest.xml`, PranaFlow declares:
 ```xml
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -278,7 +279,7 @@ In `AndroidManifest.xml`, Abhyas declares:
 When asked by Google Console to justify the foreground service:
 - **Foreground service type**: `mediaPlayback`
 - **User-facing reason to copy & paste for Google Reviewers**:
-  > *"Abhyas is a meditation and pranayama breath-pacing companion. Sadhanas run for 10 to 60 minutes, during which users lock their screen or place their device face down on a mat. The foreground service with mediaPlayback type plays continuous acoustic cue bells, chimes, and breath interval audio so practitioners can maintain their breathing cycles with their screen turned off."*
+  > *"PranaFlow is a meditation and pranayama breath-pacing companion. Sadhanas run for 10 to 60 minutes, during which users lock their screen or place their device face down on a mat. The foreground service with mediaPlayback type plays continuous acoustic cue bells, chimes, and breath interval audio so practitioners can maintain their breathing cycles with their screen turned off."*
 - **Video link**: Google may ask for a link to a short (30-second) unlisted YouTube video showing the app playing breathing chimes while the screen is off or in background.
 
 #### Location Permission Justification:
@@ -293,14 +294,14 @@ Under **Grow** ➔ **Store presence** ➔ **Main store listing**:
 
 ### 6.1 App Details
 * **App Name** (max 30 chars):
-  `Abhyas: Pranayama & Dhyan`
+  `PranaFlow` (or `PranaFlow: Pranayama & Dhyan`)
 * **Short Description** (max 80 chars):
   `Authentic classical Pranayama, breath retention, and meditation sadhana.`
 * **Full Description** (max 4000 chars):
 ```markdown
-Abhyas (अभ्यास) is an authentic, sacred companion for classical Pranayama (breathwork) and Dhyan (meditation) sadhana.
+PranaFlow (प्राण प्रवाह) is an authentic, sacred companion for classical Pranayama (breathwork) and Dhyan (meditation) sadhana.
 
-Designed with reverence to traditional yogic scriptures (Hatha Yoga Pradipika, Gheranda Samhita, Patanjali Yoga Sutras), Abhyas provides structured breath pacing, safe retention ladders, and silent meditation tools free from commercial distractions.
+Designed with reverence to traditional yogic scriptures (Hatha Yoga Pradipika, Gheranda Samhita, Patanjali Yoga Sutras), PranaFlow provides structured breath pacing, safe retention ladders, and silent meditation tools free from commercial distractions.
 
 KEY PRACTICES & FEATURES:
 
@@ -311,8 +312,8 @@ KEY PRACTICES & FEATURES:
   Measure your Comfortable Hold Time safely. The diagnostic dynamically calibrates your breath ratio ladders (1:1, 1:2, 1:4:2, 1:4:2:2) to ensure you never strain or force Kumbhaka.
 
 • Guided Routines for Dawn & Dusk:
-  - Surya Abhyas: Dynamic morning vitality routine (Invoking mantras, Kapalbhati, Nadi Shodhana, Breath Awareness).
-  - Chandra Abhyas: Restorative evening routine (Bhramari, Naam Jaap, guided Yoga Nidra).
+  - Surya Sadhana: Dynamic morning vitality routine (Invoking mantras, Kapalbhati, Nadi Shodhana, Breath Awareness).
+  - Chandra Sadhana: Restorative evening routine (Bhramari, Naam Jaap, guided Yoga Nidra).
 
 • Digital Mala & Sacred Naam Japa:
   Smooth tactile bead counting (27, 54, 108 beads) with subtle haptic feedback for your daily Japa sadhana.
@@ -327,7 +328,7 @@ Begin your daily sadhana with clarity, stillness, and breath.
 ```
 
 ### 6.2 Graphic Assets Requirements
-* **App Icon**: 512 x 512 px, 32-bit PNG with alpha channel (max 1 MB).
+* **App Icon**: 512 x 512 px, 32-bit PNG with alpha channel (max 1 MB). Ready-to-upload icon generated at `app/assets/icon/playstore_icon_512.png`.
 * **Feature Graphic**: 1024 x 500 px, JPG or 24-bit PNG (no alpha, max 15 MB).
 * **Phone Screenshots**: Minimum 2 screenshots (16:9 or 9:16 aspect ratio, between 320 px and 3840 px).
 * **Category**: Health & Fitness.
@@ -348,9 +349,9 @@ Google Play offers several release tracks:
 ### Steps to Upload:
 1. In Google Play Console, go to **Testing** ➔ **Internal testing** (or **Closed testing** / **Production**).
 2. Click **Create new release** (top right).
-3. Under **App bundles**, click **Upload** and select the unzipped `abhyas-v<version_name>+<version_code>.aab` file.
+3. Under **App bundles**, click **Upload** and select the unzipped `pranaflow-v<version_name>+<version_code>.aab` file.
 4. Google Play will inspect the bundle, verify the signature, and automatically extract:
-   - Package name (`com.abhyas.app`)
+   - Package name (`come.evertrail.pranaflow`)
    - Version name (e.g., `1.0.0`)
    - Version code (e.g., `1`)
    - Target SDK & permissions
@@ -358,7 +359,7 @@ Google Play offers several release tracks:
 6. **Release notes**: Add release notes (e.g.):
 ```
 <en-US>
-Initial release of Abhyas.
+Initial release of PranaFlow.
 - Classical Pranayama breath pacing (Kapalbhati, Nadi Shodhana, Ujjayi, Bhramari).
 - 1-minute Comfortable Hold Time (CHT) breath capacity diagnostic.
 - Morning Surya and Evening Chandra routines.

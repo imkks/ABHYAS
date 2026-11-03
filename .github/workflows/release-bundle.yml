@@ -100,7 +100,7 @@ jobs:
       - name: Stage release bundle artifact
         run: |
           mkdir -p dist
-          BUNDLE_NAME="abhyas-v${{ inputs.version_name }}+${{ inputs.version_code }}.aab"
+          BUNDLE_NAME="pranaflow-v${{ inputs.version_name }}+${{ inputs.version_code }}.aab"
           cp app/build/app/outputs/bundle/release/app-release.aab "dist/${BUNDLE_NAME}"
           
           # Generate SHA256 checksum for audit and release records
@@ -111,7 +111,7 @@ jobs:
       - name: Upload signed bundle artifact
         uses: actions/upload-artifact@v4
         with:
-          name: abhyas-v${{ inputs.version_name }}+${{ inputs.version_code }}-bundle
+          name: pranaflow-v${{ inputs.version_name }}+${{ inputs.version_code }}-bundle
           path: |
             dist/${{ env.STAGED_BUNDLE }}
             dist/${{ env.STAGED_BUNDLE }}.sha256
@@ -123,10 +123,12 @@ jobs:
           FILE_SIZE=$(ls -lh "$BUNDLE_FILE" | awk '{print $5}')
           CHECKSUM=$(cat "${BUNDLE_FILE}.sha256" | awk '{print $1}')
           
-          echo "### 🚀 Google Play Release Bundle Ready!" >> $GITHUB_STEP_SUMMARY
+          echo "### 🚀 PranaFlow Google Play Release Bundle Ready!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| **App Name** | \`PranaFlow\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Package ID** | \`come.evertrail.pranaflow\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Version Name** | \`${{ inputs.version_name }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Version Code** | \`${{ inputs.version_code }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **File Name** | \`${{ env.STAGED_BUNDLE }}\` |" >> $GITHUB_STEP_SUMMARY
@@ -135,6 +137,6 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "#### Next Steps:" >> $GITHUB_STEP_SUMMARY
           echo "1. Download the artifact bundle from the **Artifacts** section of this workflow run." >> $GITHUB_STEP_SUMMARY
-          echo "2. Go to **Google Play Console** -> Select Abhyas -> **Testing** or **Production**." >> $GITHUB_STEP_SUMMARY
+          echo "2. Go to **Google Play Console** -> Select PranaFlow -> **Testing** or **Production**." >> $GITHUB_STEP_SUMMARY
           echo "3. Create a new release and upload the downloaded \`.aab\` bundle." >> $GITHUB_STEP_SUMMARY
           echo "4. Follow [docs/PLAYSTORE_PUBLISHING_GUIDE.md](docs/PLAYSTORE_PUBLISHING_GUIDE.md) for complete answers to all Play Console questions." >> $GITHUB_STEP_SUMMARY
