@@ -1,0 +1,140 @@
+name: Release Android App Bundle (.aab)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_name:
+        description: 'Version Name (e.g. 1.0.0)'
+        required: true
+        default: '1.0.0'
+        type: string
+      version_code:
+        description: 'Version Code / Build Number (integer, e.g. 1)'
+        required: true
+        default: '1'
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-release-bundle-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-signed-bundle:
+    name: Build Signed AAB for Google Play
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: '17'
+          cache: gradle
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Validate Android upload signing secrets
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+        run: |
+          missing_secrets=()
+          [ -z "$ANDROID_KEYSTORE_BASE64" ] && missing_secrets+=("ANDROID_KEYSTORE_BASE64")
+          [ -z "$ANDROID_KEY_ALIAS" ] && missing_secrets+=("ANDROID_KEY_ALIAS")
+          [ -z "$ANDROID_KEY_PASSWORD" ] && missing_secrets+=("ANDROID_KEY_PASSWORD")
+          [ -z "$ANDROID_STORE_PASSWORD" ] && missing_secrets+=("ANDROID_STORE_PASSWORD")
+
+          if [ ${#missing_secrets[@]} -ne 0 ]; then
+            echo "::error::Missing required repository secret(s): ${missing_secrets[*]}"
+            echo "Please configure these secrets in GitHub Repo -> Settings -> Secrets and variables -> Actions."
+            echo "Refer to docs/PLAYSTORE_PUBLISHING_GUIDE.md for detailed instructions."
+            exit 1
+          fi
+
+      - name: Prepare upload keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/abhyas-upload.jks"
+          chmod 600 "$RUNNER_TEMP/abhyas-upload.jks"
+
+      - name: Install Flutter dependencies
+        working-directory: ./app
+        run: flutter pub get
+
+      - name: Run verification & safety tests
+        working-directory: ./app
+        run: flutter test
+
+      - name: Build signed Android App Bundle (AAB)
+        working-directory: ./app
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/abhyas-upload.jks
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          flutter build appbundle --release \
+            --build-name="${{ inputs.version_name }}" \
+            --build-number="${{ inputs.version_code }}"
+
+      - name: Verify AAB signature
+        run: |
+          bundle_path="app/build/app/outputs/bundle/release/app-release.aab"
+          test -f "$bundle_path" || { echo "::error::Bundle not found at $bundle_path"; exit 1; }
+          jarsigner -verify -verbose "$bundle_path"
+          echo "AAB bundle signature successfully verified."
+
+      - name: Stage release bundle artifact
+        run: |
+          mkdir -p dist
+          BUNDLE_NAME="abhyas-v${{ inputs.version_name }}+${{ inputs.version_code }}.aab"
+          cp app/build/app/outputs/bundle/release/app-release.aab "dist/${BUNDLE_NAME}"
+          
+          # Generate SHA256 checksum for audit and release records
+          cd dist
+          sha256sum "${BUNDLE_NAME}" > "${BUNDLE_NAME}.sha256"
+          echo "STAGED_BUNDLE=${BUNDLE_NAME}" >> "$GITHUB_ENV"
+
+      - name: Upload signed bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: abhyas-v${{ inputs.version_name }}+${{ inputs.version_code }}-bundle
+          path: |
+            dist/${{ env.STAGED_BUNDLE }}
+            dist/${{ env.STAGED_BUNDLE }}.sha256
+          retention-days: 90
+
+      - name: GitHub Action Job Summary
+        run: |
+          BUNDLE_FILE="dist/${{ env.STAGED_BUNDLE }}"
+          FILE_SIZE=$(ls -lh "$BUNDLE_FILE" | awk '{print $5}')
+          CHECKSUM=$(cat "${BUNDLE_FILE}.sha256" | awk '{print $1}')
+          
+          echo "### 🚀 Google Play Release Bundle Ready!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Version Name** | \`${{ inputs.version_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Version Code** | \`${{ inputs.version_code }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **File Name** | \`${{ env.STAGED_BUNDLE }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **File Size** | \`${FILE_SIZE}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **SHA256 Checksum** | \`${CHECKSUM}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "#### Next Steps:" >> $GITHUB_STEP_SUMMARY
+          echo "1. Download the artifact bundle from the **Artifacts** section of this workflow run." >> $GITHUB_STEP_SUMMARY
+          echo "2. Go to **Google Play Console** -> Select Abhyas -> **Testing** or **Production**." >> $GITHUB_STEP_SUMMARY
+          echo "3. Create a new release and upload the downloaded \`.aab\` bundle." >> $GITHUB_STEP_SUMMARY
+          echo "4. Follow [docs/PLAYSTORE_PUBLISHING_GUIDE.md](docs/PLAYSTORE_PUBLISHING_GUIDE.md) for complete answers to all Play Console questions." >> $GITHUB_STEP_SUMMARY

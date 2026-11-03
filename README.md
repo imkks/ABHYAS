@@ -68,11 +68,13 @@ flutter test test/safety_rules_engine_test.dart
 
 The safety test command is especially important for changes to practice eligibility, hold limits, progression, or configuration validation. See [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
 
-## Signed Android release artifact
+## Signed Android release artifacts & Play Store Publishing
 
-Pull requests build the debug APK and run the Flutter test suite. Changes to `app/` merged into `main` trigger a separate workflow that builds and verifies a signed APK for manual upload to Google Play Console. It does not publish to Play Console.
+- **Signed Android App Bundle (.aab)**: For publishing to the Google Play Store, trigger [`.github/workflows/release-bundle.yml`](.github/workflows/release-bundle.yml) manually via GitHub Actions with your desired `version_name` and `version_code`. The workflow tests, builds, signs, and outputs an `.aab` file ready for download and upload to Google Play Console.
+- **Signed APK**: Merges to `main` also build a signed release `.apk` via [`.github/workflows/release-apk.yml`](.github/workflows/release-apk.yml) for direct sideloading or internal manual distribution.
+- **Publishing & Questionnaire Guide**: Complete step-by-step instructions and ready-to-use answers for all Google Play Console questionnaires (Data Safety, Content Rating, Health Declarations, Foreground Services, etc.) can be found in [`docs/PLAYSTORE_PUBLISHING_GUIDE.md`](docs/PLAYSTORE_PUBLISHING_GUIDE.md).
 
-The release workflow requires repository secrets named `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`, and `ANDROID_STORE_PASSWORD`. Never commit a keystore or signing password. See [`.github/workflows/release-apk.yml`](.github/workflows/release-apk.yml).
+Both release workflows require repository secrets named `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`, and `ANDROID_STORE_PASSWORD`. Never commit a keystore or signing password.
 
 ## Repository map
 
