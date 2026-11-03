@@ -23,7 +23,7 @@ if (hasAnyUploadSigningValue && !hasCompleteUploadSigning) {
 }
 
 android {
-    namespace = "com.evertrail.pranaflow"
+    namespace = "com.example.abhyas"
     compileSdk = flutter.compileSdkVersion
     // ndkVersion is commented out to prevent AGP from attempting to download
     // unneeded NDK packages via sdkmanager in CI environments.
