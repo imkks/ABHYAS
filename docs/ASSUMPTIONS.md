@@ -128,16 +128,17 @@ As per the task brief, the following assumptions were made regarding the design,
   - Eliminated audio cue 1-second modulo lag by using state-keyed phase change detection (`_lastPhaseKey`), ensuring Tibetan singing bowl gongs and haptic pulses trigger precisely on the exact second boundary when a new breath phase begins.
 
 ## Google Play Store Publishing & Signed Bundle CI/CD Workflow
-* **Android Application ID**:
-  - Google Play Console strictly forbids publishing apps with package names starting with `com.example.*`.
-  - Updated `applicationId` in `app/android/app/build.gradle.kts` from `com.example.abhyas` to `com.abhyas.app`.
-  - Android Gradle Plugin (AGP) cleanly segregates code namespace (`com.example.abhyas` in Kotlin classes) from store application ID (`com.abhyas.app`), preventing any breaking changes to Kotlin files or imports while complying with Play Store requirements.
-* **Play Store Release Workflow (`.github/workflows/release-bundle.yml`)**:
-  - Google Play requires Android App Bundle (`.aab`) rather than `.apk` for new apps and updates.
-  - Added a dedicated manual dispatch workflow (`workflow_dispatch`) that accepts two parameters: `version_name` (e.g. `1.0.0`) and `version_code` (e.g. `1`, strictly increasing integer).
-  - Workflow validates that all four required upload keystore secrets (`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`, `ANDROID_STORE_PASSWORD`) exist, decodes the keystore to a secure runner temp path, runs verification tests (`flutter test`), builds the signed release AAB (`flutter build appbundle --release`), cryptographically verifies the bundle signature with `jarsigner`, generates SHA256 checksums, and uploads the signed `.aab` artifact for direct download.
+* **App Branding & Application ID**:
+  - Rebranded public display name to **PranaFlow** in `strings.xml` and Flutter `MaterialApp`.
+  - Configured Android `applicationId = "come.evertrail.pranaflow"` in `app/android/app/build.gradle.kts` as requested.
+  - Sized and configured official launcher icons across all Android mipmap densities (`mdpi`, `hdpi`, `xhdpi`, `xxhdpi`, `xxxhdpi`) and generated Play Store 512x512 icon at `app/assets/icon/playstore_icon_512.png`.
+* **Workflow Consolidation & Segregation**:
+  - Only two active workflows reside in `.github/workflows/` so GitHub Actions avoids clutter and duplicate triggers:
+    1. `.github/workflows/ci.yml`: Triggered strictly on pull requests (`pull_request: branches: [main]`) for linting, testing, and building debug APK.
+    2. `.github/workflows/release-bundle.yml`: Triggered strictly manually (`workflow_dispatch`) with `version_name` and `version_code` to build, sign, verify, and artifact the final `.aab` bundle.
+  - All other workflows (`deploy-console.yml`, `release-apk.yml`, `build-apk.yml`) were relocated to `.github/workflows_disabled/` so GitHub Actions does not parse or execute them.
 * **Complete Play Console Publishing Guide (`docs/PLAYSTORE_PUBLISHING_GUIDE.md`)**:
-  - Generated full documentation covering secrets configuration, keystore base64 encoding commands for macOS/Linux/Windows, workflow execution, bundle download, and copy-pasteable answers for all Google Play Console policy forms (Privacy Policy, App Access, Ads, IARC Content Rating, Target Audience, Data Safety, Health Apps Declaration, Financial Features, Government Apps, and Foreground Service / Location Justifications).
+  - Full documentation covering secrets configuration, keystore base64 encoding commands for macOS/Linux/Windows, workflow execution, bundle download, and copy-pasteable answers for all Google Play Console policy forms (Privacy Policy, App Access, Ads, IARC Content Rating, Target Audience, Data Safety, Health Apps Declaration, Financial Features, Government Apps, and Foreground Service / Location Justifications) tailored for **PranaFlow**.
 
 
 

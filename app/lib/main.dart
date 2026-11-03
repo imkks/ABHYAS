@@ -30,7 +30,7 @@ class AbhyasApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Abhyas',
+      title: 'PranaFlow',
       debugShowCheckedModeBanner: false,
       theme: AbhyasTheme.darkTheme,
       home: home,

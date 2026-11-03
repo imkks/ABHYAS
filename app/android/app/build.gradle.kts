@@ -39,9 +39,8 @@ android {
     }
 
     defaultConfig {
-        // Google Play rejects package names starting with com.example.
-        // Changed to com.abhyas.app for Play Store publishing readiness.
-        applicationId = "com.abhyas.app"
+        // Application ID / package name for PranaFlow on Google Play
+        applicationId = "come.evertrail.pranaflow"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
