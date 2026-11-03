@@ -39,8 +39,9 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.abhyas"
+        // Google Play rejects package names starting with com.example.
+        // Changed to com.abhyas.app for Play Store publishing readiness.
+        applicationId = "com.abhyas.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
