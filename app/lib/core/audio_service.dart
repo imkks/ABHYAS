@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
+import '../engine/meditation/meditation_engine.dart';
 import '../engine/player/player_engine.dart';
 
 /// Types of bell sounds used for practice cues.
@@ -37,6 +38,7 @@ class AudioService {
 
   AudioPlayer? _trackPlayer;
   AudioPlayer? _bellPlayer;
+  AudioPlayer? _voicePlayer;
   bool _initialized = false;
 
   AudioServiceStatus _status = AudioServiceStatus.idle;
@@ -63,8 +65,10 @@ class AudioService {
     try {
       _trackPlayer = AudioPlayer();
       _bellPlayer = AudioPlayer();
+      _voicePlayer = AudioPlayer();
       await _trackPlayer?.setVolume(_volume);
       await _bellPlayer?.setVolume(_volume);
+      await _voicePlayer?.setVolume(_volume);
     } catch (_) {}
     _initialized = true;
   }
@@ -82,12 +86,72 @@ class AudioService {
           asset = 'audio/singingBowl_session_complete_3bowls.wav';
           break;
         case BellType.transition:
-          asset = 'audio/singingBowl_kumbhaka_hold.wav';
+          asset = 'audio/singingBowl_grounding_bell.wav';
           break;
       }
       if (_bellPlayer != null) {
         await _bellPlayer!.stop();
         await _bellPlayer!.play(AssetSource(asset));
+      }
+    } catch (_) {}
+  }
+
+  /// Play a spoken voice guidance asset (e.g. 'audio/voice/voice_japa_vaikhari.wav')
+  Future<void> playVoiceCue(String assetPath) async {
+    try {
+      if (!_initialized) await init();
+      String clean = assetPath.startsWith('assets/') ? assetPath.substring(7) : assetPath;
+      if (_voicePlayer != null) {
+        await _voicePlayer!.stop();
+        await _voicePlayer!.play(AssetSource(clean));
+      }
+    } catch (_) {}
+  }
+
+  /// Plays a distinct acoustic Singing Bowl and spoken guidance cue for the stages of Naam Japa meditation
+  Future<void> playNaamJapaPhase(JapaStage stage) async {
+    try {
+      if (!_initialized) await init();
+      switch (stage) {
+        case JapaStage.vaikhari:
+          // Stage 1: Audible - Deep resonant start gong + spoken cue to begin chanting aloud
+          if (_bellPlayer != null) {
+            await _bellPlayer!.stop();
+            await _bellPlayer!.play(AssetSource('audio/singingBowl_practice_start_gong.wav'));
+          }
+          await playVoiceCue('audio/voice/voice_japa_vaikhari.wav');
+          break;
+
+        case JapaStage.upamshu:
+          // Stage 2: Whisper - Harmonic Kumbhaka singing bowl tone + spoken whisper cue
+          if (_bellPlayer != null) {
+            await _bellPlayer!.stop();
+            await _bellPlayer!.play(AssetSource('audio/singingBowl_kumbhaka_hold.wav'));
+          }
+          await playVoiceCue('audio/voice/voice_japa_upamshu.wav');
+          break;
+
+        case JapaStage.manasika:
+          // Stage 3: Silent mental - Ascending Puraka singing bowl harmonic + spoken mental stillness cue
+          if (_bellPlayer != null) {
+            await _bellPlayer!.stop();
+            await _bellPlayer!.play(AssetSource('audio/singingBowl_puraka_inhale.wav'));
+          }
+          await playVoiceCue('audio/voice/voice_japa_manasika.wav');
+          break;
+
+        case JapaStage.laya:
+          // Stage 4: Stillness / Absorption - Delicate triple Shanti chime + release instruction
+          if (_bellPlayer != null) {
+            await _bellPlayer!.stop();
+            await _bellPlayer!.play(AssetSource('audio/singingBowl_shanti_chime.wav'));
+          }
+          await playVoiceCue('audio/voice/voice_japa_laya.wav');
+          break;
+
+        case JapaStage.complete:
+          await playBell(BellType.end);
+          break;
       }
     } catch (_) {}
   }
@@ -195,6 +259,7 @@ class AudioService {
     try {
       await _trackPlayer?.stop();
       await _bellPlayer?.stop();
+      await _voicePlayer?.stop();
     } catch (_) {}
   }
 
@@ -204,6 +269,7 @@ class AudioService {
     try {
       _trackPlayer?.setVolume(_volume);
       _bellPlayer?.setVolume(_volume);
+      _voicePlayer?.setVolume(_volume);
     } catch (_) {}
   }
 }

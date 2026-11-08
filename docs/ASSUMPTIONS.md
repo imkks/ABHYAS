@@ -137,8 +137,27 @@ As per the task brief, the following assumptions were made regarding the design,
     1. `.github/workflows/ci.yml`: Triggered strictly on pull requests (`pull_request: branches: [main]`) for linting, testing, and building debug APK.
     2. `.github/workflows/release-bundle.yml`: Triggered strictly manually (`workflow_dispatch`) with `version_name` and `version_code` to build, sign, verify, and artifact the final `.aab` bundle.
   - All other workflows (`deploy-console.yml`, `release-apk.yml`, `build-apk.yml`) were relocated to `.github/workflows_disabled/` so GitHub Actions does not parse or execute them.
-* **Complete Play Console Publishing Guide (`docs/PLAYSTORE_PUBLISHING_GUIDE.md`)**:
-  - Full documentation covering secrets configuration, keystore base64 encoding commands for macOS/Linux/Windows, workflow execution, bundle download, and copy-pasteable answers for all Google Play Console policy forms (Privacy Policy, App Access, Ads, IARC Content Rating, Target Audience, Data Safety, Health Apps Declaration, Financial Features, Government Apps, and Foreground Service / Location Justifications) tailored for **PranaFlow**.
+## Exercise Transition Gap & Naam Japa Phase Audio Synchronization
+* **Inter-Exercise Transition Gap (Sandhi / Posture & Breath Reset Buffer)**:
+  - Previously in `CyclePlayerScreen`, finishing one exercise immediately advanced to second 1 of the next exercise with zero pause, causing abrupt shifts without time for the practitioner to unclench locks, switch hand mudras (e.g. Chin to Vishnu Mudra), or return to natural breath.
+  - Implemented an automatic 10-second transition buffer between sequential exercises.
+  - On exercise completion, a warm settling/grounding singing bowl rings out (`singingBowl_grounding_bell.wav`) with a distinct double haptic pulse.
+  - The screen shifts into an amber/teal transition view displaying:
+    - Confirmation of the completed exercise (`Completed: [Title]`).
+    - The upcoming exercise (`Switch To: [Title]`).
+    - Detailed posture and hand mudra guidance (e.g. Vishnu Mudra for Nadi Shodhana, Chin Mudra on knees for Kapalbhati, Shanmukhi Mudra for Bhramari, Dhyana Mudra for Naam Japa, Savasana for Yoga Nidra).
+    - A smooth 10s circular countdown with soft countdown ticks at 3, 2, 1 seconds.
+    - A "Begin Now ➔" button allowing experienced practitioners to bypass the transition immediately.
+  - Concludes with the deep start gong (`singingBowl_practice_start_gong.wav`) as the next practice timer begins.
+* **Meditation Naam Japa Multi-Stage Audio Distinction**:
+  - Previously in complete routine drills, `_checkAndPlayPhaseCue` in `CyclePlayerScreen` lacked handling for Naam Japa steps, resulting in silent transitions where practitioners with closed eyes could not tell when to shift from spoken chanting to whispering to silent mental repetition.
+  - Added dedicated concurrent `_voicePlayer` and `playNaamJapaPhase(JapaStage)` in `AudioService` playing distinct singing bowls coupled with authentic spoken instruction assets:
+    - **Stage 1 (Vaikhari - Audible)**: Deep start gong + `voice_japa_vaikhari.wav` ("Begin chanting aloud with a clear voice.") + single strong grounding haptic pulse.
+    - **Stage 2 (Upamshu - Whispered)**: Clear harmonic Kumbhaka singing bowl (`singingBowl_kumbhaka_hold.wav`) + `voice_japa_upamshu.wav` ("Shift to Upamshu. Lower your voice to a gentle whisper, moving only your lips.") + double pulse.
+    - **Stage 3 (Manasika - Silent Mind)**: Ethereal upward Puraka singing bowl (`singingBowl_puraka_inhale.wav`) + `voice_japa_manasika.wav` ("Shift to Manasika. Still the lips and tongue. Allow the mantra to repeat silently in the mind.") + subtle triple pulse.
+    - **Stage 4 (Laya - Stillness / Absorption)**: Triple Shanti chime (`singingBowl_shanti_chime.wav`) + `voice_japa_laya.wav` ("Release all repetition. Rest in the vibrating silence.") + completion pulse.
+  - Updated visual pacer with real-time stage progression chips, sacred Devanagari mantra rendering, and haptic feedback on bead interactions in `ProgressiveJapaScreen`.
+
 
 
 

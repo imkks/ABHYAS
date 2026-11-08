@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../core/audio/android_practice_playback.dart';
 import '../../core/audio_service.dart';
 import '../../core/haptic_service.dart';
 import '../../core/theme.dart';
+import '../../engine/meditation/meditation_engine.dart';
 import '../../engine/player/cycle_sequencer.dart';
 import '../../engine/player/player_engine.dart';
 import '../../engine/safety/safety_rules_engine.dart';
@@ -36,6 +38,13 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
   String _lastPhaseKey = '';
   int _lastStepForCue = -1;
 
+  // Exercise Transition Gap state
+  bool _isTransitioning = false;
+  int _transitionRemainingSeconds = 10;
+  final int _transitionDurationSeconds = 10;
+  int _completedStepIndex = -1;
+  Timer? _transitionTimer;
+
   @override
   void initState() {
     super.initState();
@@ -63,8 +72,13 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
       },
       onStepComplete: (completedIndex) {
         _lastPhaseKey = '';
-        _audioService.playBell(BellType.transition);
-        _hapticService.phaseTransitionPulse(widget.weaningStage);
+        if (completedIndex + 1 < widget.steps.length) {
+          _sequencer.pause();
+          _startTransitionGap(completedIndex);
+        } else {
+          _audioService.playBell(BellType.transition);
+          _hapticService.phaseTransitionPulse(widget.weaningStage);
+        }
       },
       onCycleComplete: _handleCycleComplete,
     );
@@ -227,9 +241,143 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
       }
       return;
     }
+
+    // 5. 3-Stage Naam Japa / Sacred Mantra Meditation
+    if (id.contains('naam') || id.contains('japa') || id.contains('jaap') || currentStep.title.toLowerCase().contains('naam') || currentStep.title.toLowerCase().contains('japa')) {
+      final totalDuration = currentStep.durationSeconds > 0 ? currentStep.durationSeconds : 360;
+      final vaikhariEnd = (totalDuration * 0.33).round();
+      final upamshuEnd = (totalDuration * 0.66).round();
+      final layaStart = totalDuration > 120 ? totalDuration - 30 : totalDuration - 10;
+
+      String currentPhaseKey;
+      JapaStage currentStage;
+
+      if (stepSeconds < vaikhariEnd) {
+        currentPhaseKey = 'naam_vaikhari';
+        currentStage = JapaStage.vaikhari;
+      } else if (stepSeconds < upamshuEnd) {
+        currentPhaseKey = 'naam_upamshu';
+        currentStage = JapaStage.upamshu;
+      } else if (stepSeconds < layaStart) {
+        currentPhaseKey = 'naam_manasika';
+        currentStage = JapaStage.manasika;
+      } else {
+        currentPhaseKey = 'naam_laya';
+        currentStage = JapaStage.laya;
+      }
+
+      if (currentPhaseKey != _lastPhaseKey) {
+        _lastPhaseKey = currentPhaseKey;
+        _audioService.playNaamJapaPhase(currentStage);
+
+        // Tactile sensory confirmation corresponding to sound density
+        if (currentStage == JapaStage.vaikhari) {
+          _hapticService.phaseTransitionPulse(widget.weaningStage);
+        } else if (currentStage == JapaStage.upamshu) {
+          _hapticService.phaseTransitionPulse(widget.weaningStage);
+          Future.delayed(const Duration(milliseconds: 250), () {
+            _hapticService.pulseForMatra(widget.weaningStage);
+          });
+        } else if (currentStage == JapaStage.manasika) {
+          _hapticService.pulseForMatra(widget.weaningStage);
+          Future.delayed(const Duration(milliseconds: 200), () {
+            _hapticService.pulseForMatra(widget.weaningStage);
+          });
+        } else {
+          _hapticService.completionPulse();
+        }
+      }
+      return;
+    }
+  }
+
+  void _startTransitionGap(int completedIndex) {
+    _transitionTimer?.cancel();
+    setState(() {
+      _isTransitioning = true;
+      _completedStepIndex = completedIndex;
+      _transitionRemainingSeconds = _transitionDurationSeconds;
+    });
+
+    // Deep grounding bell cue signaling exercise completion and returning to natural breath
+    _audioService.playBell(BellType.transition);
+    _hapticService.phaseTransitionPulse(widget.weaningStage);
+
+    _transitionTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      if (_isPaused) return;
+
+      setState(() {
+        if (_transitionRemainingSeconds > 1) {
+          _transitionRemainingSeconds--;
+          // Soft ticks at 3, 2, 1 seconds to prepare practitioner
+          if (_transitionRemainingSeconds <= 3) {
+            _audioService.playTick();
+            _hapticService.pulseForMatra(widget.weaningStage);
+          }
+        } else {
+          _finishTransitionAndStartNext();
+        }
+      });
+    });
+  }
+
+  void _finishTransitionAndStartNext() {
+    _transitionTimer?.cancel();
+    _transitionTimer = null;
+    setState(() {
+      _isTransitioning = false;
+    });
+
+    _lastPhaseKey = '';
+    _audioService.playBell(BellType.start);
+    _hapticService.completionPulse();
+    _sequencer.resume();
+  }
+
+  String _getMudraAndPrepGuidance(CycleStepItem step) {
+    final id = step.id.toLowerCase();
+    final title = step.title.toLowerCase();
+
+    if (id.contains('nadi') || title.contains('nadi') || title.contains('alternate')) {
+      return 'Return to natural breath · Rest left hand in Chin Mudra · Raise right hand into Vishnu Mudra (Nasagra)';
+    }
+    if (id.contains('kapal') || title.contains('kapal')) {
+      return 'Sit upright with spine erect · Rest hands in Chin Mudra on knees · Relax abdominal wall';
+    }
+    if (id.contains('bhramari') || title.contains('bhramari')) {
+      return 'Relax facial muscles · Prepare Shanmukhi Mudra or gently place thumbs on the ear tragi';
+    }
+    if (id.contains('ujjayi') || title.contains('ujjayi')) {
+      return 'Sit comfortably upright · Relax throat and jaw · Rest hands in Jnana Mudra';
+    }
+    if (id.contains('bhastrika') || title.contains('bhastrika')) {
+      return 'Straighten spine · Hands on knees in Chin Mudra · Prepare for active bellows respiration';
+    }
+    if (id.contains('sheetali') || title.contains('sheetali') || id.contains('sheetkari') || title.contains('sheetkari')) {
+      return 'Roll tongue into a tube or gently clench teeth · Rest hands in Jnana Mudra on knees';
+    }
+    if (id.contains('naam') || id.contains('japa') || id.contains('jaap') || title.contains('naam') || title.contains('japa') || title.contains('jaap')) {
+      return 'Close eyes softly · Hands in Dhyana Mudra · Prepare for 3-Stage sacred sound immersion';
+    }
+    if (id.contains('breath_awareness') || id.contains('dhyan') || id.contains('nostril') || title.contains('dhyan') || title.contains('awareness')) {
+      return 'Keep eyes gently closed · Settle awareness at nostril rims · Witness natural incoming & outgoing breath';
+    }
+    if (id.contains('nidra') || id.contains('savasana') || title.contains('nidra') || title.contains('savasana')) {
+      return 'Lie flat on back in Savasana · Arms by sides, palms facing up · Surrender bodily weight to the earth';
+    }
+    if (step.subtitle.isNotEmpty) {
+      return 'Return to natural breath · ${step.subtitle}';
+    }
+    return 'Take 2 natural calming breaths · Adjust your posture and mudra for the upcoming practice';
   }
 
   void _handleCycleComplete() {
+    _transitionTimer?.cancel();
+    _transitionTimer = null;
     AndroidPracticePlayback.stop();
     _audioService.playBell(BellType.end);
     _hapticService.completionPulse();
@@ -253,22 +401,31 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
     setState(() {
       if (_isPaused) {
         AndroidPracticePlayback.start();
-        _sequencer.resume();
+        if (!_isTransitioning) {
+          _sequencer.resume();
+        }
         _isPaused = false;
       } else {
         AndroidPracticePlayback.stop();
-        _sequencer.pause();
+        if (!_isTransitioning) {
+          _sequencer.pause();
+        }
         _isPaused = true;
       }
     });
   }
 
   void _skipStep() {
+    if (_isTransitioning) {
+      _finishTransitionAndStartNext();
+      return;
+    }
     _sequencer.skipStep();
-    _audioService.playBell(BellType.transition);
   }
 
   void _abortPractice() {
+    _transitionTimer?.cancel();
+    _transitionTimer = null;
     AndroidPracticePlayback.stop();
     _sequencer.stop();
     _audioService.stopAll();
@@ -845,35 +1002,83 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
     );
   }
 
-  /// 3-Stage Guided Naam Japa Pacer: Vaikhari (loud) -> Upamshu (murmur) -> Manasika (silent mind)
+  /// 3-Stage Guided Naam Japa Pacer: Vaikhari (loud) -> Upamshu (murmur) -> Manasika (silent mind) -> Laya Stillness
   Widget _buildNaamJapaPacer(CycleStepItem currentStep, int stepRemaining) {
     final totalDuration = currentStep.durationSeconds > 0 ? currentStep.durationSeconds : 480;
     final progress = (_stepSeconds / totalDuration).clamp(0.0, 1.0);
 
+    // Extract mantra name
+    String sacredNaam = 'Radha Radha';
+    String devanagari = 'राधा राधा';
+    if (currentStep.subtitle.contains('Om Namah Shivaya')) {
+      sacredNaam = 'Om Namah Shivaya';
+      devanagari = 'ॐ नमः शिवाय';
+    } else if (currentStep.subtitle.contains('So-Hum')) {
+      sacredNaam = 'So-Hum';
+      devanagari = 'सो ऽहम्';
+    } else if (currentStep.subtitle.contains('Hare Krishna')) {
+      sacredNaam = 'Hare Krishna';
+      devanagari = 'हरे कृष्ण हरे राम';
+    } else if (currentStep.subtitle.contains('Gayatri')) {
+      sacredNaam = 'Gayatri Mantra';
+      devanagari = 'ॐ भूर्भुवः स्वः';
+    } else if (currentStep.subtitle.contains('Ram')) {
+      sacredNaam = 'Sri Ram';
+      devanagari = 'श्री राम जय राम';
+    } else if (currentStep.subtitle.contains('Om')) {
+      sacredNaam = 'Om';
+      devanagari = 'ॐ';
+    }
+
     String stageTitle;
     String stageDescription;
     Color stageColor;
+    int activeStageIndex = 0; // 0: Vaikhari, 1: Upamshu, 2: Manasika, 3: Laya
 
-    if (progress < 0.33) {
+    final isLaya = stepRemaining <= (totalDuration > 120 ? 30 : 10);
+
+    if (isLaya) {
+      stageTitle = 'STAGE 4: LAYA STILLNESS (ABSORPTION)';
+      stageDescription = 'Release all recitation. Rest in the vibrant inner silence within.';
+      stageColor = Colors.tealAccent;
+      activeStageIndex = 3;
+    } else if (progress < 0.33) {
       stageTitle = 'STAGE 1: VAIKHARI (SPOKEN ALOUD)';
-      stageDescription = 'Recite the sacred Naam out loud with devotion and clear resonance.';
+      stageDescription = 'Recite the sacred Naam out loud with clear devotion and vocal resonance.';
       stageColor = AbhyasTheme.saffron;
+      activeStageIndex = 0;
     } else if (progress < 0.66) {
       stageTitle = 'STAGE 2: UPAMSHU (WHISPER / MURMUR)';
-      stageDescription = 'Murmur the Naam softly with subtle lip movement so only you can hear.';
+      stageDescription = 'Murmur softly with subtle lip vibration so only you can hear.';
       stageColor = AbhyasTheme.sky;
+      activeStageIndex = 1;
     } else {
       stageTitle = 'STAGE 3: MANASIKA (SILENT INNER MIND)';
-      stageDescription = 'Let the repetition become purely mental and effortless within inner space.';
-      stageColor = const Color(0xFF9D4EDD);
+      stageDescription = 'Still lips and tongue completely. Let the mantra repeat in pure mental silence.';
+      stageColor = const Color(0xFFB57EDC);
+      activeStageIndex = 2;
     }
 
     return Column(
       children: [
+        // Stage Indicator Chips
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildStageIndicatorChip('1. Vaikhari (Aloud)', activeStageIndex == 0, AbhyasTheme.saffron),
+            const SizedBox(width: 6),
+            _buildStageIndicatorChip('2. Upamshu (Whisper)', activeStageIndex == 1, AbhyasTheme.sky),
+            const SizedBox(width: 6),
+            _buildStageIndicatorChip('3. Manasika (Mind)', activeStageIndex >= 2, const Color(0xFFB57EDC)),
+          ],
+        ),
+
+        const SizedBox(height: 18),
+
         AnimatedContainer(
           duration: const Duration(milliseconds: 400),
-          width: 210,
-          height: 210,
+          width: 220,
+          height: 220,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: AbhyasTheme.darkSurface,
@@ -883,9 +1088,9 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
             ),
             boxShadow: [
               BoxShadow(
-                color: stageColor.withValues(alpha: _isPaused ? 0.05 : 0.35),
-                blurRadius: 32,
-                spreadRadius: 2,
+                color: stageColor.withValues(alpha: _isPaused ? 0.05 : 0.4),
+                blurRadius: 36,
+                spreadRadius: 3,
               ),
             ],
           ),
@@ -894,7 +1099,7 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: stageColor.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(6),
@@ -910,17 +1115,28 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
                     textAlign: TextAlign.center,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
+                Text(
+                  devanagari,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 1.2,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 4),
                 Text(
                   _formatSeconds(stepRemaining),
                   style: const TextStyle(
-                    fontSize: 42,
+                    fontSize: 38,
                     fontWeight: FontWeight.w200,
                     color: Colors.white,
                     fontFeatures: [FontFeature.tabularFigures()],
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 14.0),
                   child: Text(
@@ -946,13 +1162,39 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
             borderRadius: BorderRadius.circular(10),
             border: Border.all(color: AbhyasTheme.line),
           ),
-          child: Text(
-            '3-Stage Progression: Vaikhari ➔ Upamshu ➔ Manasika',
-            style: const TextStyle(fontSize: 11, color: Colors.white70),
-            textAlign: TextAlign.center,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.volume_up, size: 14, color: stageColor),
+              const SizedBox(width: 8),
+              Text(
+                'Sacred Naam: $sacredNaam · Audio Cued Phase Flow',
+                style: const TextStyle(fontSize: 11, color: Colors.white70),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildStageIndicatorChip(String label, bool isActive, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: isActive ? color.withValues(alpha: 0.25) : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: isActive ? color : Colors.white24, width: isActive ? 1.5 : 1),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 9,
+          fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+          color: isActive ? Colors.white : Colors.white54,
+        ),
+      ),
     );
   }
 
@@ -1162,8 +1404,193 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
     );
   }
 
+  Widget _buildTransitionView(CycleStepItem completedStep, CycleStepItem nextStep) {
+    final prepGuidance = _getMudraAndPrepGuidance(nextStep);
+    final progress = (1.0 - (_transitionRemainingSeconds / _transitionDurationSeconds)).clamp(0.0, 1.0);
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // Top badge
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          decoration: BoxDecoration(
+            color: AbhyasTheme.saffron.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AbhyasTheme.saffron.withValues(alpha: 0.5)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.pause_circle_outline, size: 16, color: AbhyasTheme.saffron),
+              const SizedBox(width: 8),
+              Text(
+                'EXERCISE TRANSITION · REST BUFFER',
+                style: TextStyle(
+                  color: AbhyasTheme.saffron,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                  fontSize: 11,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        // Completed practice confirmation
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.check_circle, size: 16, color: Colors.tealAccent),
+            const SizedBox(width: 6),
+            Text(
+              'Completed: ${completedStep.title}',
+              style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 10),
+
+        // Upcoming practice title
+        Text(
+          'SWITCH TO:',
+          style: TextStyle(
+            color: AbhyasTheme.darkInkSoft,
+            fontSize: 12,
+            letterSpacing: 2,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Text(
+            nextStep.title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 20),
+
+        // Countdown Circular Ring
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            SizedBox(
+              width: 160,
+              height: 160,
+              child: CircularProgressIndicator(
+                value: progress,
+                strokeWidth: 6,
+                backgroundColor: AbhyasTheme.darkSurfaceAlt,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  _transitionRemainingSeconds <= 3 ? Colors.amberAccent : AbhyasTheme.saffron,
+                ),
+              ),
+            ),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '$_transitionRemainingSeconds',
+                  style: TextStyle(
+                    fontSize: 52,
+                    fontWeight: FontWeight.w200,
+                    color: _transitionRemainingSeconds <= 3 ? Colors.amberAccent : Colors.white,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+                Text(
+                  _transitionRemainingSeconds <= 3 ? 'Get Ready...' : 'Natural breath...',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: _transitionRemainingSeconds <= 3 ? Colors.amberAccent : AbhyasTheme.darkInkSoft,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 20),
+
+        // Mudra & Posture Guidance Box
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: AbhyasTheme.darkSurface,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AbhyasTheme.saffron.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.self_improvement, color: AbhyasTheme.saffron, size: 24),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'POSTURE & MUDRA PREPARATION',
+                      style: TextStyle(
+                        color: AbhyasTheme.saffron,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.1,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      prepGuidance,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        // Begin Now Skip Button
+        ElevatedButton.icon(
+          onPressed: _finishTransitionAndStartNext,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AbhyasTheme.saffron,
+            foregroundColor: Colors.black,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 11),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            elevation: 4,
+          ),
+          icon: const Icon(Icons.play_arrow, size: 18),
+          label: Text(
+            'Begin ${nextStep.title} Now ➔',
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   void dispose() {
+    _transitionTimer?.cancel();
     AndroidPracticePlayback.stop();
     _sequencer.stop();
     _audioService.stopAll();
@@ -1178,15 +1605,23 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
 
     final stepRemaining = (currentStep.durationSeconds - _stepSeconds).clamp(0, currentStep.durationSeconds);
 
+    final completedStep = _completedStepIndex >= 0 && _completedStepIndex < widget.steps.length
+        ? widget.steps[_completedStepIndex]
+        : currentStep;
+
     return Scaffold(
       backgroundColor: AbhyasTheme.darkBg,
       appBar: AppBar(
-        title: Text('Cycle: Step ${_currentStepIndex + 1} of ${widget.steps.length}'),
+        title: Text(
+          _isTransitioning
+              ? 'Transition · Prepare Step ${_currentStepIndex + 1} of ${widget.steps.length}'
+              : 'Cycle: Step ${_currentStepIndex + 1} of ${widget.steps.length}',
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
           IconButton(
-            icon: Icon(Icons.close),
+            icon: const Icon(Icons.close),
             onPressed: _abortPractice,
             tooltip: 'Exit Practice',
           ),
@@ -1213,7 +1648,7 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
                       ),
                     ],
                   ),
-                  SizedBox(height: 6),
+                  const SizedBox(height: 6),
                   LinearProgressIndicator(
                     value: _sequencer.overallProgress,
                     backgroundColor: AbhyasTheme.darkSurfaceAlt,
@@ -1225,52 +1660,55 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
               ),
             ),
 
-            Spacer(),
+            const Spacer(),
 
-            // Active Step Display
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32.0),
-              child: Column(
-                children: [
-                  Text(
-                    'STEP ${_currentStepIndex + 1}',
-                    style: TextStyle(
-                      color: AbhyasTheme.sky,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 2,
-                      fontSize: 13,
+            // Active Step or Transition Display
+            if (_isTransitioning)
+              _buildTransitionView(completedStep, currentStep)
+            else
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                child: Column(
+                  children: [
+                    Text(
+                      'STEP ${_currentStepIndex + 1}',
+                      style: TextStyle(
+                        color: AbhyasTheme.sky,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2,
+                        fontSize: 13,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    currentStep.title,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                    const SizedBox(height: 8),
+                    Text(
+                      currentStep.title,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 6),
-                  Text(
-                    currentStep.subtitle,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 15),
-                  ),
-                  const SizedBox(height: 28),
+                    const SizedBox(height: 6),
+                    Text(
+                      currentStep.subtitle,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 15),
+                    ),
+                    const SizedBox(height: 28),
 
-                  _buildPacerOrTimer(currentStep, stepRemaining),
-                ],
+                    _buildPacerOrTimer(currentStep, stepRemaining),
+                  ],
+                ),
               ),
-            ),
 
             const Spacer(),
 
-            // Next step preview pill
-            if (nextStep != null)
+            // Next step preview pill (only when not in transition)
+            if (!_isTransitioning && nextStep != null)
               Container(
-                margin: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
                   color: AbhyasTheme.darkSurface,
                   borderRadius: BorderRadius.circular(12),
@@ -1279,7 +1717,7 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
                 child: Row(
                   children: [
                     Icon(Icons.skip_next, size: 18, color: AbhyasTheme.sky),
-                    SizedBox(width: 10),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         'Up next: ${nextStep.title} (${_formatSeconds(nextStep.durationSeconds)})',
@@ -1316,8 +1754,8 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
                   // Skip to next step
                   IconButton(
                     iconSize: 32,
-                    icon: Icon(Icons.skip_next, color: Colors.white70),
-                    tooltip: 'Skip Step',
+                    icon: const Icon(Icons.skip_next, color: Colors.white70),
+                    tooltip: _isTransitioning ? 'Begin Step Now' : 'Skip Step',
                     onPressed: _skipStep,
                   ),
                 ],

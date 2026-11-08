@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../core/audio/practice_audio_service.dart';
 import '../../core/audio_service.dart';
 import '../../core/theme.dart';
 import '../../engine/meditation/meditation_engine.dart';
-import '../../engine/player/audio_guidance_engine.dart';
 import 'dhyan_screen.dart';
 
 class ProgressiveJapaScreen extends StatefulWidget {
@@ -45,6 +45,9 @@ class _ProgressiveJapaScreenState extends State<ProgressiveJapaScreen> {
       isCountBased: widget.isCountBased,
     );
     _audioService.initAudio();
+    _audioService.isHapticsEnabled = true;
+    _audioService.isVoiceEnabled = true;
+    _audioService.isAudioTonesEnabled = true;
     _droneService.init();
   }
 
@@ -118,6 +121,8 @@ class _ProgressiveJapaScreenState extends State<ProgressiveJapaScreen> {
       _togglePlay();
       return;
     }
+
+    HapticFeedback.lightImpact();
 
     setState(() {
       _currentBeads++;
