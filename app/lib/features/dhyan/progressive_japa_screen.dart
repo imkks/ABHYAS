@@ -246,11 +246,10 @@ class _ProgressiveJapaScreenState extends State<ProgressiveJapaScreen> {
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // 3-Stage Progress Timeline Header
+              // 3-Stage Progress Timeline Header (pinned)
               Row(
                 children: [
                   _buildStageChip('1. Vaikhari (Audible)', JapaStage.vaikhari),
@@ -261,140 +260,150 @@ class _ProgressiveJapaScreenState extends State<ProgressiveJapaScreen> {
                 ],
               ),
 
-              const SizedBox(height: 16),
-
-              // Active Stage Instruction Banner
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: activeColor.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: activeColor.withOpacity(0.5), width: 1.5),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      _engine.stageName.toUpperCase(),
-                      style: TextStyle(color: activeColor, fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 1.2),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _engine.stageInstruction,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.white, fontSize: 13, height: 1.3),
-                    ),
-                  ],
-                ),
-              ),
-
-              const Spacer(),
-
-              // Active Mantra Display Card
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.04),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white12),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      widget.mantra.name,
-                      style: const TextStyle(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.w600),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      widget.mantra.text,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: activeColor,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.1,
-                      ),
-                    ),
-                    if (widget.mantra.meaning != null) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        widget.mantra.meaning!,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(color: Colors.white38, fontSize: 11, fontStyle: FontStyle.italic),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Digital Mala Interactive Bead Touch Disc
-              GestureDetector(
-                onTap: _onBeadTapped,
-                child: Container(
-                  width: 170,
-                  height: 170,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: activeColor.withOpacity(0.15),
-                    border: Border.all(color: activeColor, width: 3.5),
-                    boxShadow: [
-                      BoxShadow(
-                        color: activeColor.withOpacity(_isPlaying ? 0.25 : 0.08),
-                        blurRadius: 30,
-                        spreadRadius: 4,
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        if (widget.isCountBased) ...[
-                          Text(
-                            '$_currentBeads',
-                            style: TextStyle(color: activeColor, fontSize: 52, fontWeight: FontWeight.bold),
-                          ),
-                          Text('/ $targetBeads beads', style: const TextStyle(color: Colors.white54, fontSize: 13)),
-                        ] else ...[
-                          Text(
-                            _formatTime(_secondsElapsed),
-                            style: const TextStyle(color: Colors.white, fontSize: 38, fontWeight: FontWeight.w200),
-                          ),
-                          Text(
-                            'Target: ${widget.totalMinutes}m',
-                            style: const TextStyle(color: Colors.white54, fontSize: 12),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
               const SizedBox(height: 12),
-              Text(
-                widget.isCountBased ? 'Tap circle or bead to advance count' : 'Hands-free timed meditation',
-                style: const TextStyle(color: Colors.white38, fontSize: 12),
-              ),
 
-              const SizedBox(height: 16),
+              // Scrollable Center Area (guarantees zero overflow)
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    children: [
+                      // Active Stage Instruction Banner
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: activeColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: activeColor.withValues(alpha: 0.5), width: 1.5),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              _engine.stageName.toUpperCase(),
+                              style: TextStyle(color: activeColor, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1.2),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _engine.stageInstruction,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(color: Colors.white, fontSize: 12, height: 1.3),
+                            ),
+                          ],
+                        ),
+                      ),
 
-              // Progress Bar
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: LinearProgressIndicator(
-                  value: progress,
-                  backgroundColor: Colors.white12,
-                  color: activeColor,
+                      const SizedBox(height: 14),
+
+                      // Active Mantra Display Card
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.04),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.white12),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              widget.mantra.name,
+                              style: const TextStyle(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.w600),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              widget.mantra.text,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: activeColor,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.1,
+                              ),
+                            ),
+                            if (widget.mantra.meaning != null) ...[
+                              const SizedBox(height: 6),
+                              Text(
+                                widget.mantra.meaning!,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(color: Colors.white38, fontSize: 11, fontStyle: FontStyle.italic),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      // Digital Mala Interactive Bead Touch Disc
+                      GestureDetector(
+                        onTap: _onBeadTapped,
+                        child: Container(
+                          width: 155,
+                          height: 155,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: activeColor.withValues(alpha: 0.15),
+                            border: Border.all(color: activeColor, width: 3.5),
+                            boxShadow: [
+                              BoxShadow(
+                                color: activeColor.withValues(alpha: _isPlaying ? 0.25 : 0.08),
+                                blurRadius: 28,
+                                spreadRadius: 3,
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                if (widget.isCountBased) ...[
+                                  Text(
+                                    '$_currentBeads',
+                                    style: TextStyle(color: activeColor, fontSize: 46, fontWeight: FontWeight.bold),
+                                  ),
+                                  Text('/ $targetBeads beads', style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                                ] else ...[
+                                  Text(
+                                    _formatTime(_secondsElapsed),
+                                    style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w200),
+                                  ),
+                                  Text(
+                                    'Target: ${widget.totalMinutes}m',
+                                    style: const TextStyle(color: Colors.white54, fontSize: 12),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 10),
+                      Text(
+                        widget.isCountBased ? 'Tap circle or bead to advance count' : 'Hands-free timed meditation',
+                        style: const TextStyle(color: Colors.white38, fontSize: 11),
+                      ),
+
+                      const SizedBox(height: 14),
+
+                      // Progress Bar
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          backgroundColor: Colors.white12,
+                          color: activeColor,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
 
-              const Spacer(),
+              const SizedBox(height: 10),
 
-              // Bottom Control Bar
+              // Bottom Control Bar (pinned)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -402,7 +411,7 @@ class _ProgressiveJapaScreenState extends State<ProgressiveJapaScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: activeColor,
                       foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 13),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                     ),
                     icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
@@ -417,7 +426,7 @@ class _ProgressiveJapaScreenState extends State<ProgressiveJapaScreen> {
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.white70,
                       side: const BorderSide(color: Colors.white24),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                     ),
                     icon: const Icon(Icons.skip_next, size: 20),
@@ -426,8 +435,7 @@ class _ProgressiveJapaScreenState extends State<ProgressiveJapaScreen> {
                   ),
                 ],
               ),
-
-              const SizedBox(height: 12),
+              const SizedBox(height: 6),
             ],
           ),
         ),

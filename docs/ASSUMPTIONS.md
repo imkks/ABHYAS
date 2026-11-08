@@ -158,6 +158,18 @@ As per the task brief, the following assumptions were made regarding the design,
     - **Stage 4 (Laya - Stillness / Absorption)**: Triple Shanti chime (`singingBowl_shanti_chime.wav`) + `voice_japa_laya.wav` ("Release all repetition. Rest in the vibrating silence.") + completion pulse.
   - Updated visual pacer with real-time stage progression chips, sacred Devanagari mantra rendering, and haptic feedback on bead interactions in `ProgressiveJapaScreen`.
 
+## Viewport & Layout Overflow Resilience
+* **Scroll-Safe Layout Architecture across Screens and Dialogs**:
+  - Unconstrained vertical `Column`s combined with fixed spacers (`Spacer()`) and graphic rings caused `RenderFlex overflowed by X pixels` exceptions on small devices (e.g. height ≤ 700dp), landscape orientations, or when system accessibility font scaling was applied.
+  - Resolved across all practice and meditation players:
+    - **`CyclePlayerScreen`**: Scaled transition ring (160px → 140px) and central Naam Japa ring (220px → 195px); wrapped scrollable body in `Expanded` + `SingleChildScrollView(physics: BouncingScrollPhysics())` while keeping status indicators pinned at top and controls pinned at bottom.
+    - **`ProgressiveJapaScreen`**: Wrapped bead counter and stage info in `Expanded` + `SingleChildScrollView(physics: BouncingScrollPhysics())` and reduced outer bead disc from 170px to 155px.
+    - **`PracticePlayerScreen`**: Wrapped visual pacer, counters, settling view, and integration view in `SingleChildScrollView(physics: BouncingScrollPhysics())`.
+    - **`BreathAwarenessScreen`**: Wrapped breath pacer disc (170px), somatosensory anchor dropdown, and duration presets in a `SingleChildScrollView(physics: BouncingScrollPhysics())`.
+    - **`YogaNidraScreen`**: Replaced rigid `Spacer()` widgets with proportional spacing wrapped in a `SingleChildScrollView(physics: BouncingScrollPhysics())`.
+    - **`CycleComposerScreen`**: Wrapped all 7 technique customizer bottom sheets (Nadi Shodhana ratio sliders, Kapalbhati, Bhramari, Ujjayi, Naam Japa, Trataka, Yoga Nidra) with `SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, ...))` to eliminate keyboard and small-screen bottom clipping.
+
+
 
 
 

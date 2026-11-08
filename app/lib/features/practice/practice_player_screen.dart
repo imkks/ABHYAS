@@ -473,7 +473,6 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   @override
   Widget build(BuildContext context) {
     bool showVisualPacer = widget.weaningStage < 3;
-    bool showCounts = widget.weaningStage < 3;
 
     return Scaffold(
       backgroundColor: Colors.black, // Dark/subdued background for eyes-closed practice
@@ -518,11 +517,13 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         },
         child: SafeArea(
           child: Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
                   // Settling Buffer View
                   if (_isSettling) ...[
                     const Text(
@@ -668,8 +669,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildDynamicPracticePacer() {
     final isKapal = widget.practiceId.contains('kapal');

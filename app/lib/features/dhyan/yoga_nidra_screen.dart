@@ -124,12 +124,14 @@ class _YogaNidraScreenState extends State<YogaNidraScreen> {
         ],
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Spacer(),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(height: 16),
 
               // Moon / Meditative Glow Icon
               Container(
@@ -246,7 +248,7 @@ class _YogaNidraScreenState extends State<YogaNidraScreen> {
                 ],
               ),
 
-              const Spacer(),
+              const SizedBox(height: 24),
 
               // Audio file location indicator
               Container(
@@ -273,6 +275,7 @@ class _YogaNidraScreenState extends State<YogaNidraScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

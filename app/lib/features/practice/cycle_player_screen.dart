@@ -1437,59 +1437,59 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
           ),
         ),
 
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
 
         // Completed practice confirmation
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.check_circle, size: 16, color: Colors.tealAccent),
+            const Icon(Icons.check_circle, size: 15, color: Colors.tealAccent),
             const SizedBox(width: 6),
             Text(
               'Completed: ${completedStep.title}',
-              style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500),
+              style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500),
             ),
           ],
         ),
 
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
 
         // Upcoming practice title
         Text(
           'SWITCH TO:',
           style: TextStyle(
             color: AbhyasTheme.darkInkSoft,
-            fontSize: 12,
+            fontSize: 11,
             letterSpacing: 2,
             fontWeight: FontWeight.bold,
           ),
         ),
         const SizedBox(height: 4),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
           child: Text(
             nextStep.title,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              fontSize: 26,
+              fontSize: 24,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
           ),
         ),
 
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
 
         // Countdown Circular Ring
         Stack(
           alignment: Alignment.center,
           children: [
             SizedBox(
-              width: 160,
-              height: 160,
+              width: 140,
+              height: 140,
               child: CircularProgressIndicator(
                 value: progress,
-                strokeWidth: 6,
+                strokeWidth: 5,
                 backgroundColor: AbhyasTheme.darkSurfaceAlt,
                 valueColor: AlwaysStoppedAnimation<Color>(
                   _transitionRemainingSeconds <= 3 ? Colors.amberAccent : AbhyasTheme.saffron,
@@ -1502,7 +1502,7 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
                 Text(
                   '$_transitionRemainingSeconds',
                   style: TextStyle(
-                    fontSize: 52,
+                    fontSize: 46,
                     fontWeight: FontWeight.w200,
                     color: _transitionRemainingSeconds <= 3 ? Colors.amberAccent : Colors.white,
                     fontFeatures: const [FontFeature.tabularFigures()],
@@ -1511,7 +1511,7 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
                 Text(
                   _transitionRemainingSeconds <= 3 ? 'Get Ready...' : 'Natural breath...',
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 10.5,
                     color: _transitionRemainingSeconds <= 3 ? Colors.amberAccent : AbhyasTheme.darkInkSoft,
                     fontWeight: FontWeight.w500,
                   ),
@@ -1521,22 +1521,22 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
           ],
         ),
 
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
 
         // Mudra & Posture Guidance Box
         Container(
-          margin: const EdgeInsets.symmetric(horizontal: 24),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
             color: AbhyasTheme.darkSurface,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(color: AbhyasTheme.saffron.withValues(alpha: 0.3)),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.self_improvement, color: AbhyasTheme.saffron, size: 24),
-              const SizedBox(width: 12),
+              Icon(Icons.self_improvement, color: AbhyasTheme.saffron, size: 22),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1545,18 +1545,18 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
                       'POSTURE & MUDRA PREPARATION',
                       style: TextStyle(
                         color: AbhyasTheme.saffron,
-                        fontSize: 10,
+                        fontSize: 9.5,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.1,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 3),
                     Text(
                       prepGuidance,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 13,
-                        height: 1.35,
+                        fontSize: 12,
+                        height: 1.3,
                       ),
                     ),
                   ],
@@ -1566,7 +1566,7 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
           ),
         ),
 
-        const SizedBox(height: 16),
+        const SizedBox(height: 14),
 
         // Begin Now Skip Button
         ElevatedButton.icon(
@@ -1574,14 +1574,14 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
           style: ElevatedButton.styleFrom(
             backgroundColor: AbhyasTheme.saffron,
             foregroundColor: Colors.black,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 11),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-            elevation: 4,
+            elevation: 3,
           ),
           icon: const Icon(Icons.play_arrow, size: 18),
           label: Text(
             'Begin ${nextStep.title} Now ➔',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
           ),
         ),
       ],
@@ -1660,55 +1660,56 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
               ),
             ),
 
-            const Spacer(),
+            // Center Scrollable Area (guarantees zero RenderFlex overflow)
+            Expanded(
+              child: Center(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+                  child: _isTransitioning
+                      ? _buildTransitionView(completedStep, currentStep)
+                      : Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'STEP ${_currentStepIndex + 1}',
+                              style: TextStyle(
+                                color: AbhyasTheme.sky,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 2,
+                                fontSize: 13,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              currentStep.title,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              currentStep.subtitle,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 14),
+                            ),
+                            const SizedBox(height: 20),
 
-            // Active Step or Transition Display
-            if (_isTransitioning)
-              _buildTransitionView(completedStep, currentStep)
-            else
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                child: Column(
-                  children: [
-                    Text(
-                      'STEP ${_currentStepIndex + 1}',
-                      style: TextStyle(
-                        color: AbhyasTheme.sky,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 2,
-                        fontSize: 13,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      currentStep.title,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      currentStep.subtitle,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 15),
-                    ),
-                    const SizedBox(height: 28),
-
-                    _buildPacerOrTimer(currentStep, stepRemaining),
-                  ],
+                            _buildPacerOrTimer(currentStep, stepRemaining),
+                          ],
+                        ),
                 ),
               ),
-
-            const Spacer(),
+            ),
 
             // Next step preview pill (only when not in transition)
             if (!_isTransitioning && nextStep != null)
               Container(
-                margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   color: AbhyasTheme.darkSurface,
                   borderRadius: BorderRadius.circular(12),
@@ -1731,7 +1732,7 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
 
             // Controls
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [

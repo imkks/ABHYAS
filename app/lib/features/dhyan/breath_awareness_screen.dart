@@ -217,11 +217,13 @@ class _BreathAwarenessScreenState extends State<BreathAwarenessScreen> with Sing
           }
         },
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
                 if (!_isPlaying && _secondsElapsed == 0) ...[
                   // Setup view before meditation begins
                   const Text(
@@ -407,6 +409,7 @@ class _BreathAwarenessScreenState extends State<BreathAwarenessScreen> with Sing
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
