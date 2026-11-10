@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'health_screening_screen.dart';
+import '../../core/main_layout.dart';
 import '../../data/user_repository.dart';
+import '../../engine/safety/safety_rules_engine.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -10,28 +11,22 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  bool _consentGiven = false;
+  bool _consentGiven = true;
   String _selectedTradition = 'Smarta';
   final List<String> _traditions = ['Smarta', 'Vaishnava', 'Shaiva', 'Shakta', 'Arya Samaj', 'Other'];
 
   void _proceed() async {
-    if (!_consentGiven) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Please provide explicit consent to proceed.'),
-      ));
-      return;
-    }
-
     final userRepo = UserRepository();
     await userRepo.saveTradition(_selectedTradition);
     await userRepo.saveConsent(true);
+    await userRepo.saveProfile(SafetyProfile());
 
     if (!mounted) return;
 
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => HealthScreeningScreen(),
+        builder: (context) => MainLayout(safetyProfile: SafetyProfile()),
       ),
     );
   }
@@ -60,7 +55,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 SizedBox(height: 20),
                 Center(
                   child: Text(
-                    'ABHYAS',
+                    'PRANAFLOW',
                     style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, letterSpacing: 4),
                   ),
                 ),
@@ -129,7 +124,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     padding: EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: Text('Next: Health Screening', style: TextStyle(fontSize: 18)),
+                  child: Text('Begin Practice', style: TextStyle(fontSize: 18)),
                 ),
                 SizedBox(height: 20),
               ],

@@ -82,8 +82,6 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
   late int _selectedTargetDuration;
   RoutineIntensity _selectedIntensity = RoutineIntensity.adaptive;
   int _userLevel = 1;
-  String _levelTitle = 'Prarambha';
-  String _levelHighlight = 'Foundational breath';
   late List<CycleStep> _steps;
 
   @override
@@ -100,8 +98,6 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
     if (mounted) {
       setState(() {
         _userLevel = prog.level;
-        _levelTitle = prog.title;
-        _levelHighlight = prog.featureHighlight;
         _loadPresetSteps(_selectedPreset, _selectedTargetDuration);
       });
     }
@@ -114,7 +110,6 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
       case RoutineIntensity.intense:
         return (_userLevel + 1).clamp(1, 7);
       case RoutineIntensity.adaptive:
-      default:
         return _userLevel;
     }
   }
@@ -127,7 +122,6 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
       // 🌅 Surya Abhyas: Scaled to level
       String nadiSub = '1:0:1:0 Natural Balance';
       String kapalbhatiSub = '30 strokes/round gentle cleanse';
-      String ujjayiSub = 'Ocean breath focus';
 
       if (level == 2) {
         nadiSub = '1:0:2:0 Extended Exhale (Calming)';
@@ -135,7 +129,6 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
       } else if (level == 3) {
         nadiSub = '1:1:2:0 Antar Kumbhaka + Jalandhara';
         kapalbhatiSub = '60 strokes/round channel cleanse';
-        ujjayiSub = 'Ujjayi + Throat awareness';
       } else if (level >= 4) {
         nadiSub = '1:2:2:0 Deep Hold + Mula Bandha';
         kapalbhatiSub = '80 strokes/round + Solar heat';
@@ -641,6 +634,8 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
                                   children: [
                                     Text(
                                       step.title,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 15,
@@ -651,6 +646,8 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
                                     const SizedBox(height: 2),
                                     Text(
                                       step.subtitle,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
                                         color: step.isEnabled ? AbhyasTheme.darkInkSoft : Colors.white24,
                                         fontSize: 12,
@@ -675,70 +672,83 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
                           const SizedBox(height: 8),
 
                           // ROW 2: Category Badge + Working Adjust Button + Stepper Controls + Delete Action
-                          Row(
-                            children: [
-                              // 1. Accurate Category Badge
-                              _buildCategoryBadge(step),
-                              const SizedBox(width: 8),
-
-                              // 2. Working Adjust Button specifically tailored for this step
-                              _buildStepAdjustButton(index, step),
-
-                              const Spacer(),
-
-                              // Duration Stepper Pill: [-] 2 min [+]
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: AbhyasTheme.darkSurfaceAlt,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: AbhyasTheme.line),
+                          SizedBox(
+                            width: double.infinity,
+                            child: Wrap(
+                              alignment: WrapAlignment.spaceBetween,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              spacing: 8,
+                              runSpacing: 6,
+                              children: [
+                                // Left actions: Category Badge + Adjust button
+                                Wrap(
+                                  spacing: 6,
+                                  runSpacing: 4,
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  children: [
+                                    _buildCategoryBadge(step),
+                                    _buildStepAdjustButton(index, step),
+                                  ],
                                 ),
-                                child: Row(
+
+                                // Right actions: Duration Stepper Pill: [-] 2 min [+] & Delete
+                                Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    InkWell(
-                                      onTap: step.isEnabled ? () => _adjustStepDuration(index, -1) : null,
-                                      borderRadius: const BorderRadius.horizontal(left: Radius.circular(8)),
-                                      child: const Padding(
-                                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                                        child: Icon(Icons.remove, size: 16, color: Colors.white70),
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        color: AbhyasTheme.darkSurfaceAlt,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: AbhyasTheme.line),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          InkWell(
+                                            onTap: step.isEnabled ? () => _adjustStepDuration(index, -1) : null,
+                                            borderRadius: const BorderRadius.horizontal(left: Radius.circular(8)),
+                                            child: const Padding(
+                                              padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                              child: Icon(Icons.remove, size: 15, color: Colors.white70),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                            child: Text(
+                                              '${step.durationMinutes} min',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: step.isEnabled ? AbhyasTheme.saffron : Colors.grey,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ),
+                                          InkWell(
+                                            onTap: step.isEnabled ? () => _adjustStepDuration(index, 1) : null,
+                                            borderRadius: const BorderRadius.horizontal(right: Radius.circular(8)),
+                                            child: const Padding(
+                                              padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                              child: Icon(Icons.add, size: 15, color: Colors.white70),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                                      child: Text(
-                                        '${step.durationMinutes} min',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: step.isEnabled ? AbhyasTheme.saffron : Colors.grey,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
-                                    InkWell(
-                                      onTap: step.isEnabled ? () => _adjustStepDuration(index, 1) : null,
-                                      borderRadius: const BorderRadius.horizontal(right: Radius.circular(8)),
-                                      child: const Padding(
-                                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                                        child: Icon(Icons.add, size: 16, color: Colors.white70),
-                                      ),
+                                    const SizedBox(width: 8),
+
+                                    // Delete Action
+                                    IconButton(
+                                      icon: const Icon(Icons.delete_outline, size: 20),
+                                      color: Colors.red.withValues(alpha: 0.65),
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                      onPressed: () => _removeStep(index),
+                                      tooltip: 'Remove step',
                                     ),
                                   ],
                                 ),
-                              ),
-
-                              const SizedBox(width: 8),
-
-                              // Delete Action
-                              IconButton(
-                                icon: const Icon(Icons.delete_outline, size: 20),
-                                color: Colors.red.withValues(alpha: 0.65),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                                onPressed: () => _removeStep(index),
-                                tooltip: 'Remove step',
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -1333,8 +1343,6 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
     );
   }
 
-  void _showRatioCustomizer(int index) => _showNadiRatioCustomizer(index);
-
   void _showNadiRatioCustomizer(int index) {
     final step = _steps[index];
     final currentRatio = List<int>.from(step.ratio ?? [4, 0, 4, 0]);
@@ -1575,14 +1583,17 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Kapalbhati Cleansing', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                          SizedBox(height: 2),
-                          Text('Abdominal exhalations & Bahir Kumbhaka', style: TextStyle(fontSize: 12, color: AbhyasTheme.darkInkSoft)),
-                        ],
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Kapalbhati Cleansing', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white), overflow: TextOverflow.ellipsis),
+                            SizedBox(height: 2),
+                            Text('Abdominal exhalations & Bahir Kumbhaka', style: TextStyle(fontSize: 12, color: AbhyasTheme.darkInkSoft), overflow: TextOverflow.ellipsis),
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
@@ -1727,14 +1738,17 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Ujjayi Ocean Breath', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                          SizedBox(height: 2),
-                          Text('Throat whisper & internal hold', style: TextStyle(fontSize: 12, color: AbhyasTheme.darkInkSoft)),
-                        ],
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Ujjayi Ocean Breath', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white), overflow: TextOverflow.ellipsis),
+                            SizedBox(height: 2),
+                            Text('Throat whisper & internal hold', style: TextStyle(fontSize: 12, color: AbhyasTheme.darkInkSoft), overflow: TextOverflow.ellipsis),
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
@@ -1879,14 +1893,17 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Bhramari Humming Bee', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                          SizedBox(height: 2),
-                          Text('Cranial vibration & internal hold', style: TextStyle(fontSize: 12, color: AbhyasTheme.darkInkSoft)),
-                        ],
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Bhramari Humming Bee', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white), overflow: TextOverflow.ellipsis),
+                            SizedBox(height: 2),
+                            Text('Cranial vibration & internal hold', style: TextStyle(fontSize: 12, color: AbhyasTheme.darkInkSoft), overflow: TextOverflow.ellipsis),
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
@@ -2031,14 +2048,17 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('3-Stage Naam Jaap', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                          SizedBox(height: 2),
-                          Text('Vaikhari ➔ Upamshu ➔ Manasika', style: TextStyle(fontSize: 12, color: AbhyasTheme.darkInkSoft)),
-                        ],
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('3-Stage Naam Jaap', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white), overflow: TextOverflow.ellipsis),
+                            SizedBox(height: 2),
+                            Text('Vaikhari ➔ Upamshu ➔ Manasika', style: TextStyle(fontSize: 12, color: AbhyasTheme.darkInkSoft), overflow: TextOverflow.ellipsis),
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
@@ -2184,14 +2204,17 @@ class _CycleComposerScreenState extends State<CycleComposerScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Silent Nostril Dhyan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                          SizedBox(height: 2),
-                          Text('Somatic focus & meditative witnessing', style: TextStyle(fontSize: 12, color: AbhyasTheme.darkInkSoft)),
-                        ],
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Silent Nostril Dhyan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white), overflow: TextOverflow.ellipsis),
+                            SizedBox(height: 2),
+                            Text('Somatic focus & meditative witnessing', style: TextStyle(fontSize: 12, color: AbhyasTheme.darkInkSoft), overflow: TextOverflow.ellipsis),
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(

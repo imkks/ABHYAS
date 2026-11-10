@@ -88,12 +88,14 @@ class _ProgressScreenState extends State<ProgressScreen> {
                   ),
                   const SizedBox(height: 12),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildMetricTile('Tapas Count', '$_tapasCount', 'Sessions', Colors.deepOrange),
-                      _buildMetricTile('Total Time', '$_totalPracticeMinutes', 'Minutes', Colors.amber),
-                      _buildMetricTile('Calm Shift', _avgCalmnessDelta > 0 ? '+${(_avgCalmnessDelta * 10).round()}%' : '--', 'Post-practice', Colors.teal),
-                      _buildMetricTile('CHT Hold', '${_chtSeconds.round()}s', 'Comfort test', Colors.blue),
+                      Expanded(child: _buildMetricTile('Tapas Count', '$_tapasCount', 'Sessions', Colors.deepOrange)),
+                      const SizedBox(width: 8),
+                      Expanded(child: _buildMetricTile('Total Time', '$_totalPracticeMinutes', 'Minutes', Colors.amber)),
+                      const SizedBox(width: 8),
+                      Expanded(child: _buildMetricTile('Calm Shift', _avgCalmnessDelta > 0 ? '+${(_avgCalmnessDelta * 10).round()}%' : '--', 'Post-practice', Colors.teal)),
+                      const SizedBox(width: 8),
+                      Expanded(child: _buildMetricTile('CHT Hold', '${_chtSeconds.round()}s', 'Comfort test', Colors.blue)),
                     ],
                   ),
                   const SizedBox(height: 10),
@@ -112,17 +114,26 @@ class _ProgressScreenState extends State<ProgressScreen> {
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(color: AbhyasTheme.line),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: [
-                              Icon(Icons.speed, size: 16, color: Colors.blue),
-                              SizedBox(width: 8),
-                              Text('Retest Breath Hold Capacity (CHT)', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                            ],
+                          Expanded(
+                            child: Row(
+                              children: const [
+                                Icon(Icons.speed, size: 16, color: Colors.blue),
+                                SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'Retest Breath Hold Capacity (CHT)',
+                                    style: TextStyle(color: Colors.white70, fontSize: 12),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          Icon(Icons.chevron_right, size: 16, color: AbhyasTheme.darkInkSoft),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.chevron_right, size: 16, color: AbhyasTheme.darkInkSoft),
                         ],
                       ),
                     ),
@@ -232,16 +243,22 @@ class _ProgressScreenState extends State<ProgressScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  const Icon(Icons.workspace_premium, color: AbhyasTheme.saffron, size: 24),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Level ${prog.level}: ${prog.title}',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.white),
-                  ),
-                ],
+              Expanded(
+                child: Row(
+                  children: [
+                    const Icon(Icons.workspace_premium, color: AbhyasTheme.saffron, size: 24),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Level ${prog.level}: ${prog.title}',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.white),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
@@ -286,7 +303,6 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
   Widget _buildMetricTile(String title, String value, String sub, Color color) {
     return Container(
-      width: 78,
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
       decoration: BoxDecoration(
         color: AbhyasTheme.darkSurface,

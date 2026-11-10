@@ -165,9 +165,30 @@ As per the task brief, the following assumptions were made regarding the design,
     - **`CyclePlayerScreen`**: Scaled transition ring (160px → 140px) and central Naam Japa ring (220px → 195px); wrapped scrollable body in `Expanded` + `SingleChildScrollView(physics: BouncingScrollPhysics())` while keeping status indicators pinned at top and controls pinned at bottom.
     - **`ProgressiveJapaScreen`**: Wrapped bead counter and stage info in `Expanded` + `SingleChildScrollView(physics: BouncingScrollPhysics())` and reduced outer bead disc from 170px to 155px.
     - **`PracticePlayerScreen`**: Wrapped visual pacer, counters, settling view, and integration view in `SingleChildScrollView(physics: BouncingScrollPhysics())`.
-    - **`BreathAwarenessScreen`**: Wrapped breath pacer disc (170px), somatosensory anchor dropdown, and duration presets in a `SingleChildScrollView(physics: BouncingScrollPhysics())`.
+    - **`BreathAwarenessScreen`**: Wrapped breath pacer disc (170px) in `SingleChildScrollView(physics: BouncingScrollPhysics())`, replaced rigid duration chip `Row` with flexible `Wrap(alignment: WrapAlignment.center, spacing: 8, runSpacing: 8)` and wrapped play/action buttons to eliminate horizontal overflow on start practice.
     - **`YogaNidraScreen`**: Replaced rigid `Spacer()` widgets with proportional spacing wrapped in a `SingleChildScrollView(physics: BouncingScrollPhysics())`.
-    - **`CycleComposerScreen`**: Wrapped all 7 technique customizer bottom sheets (Nadi Shodhana ratio sliders, Kapalbhati, Bhramari, Ujjayi, Naam Japa, Trataka, Yoga Nidra) with `SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, ...))` to eliminate keyboard and small-screen bottom clipping.
+    - **`CycleComposerScreen`**: Wrapped all 7 technique customizer bottom sheets (Nadi Shodhana, Kapalbhati, Bhramari, Ujjayi, Naam Japa, Trataka, Silent Nostril Dhyan) with `SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, ...))` and constrained their header rows with `Expanded` + ellipsis to prevent header and keyboard clipping.
+    - **`PracticeListScreen` (Abhyas Page)**:
+      - Wrapped the Master Sequence top banner in `Expanded` with text truncation to prevent right overflow against the `15-20 Min` pill.
+      - Made `Classical Pranayama Practices` header and practice card tags fully responsive.
+      - Converted all 6 technique adjust modal bottom sheets (`_showNadiRatioDialog`, `_showKapalbhatiDialog`, `_showUjjayiDialog`, `_showBhramariDialog`, `_showBhastrikaDialog`, `_showSheetaliDialog`) to scroll-safe `SingleChildScrollView` containers with `Expanded` header titles.
+    - **`PanchangScreen` (Vedic Planning)**:
+      - `_buildChoghadiyaSection`: Wrapped the section title in `Expanded` to prevent right overflow next to Day/Night choice chips.
+      - `_buildAngaCard`: Replaced unconstrained `Spacer()` with `Expanded` on limb titles to ensure long titles like *Nakshatra (Lunar Mansion)* do not push Sanskrit titles and badges off screen.
+      - `_buildMuhurtaTile`: Added `Flexible` constraints to Sanskrit names and muhurta badges.
+      - `_buildDateNavigator`: Made date header text responsive with `Flexible` and truncation.
+      - Kaala Windows (`_buildKaalaSection`), Sacred Muhurtas, Pancha-Anga, and transit sections wrapped in `Expanded` with truncation.
+    - **`ProgressScreen` (My Journey)**:
+      - Wrapped level header in `Expanded` with ellipsis; made the 4 metric tiles expand proportionally rather than fixing width to 78dp.
+    - **`CycleComposerScreen` (Routine Planner Step Cards)**:
+      - Restructured card Row 2: wrapped category badge and step adjust button inside `Wrap` and stepper controls in a bounded `Wrap(alignment: WrapAlignment.spaceBetween)` so timing adjust buttons `[-] X min [+]` never overflow.
+
+## Removal of Initial Health Screening Blocker
+* The initial onboarding and health screening questionnaire page previously shown on first launch has been removed from the application entry point (`main.dart`).
+* The application now launches directly into `MainLayout` with a safe default `SafetyProfile()`, allowing practitioners immediate access to daily practice and routines.
+* Medical contraindications and health screening remain fully accessible on demand in the "Me / Journey" tab under `Health & Safety Screening` (`HealthScreeningScreen(isUpdating: true)`).
+
+
 
 
 

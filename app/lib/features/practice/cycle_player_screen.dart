@@ -1302,7 +1302,8 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
                 ),
                 const SizedBox(height: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                  margin: const EdgeInsets.symmetric(horizontal: 14),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: phaseColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
@@ -1310,11 +1311,13 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
                   child: Text(
                     nostrilCue,
                     style: TextStyle(
-                      fontSize: 10,
+                      fontSize: 9.5,
                       fontWeight: FontWeight.w600,
                       color: phaseColor,
                     ),
                     textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
@@ -1322,8 +1325,10 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
           ),
         ),
         const SizedBox(height: 14),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 8,
+          runSpacing: 6,
           children: [
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -1337,7 +1342,6 @@ class _CyclePlayerScreenState extends State<CyclePlayerScreen> {
                 style: const TextStyle(fontSize: 11, color: Colors.white70),
               ),
             ),
-            const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(

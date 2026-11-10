@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../core/theme.dart';
-import '../../data/user_repository.dart';
 import '../../engine/panchang/panchang_service.dart';
 import '../../engine/progression/progression_service.dart';
 import '../practice/cycle_composer_screen.dart';
@@ -18,7 +17,6 @@ class _TodayScreenState extends State<TodayScreen> {
   final PanchangService _panchangService = PanchangService();
   final ProgressionService _progressionService = ProgressionService();
 
-  String _tradition = 'Traditional';
   UserProgression? _progression;
   bool _loading = true;
 
@@ -29,13 +27,10 @@ class _TodayScreenState extends State<TodayScreen> {
   }
 
   Future<void> _loadTodayData() async {
-    final userRepo = UserRepository();
-    final tradition = await userRepo.loadTradition();
     final prog = await _progressionService.getProgression();
 
     if (mounted) {
       setState(() {
-        _tradition = tradition ?? 'Smarta';
         _progression = prog;
         _loading = false;
       });
