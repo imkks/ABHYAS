@@ -217,11 +217,13 @@ class _BreathAwarenessScreenState extends State<BreathAwarenessScreen> with Sing
           }
         },
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
                 if (!_isPlaying && _secondsElapsed == 0) ...[
                   // Setup view before meditation begins
                   const Text(
@@ -275,27 +277,26 @@ class _BreathAwarenessScreenState extends State<BreathAwarenessScreen> with Sing
                   const SizedBox(height: 24),
 
                   // Duration Presets
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 8,
+                    runSpacing: 8,
                     children: [5, 10, 15, 20, 30].map((m) {
                       final isSel = _durationMinutes == m;
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                        child: ChoiceChip(
-                          label: Text('$m m'),
-                          selected: isSel,
-                          selectedColor: Colors.tealAccent,
-                          backgroundColor: Colors.white10,
-                          labelStyle: TextStyle(
-                            color: isSel ? Colors.black : Colors.white,
-                            fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
-                          ),
-                          onSelected: (_) {
-                            setState(() {
-                              _durationMinutes = m;
-                            });
-                          },
+                      return ChoiceChip(
+                        label: Text('$m m'),
+                        selected: isSel,
+                        selectedColor: Colors.tealAccent,
+                        backgroundColor: Colors.white10,
+                        labelStyle: TextStyle(
+                          color: isSel ? Colors.black : Colors.white,
+                          fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
                         ),
+                        onSelected: (_) {
+                          setState(() {
+                            _durationMinutes = m;
+                          });
+                        },
                       );
                     }).toList(),
                   ),
@@ -365,22 +366,23 @@ class _BreathAwarenessScreenState extends State<BreathAwarenessScreen> with Sing
                 const SizedBox(height: 36),
 
                 // Play / Pause controls
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 16,
+                  runSpacing: 10,
                   children: [
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.teal,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                       ),
                       icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
                       label: Text(_isPlaying ? 'Pause' : (_secondsElapsed == 0 ? 'Begin Meditation' : 'Resume')),
                       onPressed: _togglePlay,
                     ),
-                    if (_isPlaying || _secondsElapsed > 0) ...[
-                      const SizedBox(width: 16),
+                    if (_isPlaying || _secondsElapsed > 0)
                       OutlinedButton(
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.white70,
@@ -391,7 +393,6 @@ class _BreathAwarenessScreenState extends State<BreathAwarenessScreen> with Sing
                         onPressed: _completePractice,
                         child: const Text('Finish'),
                       ),
-                    ],
                   ],
                 ),
 
@@ -407,6 +408,7 @@ class _BreathAwarenessScreenState extends State<BreathAwarenessScreen> with Sing
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
