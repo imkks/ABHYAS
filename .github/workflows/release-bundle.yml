@@ -1,4 +1,4 @@
-name: Release Android App Bundle (.aab)
+name: Release Android App Bundle & APK (Manual)
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ on:
         default: '1.0.0'
         type: string
       version_code:
-        description: 'Version Code / Build Number (integer, e.g. 1)'
+        description: 'Version Code / Build Number (positive integer, e.g. 1)'
         required: true
         default: '1'
         type: string
@@ -18,12 +18,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: android-release-bundle-${{ github.ref }}
+  group: android-release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  build-signed-bundle:
-    name: Build Signed AAB for Google Play
+  build-signed-release:
+    name: Build Signed Release AAB & APK
     runs-on: ubuntu-latest
 
     steps:
@@ -33,23 +33,30 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          distribution: zulu
+          distribution: 'zulu'
           java-version: '17'
-          cache: gradle
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
         with:
-          channel: stable
-          cache: true
+          gradle-home-cache-cleanup: true
 
-      - name: Validate Android upload signing secrets
+      - name: Validate release inputs & upload signing secrets
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
         run: |
+          if ! [[ "${{ inputs.version_code }}" =~ ^[1-9][0-9]*$ ]]; then
+            echo "::error::Invalid version_code '${{ inputs.version_code }}'. Must be a positive integer."
+            exit 1
+          fi
+          if [ -z "${{ inputs.version_name }}" ]; then
+            echo "::error::version_name must not be blank."
+            exit 1
+          fi
+
           missing_secrets=()
           [ -z "$ANDROID_KEYSTORE_BASE64" ] && missing_secrets+=("ANDROID_KEYSTORE_BASE64")
           [ -z "$ANDROID_KEY_ALIAS" ] && missing_secrets+=("ANDROID_KEY_ALIAS")
@@ -59,7 +66,6 @@ jobs:
           if [ ${#missing_secrets[@]} -ne 0 ]; then
             echo "::error::Missing required repository secret(s): ${missing_secrets[*]}"
             echo "Please configure these secrets in GitHub Repo -> Settings -> Secrets and variables -> Actions."
-            echo "Refer to docs/PLAYSTORE_PUBLISHING_GUIDE.md for detailed instructions."
             exit 1
           fi
 
@@ -70,73 +76,87 @@ jobs:
           echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/abhyas-upload.jks"
           chmod 600 "$RUNNER_TEMP/abhyas-upload.jks"
 
-      - name: Install Flutter dependencies
-        working-directory: ./app
-        run: flutter pub get
+      - name: Make Gradle wrapper executable
+        run: chmod +x android/gradlew
 
-      - name: Run verification & safety tests
-        working-directory: ./app
-        run: flutter test
+      - name: Run unit tests before release packaging
+        working-directory: ./android
+        run: ./gradlew :engine:test :app:testDebugUnitTest --no-daemon
 
-      - name: Build signed Android App Bundle (AAB)
-        working-directory: ./app
+      - name: Build signed Release AAB & Release APK
+        working-directory: ./android
         env:
           ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/abhyas-upload.jks
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          flutter build appbundle --release \
-            --build-name="${{ inputs.version_name }}" \
-            --build-number="${{ inputs.version_code }}"
+          ./gradlew :app:bundleRelease :app:assembleRelease --no-daemon \
+            -PversionName="${{ inputs.version_name }}" \
+            -PversionCode="${{ inputs.version_code }}"
 
-      - name: Verify AAB signature
+      - name: Verify signed AAB & APK signatures
         run: |
-          bundle_path="app/build/app/outputs/bundle/release/app-release.aab"
+          bundle_path="android/app/build/outputs/bundle/release/app-release.aab"
+          apk_path="android/app/build/outputs/apk/release/app-release.apk"
           test -f "$bundle_path" || { echo "::error::Bundle not found at $bundle_path"; exit 1; }
-          jarsigner -verify -verbose "$bundle_path"
-          echo "AAB bundle signature successfully verified."
+          test -f "$apk_path" || { echo "::error::Release APK not found at $apk_path"; exit 1; }
 
-      - name: Stage release bundle artifact
+          jarsigner -verify -verbose "$bundle_path"
+          echo "AAB bundle signature verified."
+
+          apksigner_bin=$(ls -d "$ANDROID_HOME"/build-tools/*/apksigner 2>/dev/null | sort -V | tail -n 1 || true)
+          if [ -n "$apksigner_bin" ]; then
+            "$apksigner_bin" verify --verbose "$apk_path"
+          else
+            jarsigner -verify -verbose "$apk_path"
+          fi
+          echo "Release APK signature verified."
+
+      - name: Stage release artifacts
         run: |
           mkdir -p dist
-          BUNDLE_NAME="pranaflow-v${{ inputs.version_name }}+${{ inputs.version_code }}.aab"
-          cp app/build/app/outputs/bundle/release/app-release.aab "dist/${BUNDLE_NAME}"
-          
-          # Generate SHA256 checksum for audit and release records
+          VERSION_TAG="v${{ inputs.version_name }}+${{ inputs.version_code }}"
+          BUNDLE_NAME="pranaflow-${VERSION_TAG}.aab"
+          APK_NAME="pranaflow-${VERSION_TAG}-release.apk"
+
+          cp android/app/build/outputs/bundle/release/app-release.aab "dist/${BUNDLE_NAME}"
+          cp android/app/build/outputs/apk/release/app-release.apk "dist/${APK_NAME}"
+
           cd dist
           sha256sum "${BUNDLE_NAME}" > "${BUNDLE_NAME}.sha256"
-          echo "STAGED_BUNDLE=${BUNDLE_NAME}" >> "$GITHUB_ENV"
+          sha256sum "${APK_NAME}" > "${APK_NAME}.sha256"
 
-      - name: Upload signed bundle artifact
+          echo "STAGED_BUNDLE=${BUNDLE_NAME}" >> "$GITHUB_ENV"
+          echo "STAGED_APK=${APK_NAME}" >> "$GITHUB_ENV"
+
+      - name: Upload signed release artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: pranaflow-v${{ inputs.version_name }}+${{ inputs.version_code }}-bundle
+          name: pranaflow-v${{ inputs.version_name }}+${{ inputs.version_code }}-release
           path: |
             dist/${{ env.STAGED_BUNDLE }}
             dist/${{ env.STAGED_BUNDLE }}.sha256
+            dist/${{ env.STAGED_APK }}
+            dist/${{ env.STAGED_APK }}.sha256
           retention-days: 90
+
+      - name: Clean temporary keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/abhyas-upload.jks"
 
       - name: GitHub Action Job Summary
         run: |
           BUNDLE_FILE="dist/${{ env.STAGED_BUNDLE }}"
-          FILE_SIZE=$(ls -lh "$BUNDLE_FILE" | awk '{print $5}')
-          CHECKSUM=$(cat "${BUNDLE_FILE}.sha256" | awk '{print $1}')
-          
-          echo "### 🚀 PranaFlow Google Play Release Bundle Ready!" >> $GITHUB_STEP_SUMMARY
+          APK_FILE="dist/${{ env.STAGED_APK }}"
+          BUNDLE_SIZE=$(ls -lh "$BUNDLE_FILE" | awk '{print $5}')
+          APK_SIZE=$(ls -lh "$APK_FILE" | awk '{print $5}')
+          BUNDLE_SHA=$(awk '{print $1}' "${BUNDLE_FILE}.sha256")
+          APK_SHA=$(awk '{print $1}' "${APK_FILE}.sha256")
+
+          echo "### PranaFlow Android Native Release Ready" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
-          echo "| **App Name** | \`PranaFlow\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Package ID** | \`come.evertrail.pranaflow\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Version Name** | \`${{ inputs.version_name }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Version Code** | \`${{ inputs.version_code }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **File Name** | \`${{ env.STAGED_BUNDLE }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **File Size** | \`${FILE_SIZE}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **SHA256 Checksum** | \`${CHECKSUM}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "#### Next Steps:" >> $GITHUB_STEP_SUMMARY
-          echo "1. Download the artifact bundle from the **Artifacts** section of this workflow run." >> $GITHUB_STEP_SUMMARY
-          echo "2. Go to **Google Play Console** -> Select PranaFlow -> **Testing** or **Production**." >> $GITHUB_STEP_SUMMARY
-          echo "3. Create a new release and upload the downloaded \`.aab\` bundle." >> $GITHUB_STEP_SUMMARY
-          echo "4. Follow [docs/PLAYSTORE_PUBLISHING_GUIDE.md](docs/PLAYSTORE_PUBLISHING_GUIDE.md) for complete answers to all Play Console questions." >> $GITHUB_STEP_SUMMARY
+          echo "| Artifact | Version | Size | SHA256 |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| \`${{ env.STAGED_BUNDLE }}\` (Play Console) | \`${{ inputs.version_name }}\` (\`${{ inputs.version_code }}\`) | \`${BUNDLE_SIZE}\` | \`${BUNDLE_SHA}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| \`${{ env.STAGED_APK }}\` (Direct Install) | \`${{ inputs.version_name }}\` (\`${{ inputs.version_code }}\`) | \`${APK_SIZE}\` | \`${APK_SHA}\` |" >> $GITHUB_STEP_SUMMARY

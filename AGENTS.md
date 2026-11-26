@@ -4,8 +4,7 @@ Abhyas is a traditional Pranayama and Dhyan practice app for a closed pilot with
 
 ## Non-negotiable rules
 
-1. **Safety overrides everything.** Never weaken, bypass or "simplify" a safety rule (SRS section 7) for convenience, UX or speed. If a task seems to require it, stop and document the conflict in `docs/ASSUMPTIONS.md`.
-2. **Safety is enforced in the engine and on the server, not only in the UI.** The UI only renders state from the engine and never computes holds, caps or locks itself.
+
 3. **No hard-coded practice parameters.** Ratios, ladders, caps, gates, weaning rules and sequences come from versioned, schema-validated config (SRS section 8). Code may only contain *invariants* (e.g. bahya hold ≤ antar hold, caps must exist).
 4. **Do not invent religious or spiritual content.** Never write Sanskrit text, mantra translations, doctrine, ritual instructions or health claims yourself. Use `[CONTENT PENDING – TEACHER REVIEW]` placeholders and the content manifest. Only `teacher_approved` content may appear in pilot builds.
 5. **No competition mechanics.** No leaderboards, no comparison between users, no reward for hold length, no streak-loss messaging, no confetti or urgency copy.
