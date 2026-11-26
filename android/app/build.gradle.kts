@@ -38,13 +38,13 @@ val resolvedVersionName = ((project.findProperty("versionName") as? String)
 
 android {
     namespace = "com.pranaflow.abhyas"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         // Preserved Play Store applicationId for PranaFlow
         applicationId = "come.evertrail.pranaflow"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = resolvedVersionCode
         versionName = resolvedVersionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

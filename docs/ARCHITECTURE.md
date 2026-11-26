@@ -26,7 +26,7 @@ Zero Android, Flutter, or network dependencies (`kotlin("jvm")`), unit-tested di
 
 ## 2. Android Data & Platform Services Layer (`android/app` — Gradle module `:app`)
 
-Package namespace `com.pranaflow.abhyas` (preserving `applicationId = "come.evertrail.pranaflow"` in `android/app/build.gradle.kts`, `minSdk = 26`, `targetSdk = 35`):
+Package namespace `com.pranaflow.abhyas` (preserving `applicationId = "come.evertrail.pranaflow"` in `android/app/build.gradle.kts`, `minSdk = 26`, `targetSdk = 36`):
 
 * **Dependency Injection Container (`core/di/AbhyasContainer.kt`)**: Wires `:engine` workflows (open advisory mode, no remote backend gating), Jetpack DataStore repositories, audio/haptic drivers, and `ContentRepository` asset loading without third-party analytics, ads, or remote cloud SDKs.
 * **Local Persistence (`data/store/`, `data/models/`, `data/repositories/`)**:
