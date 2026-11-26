@@ -13,6 +13,11 @@ yarn-error.log
 # Build outputs
 console/build/
 app/build/
+android/.gradle/
+android/build/
+android/app/build/
+android/engine/build/
+android/local.properties
 build/
 target/
 
@@ -20,6 +25,7 @@ target/
 *.jks
 *.keystore
 /app/android/key.properties
+/android/key.properties
 .env
 .env.*
 !.env.example

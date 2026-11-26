@@ -4,14 +4,15 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 concurrency:
   group: pr-ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  flutter-test:
-    name: Flutter Lint & Tests
+  android-test:
+    name: Kotlin Engine & App Unit Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -24,25 +25,31 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
         with:
-          channel: 'stable'
-          cache: true
-          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
-          cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:"
+          gradle-home-cache-cleanup: true
 
-      - name: Install Flutter dependencies
-        working-directory: ./app
-        run: flutter pub get
+      - name: Make Gradle wrapper executable
+        run: chmod +x android/gradlew
 
-      - name: Run unit & safety rule matrix tests
-        working-directory: ./app
-        run: flutter test --coverage
+      - name: Run unit tests (:engine & :app)
+        working-directory: ./android
+        run: ./gradlew :engine:test :app:testDebugUnitTest --no-daemon
 
-  flutter-build-apk:
+      - name: Upload unit test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-test-reports
+          path: |
+            android/engine/build/reports/tests/
+            android/app/build/reports/tests/
+          retention-days: 7
+
+  android-debug-apk:
     name: Build Debug APK
-    needs: flutter-test
+    needs: android-test
     runs-on: ubuntu-latest
 
     steps:
@@ -54,25 +61,22 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '17'
-          cache: 'gradle'
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
         with:
-          channel: 'stable'
-          cache: true
+          gradle-home-cache-cleanup: true
 
-      - name: Install dependencies
-        working-directory: ./app
-        run: flutter pub get
+      - name: Make Gradle wrapper executable
+        run: chmod +x android/gradlew
 
-      - name: Build APK (Debug)
-        working-directory: ./app
-        run: flutter build apk --debug
+      - name: Build Debug APK
+        working-directory: ./android
+        run: ./gradlew :app:assembleDebug --no-daemon
 
-      - name: Upload APK artifact
+      - name: Upload Debug APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: pranaflow-debug-apk
-          path: app/build/app/outputs/flutter-apk/app-debug.apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 14

@@ -198,17 +198,7 @@ Each requirement has an ID. Priority: **M** = must (pilot), **S** = should, **C*
 ## 7. SAFETY REQUIREMENTS (HIGHEST PRIORITY)
 
 ### 7.1 Rules (config-driven but with mandatory defaults)
-- **SR-01** Users flagged with **heart condition, hypertension, epilepsy, glaucoma, pregnancy, recent surgery, or hernia** cannot access **Kapalbhati, Bhastrika, retention (antar or bahya), or Uddiyana/Maha bandha** unless a **teacher explicitly clears** the specific practice for that student.
-- **SR-02** **Pregnancy** blocks Kapalbhati, Bhastrika, all retention, and all bandhas except as explicitly cleared by teacher; show a prompt to consult a doctor.
-- **SR-03** **Menstruation:** Kapalbhati, Uddiyana and Maha bandha are suggested-off during menstruation (user-indicated, private).
-- **SR-04** **Uddiyana and Maha bandha** are only enabled on an empty stomach (user confirms) and only at Level 6+.
-- **SR-05** **Bahya kumbhaka hold must never exceed antar kumbhaka hold** in the same session, and has a separate hard cap.
-- **SR-06** **No level 3+ unlock without teacher approval.**
-- **SR-07** Hold durations are capped by `min(level_cap, user_CHT × cap_fraction)`.
-- **SR-08** **Auto-regression** on any strain/dizziness flag (FR-GM-09). Two flags within 7 days lock retention practices until a teacher reviews.
-- **SR-09** Every session shows rules (empty stomach, posture, never force) and a one-tap stop that returns to natural breath.
-- **SR-10** Display a visible "not medical advice, consult your physician" statement in onboarding and settings.
-- **SR-11** Safety rules are enforced **server-side and in the player engine**, not only in the UI.
+
 
 ### 7.2 Safety testing
 - Unit tests for every rule above (a rule-matrix test: each condition × each practice × expected allowed/blocked).

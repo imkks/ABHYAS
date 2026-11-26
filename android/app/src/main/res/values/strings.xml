@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">PranaFlow</string>
+    <string name="app_tagline">Abhyas · Daily Pranayama &amp; Dhyan</string>
+    <string name="practice_playback_channel">Practice playback</string>
+    <string name="practice_playback_notification">Practice audio and timers are active</string>
+    <string name="reminder_channel">Practice reminders</string>
+
+    <!-- Bottom navigation -->
+    <string name="nav_sanctuary">Sanctuary</string>
+    <string name="nav_pranayama">Pranayama</string>
+    <string name="nav_dhyan">Dhyan</string>
+    <string name="nav_growth">Growth</string>
+
+    <!-- Common labels -->
+    <string name="action_begin_practice">Begin Practice</string>
+    <string name="action_configure">Configure</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_close">Close</string>
+    <string name="action_done">Complete</string>
+    <string name="action_pause">Pause</string>
+    <string name="action_resume">Resume</string>
+    <string name="action_skip_transition">Begin Now</string>
+    <string name="action_return_natural_breath">Return to Natural Breath</string>
+    <string name="label_open_daily_abhyas">Open Daily Abhyas · All 7 Sopanas Open for Practice</string>
+    <string name="label_custom_composer">Custom Session Composer</string>
+    <string name="label_calmness_shift">Calmness Shift</string>
+    <string name="label_vishrama_rest">Take Vishrama Rest Day</string>
+</resources>
