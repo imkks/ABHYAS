@@ -92,7 +92,7 @@ class ProgressiveJapaEngine {
       spokenText: 'Begin chanting aloud with a clear voice.',
       voiceAssetIdentifier: 'assets/audio/voice/voice_japa_vaikhari.wav',
       soundIdentifier: 'assets/audio/singingBowl_practice_start_gong.wav',
-      triggerHaptic: false,
+      triggerHaptic: true,
     );
   }
 
@@ -115,7 +115,7 @@ class ProgressiveJapaEngine {
         spokenText: 'When you are ready, gently open your eyes.',
         voiceAssetIdentifier: 'assets/audio/voice/voice_open_eyes.wav',
         soundIdentifier: 'assets/audio/singingBowl_shanti_chime.wav',
-        triggerHaptic: false,
+        triggerHaptic: true,
       );
     }
 
@@ -151,7 +151,7 @@ class ProgressiveJapaEngine {
           spokenText: 'Shift to Upamshu. Lower your voice to a gentle whisper, moving only your lips.',
           voiceAssetIdentifier: 'assets/audio/voice/voice_japa_upamshu.wav',
           soundIdentifier: 'assets/audio/singingBowl_kumbhaka_hold.wav',
-          triggerHaptic: false,
+          triggerHaptic: true,
         );
 
       case JapaStage.upamshu:
@@ -161,7 +161,7 @@ class ProgressiveJapaEngine {
           spokenText: 'Shift to Manasika. Still the lips and tongue. Allow the mantra to repeat silently in the mind.',
           voiceAssetIdentifier: 'assets/audio/voice/voice_japa_manasika.wav',
           soundIdentifier: 'assets/audio/singingBowl_puraka_inhale.wav',
-          triggerHaptic: false,
+          triggerHaptic: true,
         );
 
       case JapaStage.manasika:
@@ -171,7 +171,7 @@ class ProgressiveJapaEngine {
           spokenText: 'Release all repetition. Rest in the vibrating silence.',
           voiceAssetIdentifier: 'assets/audio/voice/voice_japa_laya.wav',
           soundIdentifier: 'assets/audio/singingBowl_session_complete_3bowls.wav',
-          triggerHaptic: false,
+          triggerHaptic: true,
         );
 
       case JapaStage.laya:
@@ -182,7 +182,7 @@ class ProgressiveJapaEngine {
           spokenText: 'When you are ready, gently open your eyes.',
           voiceAssetIdentifier: 'assets/audio/voice/voice_open_eyes.wav',
           soundIdentifier: 'assets/audio/singingBowl_shanti_chime.wav',
-          triggerHaptic: false,
+          triggerHaptic: true,
         );
     }
   }

@@ -76,5 +76,35 @@ void main() {
 
       sequencer.stop();
     });
+
+    test('step sequence maintains step indices for transition intervals', () {
+      final steps = [
+        CycleStepItem(id: 'kapalbhati', title: 'Kapalbhati', subtitle: '3 Rounds', durationSeconds: 60),
+        CycleStepItem(id: 'nadi_shodhana', title: 'Nadi Shodhana', subtitle: 'Vishnu Mudra', durationSeconds: 120),
+        CycleStepItem(id: 'naam_japa', title: '3-Stage Naam Japa', subtitle: 'Vaikhari to Manasika', durationSeconds: 180),
+      ];
+
+      final sequencer = CycleSequencer(steps: steps);
+      final List<int> completedIndices = [];
+
+      sequencer.start(onStepComplete: (idx) {
+        completedIndices.add(idx);
+      });
+
+      expect(sequencer.currentStepIndex, 0);
+      expect(sequencer.currentStep.id, 'kapalbhati');
+
+      sequencer.skipStep();
+      expect(completedIndices, contains(0));
+      expect(sequencer.currentStepIndex, 1);
+      expect(sequencer.currentStep.id, 'nadi_shodhana');
+
+      sequencer.skipStep();
+      expect(completedIndices, contains(1));
+      expect(sequencer.currentStepIndex, 2);
+      expect(sequencer.currentStep.id, 'naam_japa');
+
+      sequencer.stop();
+    });
   });
 }

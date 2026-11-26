@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../core/theme.dart';
-import '../../data/user_repository.dart';
 import '../../engine/panchang/panchang_service.dart';
 import '../../engine/progression/progression_service.dart';
 import '../practice/cycle_composer_screen.dart';
@@ -18,7 +17,6 @@ class _TodayScreenState extends State<TodayScreen> {
   final PanchangService _panchangService = PanchangService();
   final ProgressionService _progressionService = ProgressionService();
 
-  String _tradition = 'Traditional';
   UserProgression? _progression;
   bool _loading = true;
 
@@ -29,13 +27,10 @@ class _TodayScreenState extends State<TodayScreen> {
   }
 
   Future<void> _loadTodayData() async {
-    final userRepo = UserRepository();
-    final tradition = await userRepo.loadTradition();
     final prog = await _progressionService.getProgression();
 
     if (mounted) {
       setState(() {
-        _tradition = tradition ?? 'Smarta';
         _progression = prog;
         _loading = false;
       });
@@ -135,49 +130,58 @@ class _TodayScreenState extends State<TodayScreen> {
         children: [
           // Top Row: Level Title + Streak
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: AbhyasTheme.saffron.withValues(alpha: 0.2),
-                      shape: BoxShape.circle,
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: AbhyasTheme.saffron.withValues(alpha: 0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.workspace_premium, color: AbhyasTheme.saffron, size: 20),
                     ),
-                    child: const Icon(Icons.workspace_premium, color: AbhyasTheme.saffron, size: 20),
-                  ),
-                  const SizedBox(width: 8),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        prog.journeyPhase.toUpperCase(),
-                        style: const TextStyle(
-                          color: AbhyasTheme.saffron,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 10,
-                          letterSpacing: 1.1,
-                        ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            prog.journeyPhase.toUpperCase(),
+                            style: const TextStyle(
+                              color: AbhyasTheme.saffron,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10,
+                              letterSpacing: 1.1,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'LEVEL ${prog.level}: ${prog.title.toUpperCase()}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              letterSpacing: 1.1,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            panchangDate,
+                            style: const TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 11),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'LEVEL ${prog.level}: ${prog.title.toUpperCase()}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                          letterSpacing: 1.1,
-                        ),
-                      ),
-                      Text(
-                        panchangDate,
-                        style: const TextStyle(color: AbhyasTheme.darkInkSoft, fontSize: 11),
-                      ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
 
               // Streak Badge
               Container(
@@ -307,18 +311,18 @@ class _TodayScreenState extends State<TodayScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Row(
-                  children: [
-                    Text(
-                      '🌅 Morning Surya Abhyas',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        color: AbhyasTheme.saffron,
-                      ),
+                const Expanded(
+                  child: Text(
+                    '🌅 Morning Surya Abhyas',
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                      color: AbhyasTheme.saffron,
                     ),
-                  ],
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
+                const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
@@ -405,20 +409,26 @@ class _TodayScreenState extends State<TodayScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Icon(Icons.bedtime, color: Colors.indigo.shade300, size: 18),
-                    const SizedBox(width: 6),
-                    Text(
-                      '🌙 Bedtime Chandra Abhyas',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.indigo.shade200,
+                Expanded(
+                  child: Row(
+                    children: [
+                      Icon(Icons.bedtime, color: Colors.indigo.shade300, size: 18),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          'Bedtime Chandra Abhyas',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.indigo.shade200,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
@@ -506,9 +516,12 @@ class _TodayScreenState extends State<TodayScreen> {
               children: [
                 Icon(Icons.av_timer, color: AbhyasTheme.saffron, size: 16),
                 SizedBox(width: 6),
-                Text(
-                  'Quick Practice: How much time do you have?',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.white),
+                Expanded(
+                  child: Text(
+                    'Quick Practice: How much time do you have?',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.white),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),

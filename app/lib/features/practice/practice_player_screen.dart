@@ -473,7 +473,6 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
   @override
   Widget build(BuildContext context) {
     bool showVisualPacer = widget.weaningStage < 3;
-    bool showCounts = widget.weaningStage < 3;
 
     return Scaffold(
       backgroundColor: Colors.black, // Dark/subdued background for eyes-closed practice
@@ -518,11 +517,13 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
         },
         child: SafeArea(
           child: Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
                   // Settling Buffer View
                   if (_isSettling) ...[
                     const Text(
@@ -668,8 +669,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildDynamicPracticePacer() {
     final isKapal = widget.practiceId.contains('kapal');
@@ -791,7 +793,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       count: '${_secondsElapsed}s',
       subtitle: nostrilCue,
       color: pColor,
-      size: _currentPhase == PracticePhase.puraka ? 220 : (_currentPhase == PracticePhase.rechaka ? 140 : 180),
+      size: _currentPhase == PracticePhase.puraka ? 210 : (_currentPhase == PracticePhase.rechaka ? 180 : 195),
     );
   }
 
@@ -820,8 +822,9 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
       ),
       child: Center(
         child: Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
@@ -834,17 +837,17 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                   color: color,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 count,
                 style: const TextStyle(
-                  fontSize: 28,
+                  fontSize: 26,
                   fontWeight: FontWeight.w300,
                   color: Colors.white,
                   fontFeatures: [FontFeature.tabularFigures()],
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 subtitle,
                 textAlign: TextAlign.center,
@@ -854,6 +857,7 @@ class _PracticePlayerScreenState extends State<PracticePlayerScreen> {
                   color: color,
                 ),
                 maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),

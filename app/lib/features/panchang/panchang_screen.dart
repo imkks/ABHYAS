@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../core/location_service.dart';
 import '../../core/theme.dart';
-import '../../engine/panchang/panchang_engine.dart';
 import '../../engine/panchang/panchang_models.dart';
 import '../../engine/panchang/panchang_service.dart';
 import '../practice/cycle_composer_screen.dart';
@@ -654,16 +653,20 @@ class _PanchangScreenState extends State<PanchangScreen> {
               padding: const EdgeInsets.symmetric(vertical: 6.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.calendar_today,
                       size: 16, color: AbhyasTheme.saffron),
                   const SizedBox(width: 8),
-                  Text(
-                    formattedDate,
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
+                  Flexible(
+                    child: Text(
+                      formattedDate,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
@@ -720,14 +723,17 @@ class _PanchangScreenState extends State<PanchangScreen> {
                 size: 20,
               ),
               const SizedBox(width: 8),
-              Text(
-                status.isActive
-                    ? 'Brahma Muhurta Active Now'
-                    : 'Brahma Muhurta ${status.countdownString}',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                  color: AbhyasTheme.darkInk,
+              Expanded(
+                child: Text(
+                  status.isActive
+                      ? 'Brahma Muhurta Active Now'
+                      : 'Brahma Muhurta ${status.countdownString}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: AbhyasTheme.darkInk,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -784,12 +790,15 @@ class _PanchangScreenState extends State<PanchangScreen> {
           children: const [
             Icon(Icons.auto_awesome, size: 18, color: AbhyasTheme.saffron),
             SizedBox(width: 8),
-            Text(
-              'The Five Limbs (Pancha-Anga)',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.5,
+            Expanded(
+              child: Text(
+                'The Five Limbs (Pancha-Anga)',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -885,15 +894,18 @@ class _PanchangScreenState extends State<PanchangScreen> {
             children: [
               Icon(icon, size: 16, color: accentColor),
               const SizedBox(width: 8),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AbhyasTheme.darkInkSoft,
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AbhyasTheme.darkInkSoft,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const Spacer(),
+              const SizedBox(width: 8),
               Text(
                 sanskrit,
                 style: const TextStyle(
@@ -908,7 +920,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: accentColor.withOpacity(0.2),
+                    color: accentColor.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: accentColor, width: 0.8),
                   ),
@@ -958,9 +970,12 @@ class _PanchangScreenState extends State<PanchangScreen> {
               children: const [
                 Icon(Icons.wb_sunny, color: AbhyasTheme.saffron, size: 20),
                 SizedBox(width: 8),
-                Text(
-                  'Surya & Chandra Transit',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                Expanded(
+                  child: Text(
+                    'Surya & Chandra Transit',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
@@ -1023,9 +1038,12 @@ class _PanchangScreenState extends State<PanchangScreen> {
           children: const [
             Icon(Icons.spa, size: 18, color: AbhyasTheme.saffron),
             SizedBox(width: 8),
-            Text(
-              'Sacred Muhurtas & Sandhya Kaalas',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Expanded(
+              child: Text(
+                'Sacred Muhurtas & Sandhya Kaalas',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
         ),
@@ -1071,30 +1089,37 @@ class _PanchangScreenState extends State<PanchangScreen> {
               Expanded(
                 child: Row(
                   children: [
-                    Text(
-                      m.name,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                    Flexible(
+                      child: Text(
+                        m.name,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      m.sanskritName,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: AbhyasTheme.darkInkSoft,
+                    Flexible(
+                      child: Text(
+                        m.sanskritName,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: AbhyasTheme.darkInkSoft,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
                 ),
               ),
-              if (isToday)
+              if (isToday) ...[
+                const SizedBox(width: 8),
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: badgeColor.withOpacity(0.2),
+                    color: badgeColor.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -1106,6 +1131,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
                     ),
                   ),
                 ),
+              ],
             ],
           ),
           const SizedBox(height: 6),
@@ -1181,9 +1207,12 @@ class _PanchangScreenState extends State<PanchangScreen> {
           children: const [
             Icon(Icons.shield_outlined, size: 18, color: AbhyasTheme.clay),
             SizedBox(width: 8),
-            Text(
-              'Kaala Windows (Restraint & Inner Japa)',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Expanded(
+              child: Text(
+                'Kaala Windows (Restraint & Inner Japa)',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
         ),
@@ -1210,19 +1239,25 @@ class _PanchangScreenState extends State<PanchangScreen> {
                     children: [
                       Row(
                         children: [
-                          Text(
-                            k.name,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                          Flexible(
+                            child: Text(
+                              k.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           const SizedBox(width: 6),
-                          Text(
-                            '(${k.sanskritName})',
-                            style: const TextStyle(
-                              color: AbhyasTheme.darkInkSoft,
-                              fontSize: 12,
+                          Flexible(
+                            child: Text(
+                              '(${k.sanskritName})',
+                              style: const TextStyle(
+                                color: AbhyasTheme.darkInkSoft,
+                                fontSize: 12,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
@@ -1273,19 +1308,26 @@ class _PanchangScreenState extends State<PanchangScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: const [
-                Icon(Icons.access_time, size: 18, color: AbhyasTheme.saffron),
-                SizedBox(width: 8),
-                Text(
-                  'Choghadiya Timings',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ],
+            Expanded(
+              child: Row(
+                children: const [
+                  Icon(Icons.access_time, size: 18, color: AbhyasTheme.saffron),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Choghadiya Timings',
+                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
             ),
+            const SizedBox(width: 8),
             Row(
               children: [
                 ChoiceChip(
+                  visualDensity: VisualDensity.compact,
                   label: const Text('Day', style: TextStyle(fontSize: 12)),
                   selected: _showDayChoghadiya,
                   onSelected: (val) {
@@ -1296,6 +1338,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
                 ),
                 const SizedBox(width: 6),
                 ChoiceChip(
+                  visualDensity: VisualDensity.compact,
                   label: const Text('Night', style: TextStyle(fontSize: 12)),
                   selected: !_showDayChoghadiya,
                   onSelected: (val) {
